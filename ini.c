@@ -175,3 +175,24 @@ int ini_parse(const char *filename, int (*handler)(void *user, const char *secti
 
 }
 
+int ini_writesection(FILE *file, char *name)
+{
+
+    return fprintf(file, "[%s]\n", name);
+
+}
+
+int ini_writeint(FILE *file, char *key, int value)
+{
+
+    return fprintf(file, "        %s = %d\n", key, value);
+
+}
+
+int ini_writestring(FILE *file, char *key, char *value)
+{
+
+    return fprintf(file, "        %s = %s\n", key, value);
+
+}
+

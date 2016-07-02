@@ -5,6 +5,23 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "berk.h"
+#include "ini.h"
+
+static int saveconfig(char *filename, char *version)
+{
+
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL)
+        berk_panic("Could not create config file.");
+
+    ini_writesection(file, "core");
+    ini_writestring(file, "version", version);
+    fclose(file);
+
+    return 0;
+
+}
 
 void init_assert()
 {
@@ -17,11 +34,7 @@ void init_assert()
 void init_setup()
 {
 
-    static const char *fmt =
-        "[core]\n"
-        "        version = %s\n";
     char path[1024];
-    FILE *config;
 
     if (mkdir(BERK_ROOT, 0775) < 0)
         berk_panic("Ewok already initialized.");
@@ -29,15 +42,7 @@ void init_setup()
     if (snprintf(path, 1024, "%s", BERK_CONFIG) < 0)
         berk_panic("Could not copy string.");
 
-    config = fopen(path, "w");
-
-    if (config == NULL)
-        berk_panic("Could not create config file.");
-
-    if (fprintf(config, fmt, BERK_VERSION) < 0)
-        berk_panic("Could not write to config file.");
-
-    fclose(config);
+    saveconfig(path, BERK_VERSION);
 
     if (snprintf(path, 1024, "%s", BERK_REMOTES_BASE) < 0)
         berk_panic("Could not copy string.");

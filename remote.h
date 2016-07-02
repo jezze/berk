@@ -1,15 +1,16 @@
 struct remote
 {
 
-    char name[32];
-    char hostname[64];
+    char *name;
+    char *hostname;
     unsigned int port;
-    char username[64];
-    char publickey[64];
-    char privatekey[64];
+    char *username;
+    char *publickey;
+    char *privatekey;
     int sock;
 
 };
 
-int remote_load(char *remote_name, struct remote *remote);
+int remote_load(char *filename, struct remote *remote);
+int remote_save(char *filename, struct remote *remote);
 int remote_parse(int argc, char **argv);

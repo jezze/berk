@@ -10,31 +10,66 @@
 #include "remote.h"
 #include "con_ssh.h"
 
+static int job_load_callback(void *user, const char *section, const char *name, const char *value)
+{
+
+    struct job *job = user;
+
+    if (!strcmp(section, "job") && !strcmp(name, "name"))
+        job->name = strdup(value);
+
+    if (!strcmp(section, "job") && !strcmp(name, "exec"))
+        job->exec = strdup(value);
+
+    return 1;
+
+}
+
+int job_load(char *filename, struct job *job)
+{
+
+    char path[1024];
+
+    if (snprintf(path, 1024, "%s/%s", BERK_JOBS_BASE, filename) < 0)
+        return -1;
+
+    memset(job, 0, sizeof (struct job));
+
+    return ini_parse(path, job_load_callback, job);
+
+}
+
+int job_save(char *filename, struct job *job)
+{
+
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL)
+        berk_panic("Could not create job config file.");
+
+    ini_writesection(file, "job");
+    ini_writestring(file, "name", job->name);
+    ini_writestring(file, "exec", job->exec);
+    fclose(file);
+
+    return 0;
+
+}
+
 void job_add(char *job_name)
 {
 
-    static const char *fmt =
-        "[job]\n"
-        "        name = %s\n"
-        "        exec = whoami\n"
-        "        label = all\n";
+    struct job job;
     char path[1024];
-    FILE *config;
 
     init_assert();
+    memset(&job, 0, sizeof (struct job));
+    snprintf(path, 1024, "%s/%s", BERK_JOBS_BASE, job_name);
 
-    if (snprintf(path, 1024, "%s/%s", BERK_JOBS_BASE, job_name) < 0)
-        berk_panic("Could not copy string.");
+    job.name = job_name;
+    job.exec = "whoami";
 
-    config = fopen(path, "w");
-
-    if (config == NULL)
-        berk_panic("Could not create job config file.");
-
-    if (fprintf(config, fmt, job_name) < 0)
-        berk_panic("Could not write to job config file.");
-
-    fclose(config);
+    job_save(path, &job);
     fprintf(stdout, "Job '%s' created in '%s'\n", job_name, path);
 
 }
@@ -66,35 +101,6 @@ void job_list()
         fprintf(stdout, "%s\n", entry->d_name);
 
     }
-
-}
-
-int job_load_callback(void *user, const char *section, const char *name, const char *value)
-{
-
-    struct job *job = user;
-
-    if (!strcmp(section, "job") && !strcmp(name, "name"))
-        strncpy(job->name, value, 32);
-
-    if (!strcmp(section, "job") && !strcmp(name, "exec"))
-        strncpy(job->exec, value, 1024);
-
-    return 1;
-
-}
-
-int job_load(char *job_name, struct job *job)
-{
-
-    char path[1024];
-
-    if (snprintf(path, 1024, "%s/%s", BERK_JOBS_BASE, job_name) < 0)
-        return -1;
-
-    memset(job, 0, sizeof (struct job));
-
-    return ini_parse(path, job_load_callback, job);
 
 }
 

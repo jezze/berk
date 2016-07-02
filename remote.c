@@ -8,39 +8,91 @@
 #include "init.h"
 #include "remote.h"
 
+static int remote_load_callback(void *user, const char *section, const char *name, const char *value)
+{
+
+    struct remote *remote = user;
+
+    if (!strcmp(section, "remote") && !strcmp(name, "name"))
+        remote->name = strdup(value);
+
+    if (!strcmp(section, "remote") && !strcmp(name, "hostname"))
+        remote->hostname = strdup(value);
+
+    if (!strcmp(section, "remote") && !strcmp(name, "port"))
+        remote->port = atoi(value);
+
+    if (!strcmp(section, "remote") && !strcmp(name, "username"))
+        remote->username = strdup(value);
+
+    if (!strcmp(section, "remote") && !strcmp(name, "privatekey"))
+        remote->privatekey = strdup(value);
+
+    if (!strcmp(section, "remote") && !strcmp(name, "publickey"))
+        remote->publickey = strdup(value);
+
+    return 1;
+
+}
+
+int remote_load(char *filename, struct remote *remote)
+{
+
+    char path[1024];
+
+    if (snprintf(path, 1024, "%s/%s", BERK_REMOTES_BASE, filename) < 0)
+        return -1;
+
+    memset(remote, 0, sizeof (struct remote));
+
+    return ini_parse(path, remote_load_callback, remote);
+
+}
+
+int remote_save(char *filename, struct remote *remote)
+{
+
+    FILE *file = fopen(filename, "w");
+
+    if (file == NULL)
+        berk_panic("Could not create remote config file.");
+
+    ini_writesection(file, "remote");
+    ini_writestring(file, "name", remote->name);
+    ini_writestring(file, "hostname", remote->hostname);
+    ini_writeint(file, "port", remote->port);
+    ini_writestring(file, "username", remote->username);
+    ini_writestring(file, "privatekey", remote->privatekey);
+    ini_writestring(file, "publickey", remote->publickey);
+    fclose(file);
+
+    return 0;
+
+}
+
 void remote_add(char *remote_name, char *remote_hostname, char *remote_username)
 {
 
-    static const char *fmt =
-        "[remote]\n"
-        "        name = %s\n"
-        "        hostname = %s\n"
-        "        port = 22\n"
-        "        username = %s\n"
-        "        publickey = /home/%s/.ssh/id_rsa.pub\n"
-        "        privatekey = /home/%s/.ssh/id_rsa\n"
-        "        label = all\n";
+    struct remote remote;
     char path[1024];
-    FILE *config;
+    char privatekey[512];
+    char publickey[512];
 
     init_assert();
+    memset(&remote, 0, sizeof (struct remote));
+    snprintf(path, 1024, "%s/%s", BERK_REMOTES_BASE, remote_name);
+    snprintf(privatekey, 512, "/home/%s/.ssh/%s", remote_username, "id_rsa");
+    snprintf(publickey, 512, "/home/%s/.ssh/%s", remote_username, "id_rsa.pub");
 
-    if (snprintf(path, 1024, "%s/%s", BERK_REMOTES_BASE, remote_name) < 0)
-        berk_panic("Could not copy string.");
+    remote.name = remote_name;
+    remote.hostname = remote_hostname;
+    remote.port = 22;
+    remote.username = remote_username;
+    remote.privatekey = privatekey;
+    remote.publickey = publickey;
 
-    config = fopen(path, "w");
-
-    if (config == NULL)
-        berk_panic("Could not create remote config file.");
-
-    if (remote_username == NULL)
-        remote_username = "berk";
-
-    if (fprintf(config, fmt, remote_name, remote_hostname, remote_username, remote_username, remote_username) < 0)
-        berk_panic("Could not write to remote config file.");
-
-    fclose(config);
-    fprintf(stdout, "Host '%s' created in '%s'\n", remote_name, path);
+    remote_save(path, &remote);
+    fprintf(stdout, "Remote '%s' created in '%s'\n", remote_name, path);
 
 }
 
@@ -95,47 +147,6 @@ void remote_list()
         fprintf(stdout, "%s\n", entry->d_name);
 
     }
-
-}
-
-int remote_load_callback(void *user, const char *section, const char *name, const char *value)
-{
-
-    struct remote *remote = user;
-
-    if (!strcmp(section, "remote") && !strcmp(name, "name"))
-        strncpy(remote->name, value, 32);
-
-    if (!strcmp(section, "remote") && !strcmp(name, "hostname"))
-        strncpy(remote->hostname, value, 64);
-
-    if (!strcmp(section, "remote") && !strcmp(name, "port"))
-        remote->port = atoi(value);
-
-    if (!strcmp(section, "remote") && !strcmp(name, "username"))
-        strncpy(remote->username, value, 64);
-
-    if (!strcmp(section, "remote") && !strcmp(name, "publickey"))
-        strncpy(remote->publickey, value, 64);
-
-    if (!strcmp(section, "remote") && !strcmp(name, "privatekey"))
-        strncpy(remote->privatekey, value, 64);
-
-    return 1;
-
-}
-
-int remote_load(char *remote_name, struct remote *remote)
-{
-
-    char path[1024];
-
-    if (snprintf(path, 1024, "%s/%s", BERK_REMOTES_BASE, remote_name) < 0)
-        return -1;
-
-    memset(remote, 0, sizeof (struct remote));
-
-    return ini_parse(path, remote_load_callback, remote);
 
 }
 
