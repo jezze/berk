@@ -73,7 +73,10 @@ static int checkargs(char *name, struct command *commands, int argc, char **argv
         if ((argc - 1) < commands[i].argc)
         {
 
-            fprintf(stderr, "%s: Missing argument(s)\n", BERK_NAME);
+            if (commands[i].description)
+                fprintf(stderr, "Usage: %s %s %s %s\n", BERK_NAME, name, commands[i].name, commands[i].description);
+            else
+                fprintf(stderr, "Usage: %s %s %s\n", BERK_NAME, name, commands[i].name);
 
             return EXIT_FAILURE;
 
