@@ -57,7 +57,7 @@ void init_setup()
     if (mkdir(path, 0775) < 0)
         berk_panic("Could not create directory.");
 
-    fprintf(stdout, "Initialized berk in '%s'\n", BERK_ROOT);
+    fprintf(stdout, "Initialized %s in '%s'\n", BERK_NAME, BERK_ROOT);
 
 }
 

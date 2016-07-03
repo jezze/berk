@@ -299,7 +299,7 @@ static int parseversion(int argc, char **argv)
     if (argc)
         return errorarguments();
 
-    fprintf(stdout, "berk version %s\n", BERK_VERSION);
+    fprintf(stdout, "%s: version %s\n", BERK_NAME, BERK_VERSION);
 
     return EXIT_SUCCESS;
 
