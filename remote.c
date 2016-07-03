@@ -42,12 +42,12 @@ static int loadcallback(void *user, const char *section, const char *name, const
 
 }
 
-int remote_load(char *filename, struct remote *remote)
+int remote_load(struct remote *remote, char *name)
 {
 
     char path[1024];
 
-    if (getconfigpath(path, 1024, filename))
+    if (getconfigpath(path, 1024, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -56,10 +56,16 @@ int remote_load(char *filename, struct remote *remote)
 
 }
 
-int remote_save(char *filename, struct remote *remote)
+int remote_save(struct remote *remote)
 {
 
-    FILE *file = fopen(filename, "w");
+    FILE *file;
+    char path[1024];
+
+    if (getconfigpath(path, 1024, remote->name))
+        return -1;
+
+    file = fopen(path, "w");
 
     if (file == NULL)
         return -1;
@@ -77,22 +83,34 @@ int remote_save(char *filename, struct remote *remote)
 
 }
 
-void remote_copy(struct remote *remote, char *name)
+int remote_erase(struct remote *remote)
 {
 
     char path[1024];
+
+    if (getconfigpath(path, 1024, remote->name))
+        return -1;
+
+    if (unlink(path) < 0)
+        return -1;
+
+    return 0;
+
+}
+
+void remote_copy(struct remote *remote, char *name)
+{
+
     char *temp = remote->name;
 
     remote->name = name;
 
-    getconfigpath(path, 1024, remote->name);
-
-    if (remote_save(path, remote))
-        error(ERROR_PANIC, "Could not save '%s'.", path);
+    if (remote_save(remote))
+        error(ERROR_PANIC, "Could not save '%s'.", remote->name);
 
     remote->name = temp;
 
-    fprintf(stdout, "Remote '%s' (copied from '%s') created in '%s'\n", name, remote->name, path);
+    fprintf(stdout, "Remote '%s' (copied from '%s') created\n", name, remote->name);
 
 }
 
@@ -100,7 +118,6 @@ void remote_create(char *name, char *hostname, char *username)
 {
 
     struct remote remote;
-    char path[1024];
     char privatekey[512];
     char publickey[512];
 
@@ -115,12 +132,10 @@ void remote_create(char *name, char *hostname, char *username)
     remote.privatekey = privatekey;
     remote.publickey = publickey;
 
-    getconfigpath(path, 1024, remote.name);
+    if (remote_save(&remote))
+        error(ERROR_PANIC, "Could not save '%s'.", remote.name);
 
-    if (remote_save(path, &remote))
-        error(ERROR_PANIC, "Could not save '%s'.", path);
-
-    fprintf(stdout, "Remote '%s' created in '%s'\n", remote.name, path);
+    fprintf(stdout, "Remote '%s' created\n", remote.name);
 
 }
 
@@ -150,14 +165,10 @@ void remote_list()
 void remote_remove(struct remote *remote)
 {
 
-    char path[1024];
+    if (remote_erase(remote))
+        error(ERROR_PANIC, "Could not remove '%s'.", remote->name);
 
-    getconfigpath(path, 1024, remote->name);
-
-    if (unlink(path) < 0)
-        error(ERROR_PANIC, "Could not remove '%s'.", path);
-
-    fprintf(stdout, "Host '%s' removed from '%s'\n", remote->name, path);
+    fprintf(stdout, "Remote '%s' removed'\n", remote->name);
 
 }
 

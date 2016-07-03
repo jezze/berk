@@ -112,7 +112,7 @@ static int parsejobcopy(int argc, char **argv)
 
     init_assert();
 
-    if (job_load(argv[0], &job))
+    if (job_load(&job, argv[0]))
         return errorresource(argv[0]);
 
     job_copy(&job, argv[1]);
@@ -150,7 +150,7 @@ static int parsejobremove(int argc, char **argv)
 
     init_assert();
 
-    if (job_load(argv[0], &job))
+    if (job_load(&job, argv[0]))
         return errorresource(argv[0]);
 
     job_remove(&job);
@@ -166,7 +166,7 @@ static int parsejobshow(int argc, char **argv)
 
     init_assert();
 
-    if (job_load(argv[0], &job))
+    if (job_load(&job, argv[0]))
         return errorresource(argv[0]);
 
     job_show(&job);
@@ -198,7 +198,7 @@ static int parseremotecopy(int argc, char **argv)
 
     init_assert();
 
-    if (remote_load(argv[0], &remote))
+    if (remote_load(&remote, argv[0]))
         return errorresource(argv[0]);
 
     remote_copy(&remote, argv[1]);
@@ -236,7 +236,7 @@ static int parseremoteremove(int argc, char **argv)
 
     init_assert();
 
-    if (remote_load(argv[0], &remote))
+    if (remote_load(&remote, argv[0]))
         return errorresource(argv[0]);
 
     remote_remove(&remote);
@@ -252,7 +252,7 @@ static int parseremoteshow(int argc, char **argv)
 
     init_assert();
 
-    if (remote_load(argv[0], &remote))
+    if (remote_load(&remote, argv[0]))
         return errorresource(argv[0]);
 
     remote_show(&remote);
@@ -285,10 +285,10 @@ static int parserun(int argc, char **argv)
 
     init_assert();
 
-    if (job_load(argv[0], &job))
+    if (job_load(&job, argv[0]))
         return errorresource(argv[0]);
 
-    if (remote_load(argv[1], &remote))
+    if (remote_load(&remote, argv[1]))
         return errorresource(argv[1]);
 
     run(&job, &remote);

@@ -30,12 +30,12 @@ static int loadcallback(void *user, const char *section, const char *name, const
 
 }
 
-int job_load(char *filename, struct job *job)
+int job_load(struct job *job, char *name)
 {
 
     char path[1024];
 
-    if (getconfigpath(path, 1024, filename))
+    if (getconfigpath(path, 1024, name))
         return -1;
 
     memset(job, 0, sizeof (struct job));
@@ -44,10 +44,16 @@ int job_load(char *filename, struct job *job)
 
 }
 
-int job_save(char *filename, struct job *job)
+int job_save(struct job *job)
 {
 
-    FILE *file = fopen(filename, "w");
+    FILE *file;
+    char path[1024];
+
+    if (getconfigpath(path, 1024, job->name))
+        return -1;
+
+    file = fopen(path, "w");
 
     if (file == NULL)
         return -1;
@@ -61,22 +67,34 @@ int job_save(char *filename, struct job *job)
 
 }
 
-void job_copy(struct job *job, char *name)
+int job_erase(struct job *job)
 {
 
     char path[1024];
+
+    if (getconfigpath(path, 1024, job->name))
+        return -1;
+
+    if (unlink(path) < 0)
+        return -1;
+
+    return 0;
+
+}
+
+void job_copy(struct job *job, char *name)
+{
+
     char *temp = job->name;
 
     job->name = name;
 
-    getconfigpath(path, 1024, job->name);
-
-    if (job_save(path, job))
-        error(ERROR_PANIC, "Could not save '%s'.", path);
+    if (job_save(job))
+        error(ERROR_PANIC, "Could not save '%s'.", job->name);
 
     job->name = temp;
 
-    fprintf(stdout, "Job '%s' (copied from '%s') created in '%s'\n", name, job->name, path);
+    fprintf(stdout, "Job '%s' (copied from '%s') created\n", name, job->name);
 
 }
 
@@ -84,19 +102,16 @@ void job_create(char *name)
 {
 
     struct job job;
-    char path[1024];
 
     memset(&job, 0, sizeof (struct job));
 
     job.name = name;
     job.exec = "whoami";
 
-    getconfigpath(path, 1024, job.name);
+    if (job_save(&job))
+        error(ERROR_PANIC, "Could not save '%s'.", job.name);
 
-    if (job_save(path, &job))
-        error(ERROR_PANIC, "Could not save '%s'.", path);
-
-    fprintf(stdout, "Job '%s' created in '%s'\n", job.name, path);
+    fprintf(stdout, "Job '%s' created\n", job.name);
 
 }
 
@@ -126,14 +141,10 @@ void job_list()
 void job_remove(struct job *job)
 {
 
-    char path[1024];
+    if (job_erase(job))
+        error(ERROR_PANIC, "Could not remove '%s'.", job->name);
 
-    getconfigpath(path, 1024, job->name);
-
-    if (unlink(path) < 0)
-        error(ERROR_PANIC, "Could not remove '%s'.", path);
-
-    fprintf(stdout, "Job '%s' removed from '%s'\n", job->name, path);
+    fprintf(stdout, "Job '%s' removed'\n", job->name);
 
 }
 
