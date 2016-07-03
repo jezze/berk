@@ -5,7 +5,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include "berk.h"
 #include "remote.h"
 
 int con_connect(struct remote *remote)

@@ -1,1 +1,1 @@
-int run_parse(int argc, char **argv);
+void run(struct job *job, struct remote *remote);

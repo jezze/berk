@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "berk.h"
+#include "config.h"
+#include "error.h"
 #include "ini.h"
 
 static int saveconfig(char *filename, char *version)
@@ -57,18 +58,6 @@ void init_setup()
         berk_panic("Could not create directory.");
 
     fprintf(stdout, "Initialized berk in '%s'\n", BERK_ROOT);
-
-}
-
-int init_parse(int argc, char **argv)
-{
-
-    if (argc)
-        return berk_error_extra();
-
-    init_setup();
-
-    return EXIT_SUCCESS;
 
 }
 

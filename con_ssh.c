@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libssh2.h>
-#include "berk.h"
+#include "error.h"
 #include "remote.h"
 #include "con.h"
 

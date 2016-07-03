@@ -13,4 +13,8 @@ struct remote
 
 int remote_load(char *filename, struct remote *remote);
 int remote_save(char *filename, struct remote *remote);
-int remote_parse(int argc, char **argv);
+void remote_copy(struct remote *remote, char *name);
+void remote_create(char *name, char *hostname, char *username);
+void remote_list();
+void remote_remove(struct remote *remote);
+void remote_show(struct remote *remote);
