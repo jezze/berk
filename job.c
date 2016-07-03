@@ -72,7 +72,7 @@ void job_copy(struct job *job, char *name)
     getconfigpath(path, 1024, job->name);
 
     if (job_save(path, job))
-        berk_panic("Failed to save.");
+        error(ERROR_PANIC, "Could not save '%s'.", path);
 
     job->name = temp;
 
@@ -94,7 +94,7 @@ void job_create(char *name)
     getconfigpath(path, 1024, job.name);
 
     if (job_save(path, &job))
-        berk_panic("Failed to save.");
+        error(ERROR_PANIC, "Could not save '%s'.", path);
 
     fprintf(stdout, "Job '%s' created in '%s'\n", job.name, path);
 
@@ -109,7 +109,7 @@ void job_list()
     dir = opendir(BERK_JOBS_BASE);
 
     if (dir == NULL)
-        berk_panic("Could not open dir.");
+        error(ERROR_PANIC, "Could not open '%s'.", BERK_JOBS_BASE);
 
     while ((entry = readdir(dir)) != NULL)
     {
@@ -131,7 +131,7 @@ void job_remove(struct job *job)
     getconfigpath(path, 1024, job->name);
 
     if (unlink(path) < 0)
-        berk_panic("Could not remove file.");
+        error(ERROR_PANIC, "Could not remove '%s'.", path);
 
     fprintf(stdout, "Job '%s' removed from '%s'\n", job->name, path);
 

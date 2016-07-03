@@ -11,21 +11,21 @@ int con_ssh_connect(struct remote *remote)
 {
 
     if (con_connect(remote) < 0)
-        berk_panic("Could not connect.");
+        error(ERROR_PANIC, "Could not connect to '%s'.", remote->name);
 
     if (libssh2_init(0) < 0)
-        berk_panic("Could not initialize SSH2.");
+        error(ERROR_PANIC, "Could not initialize SSH2.");
 
     session = libssh2_session_init();
 
     if (session == NULL)
-        berk_panic("Could not initialize SSH2 session.");
+        error(ERROR_PANIC, "Could not initialize SSH2 session.");
 
     if (libssh2_session_handshake(session, remote->sock) < 0)
-        berk_panic("Could not handshake SSH2 session.");
+        error(ERROR_PANIC, "Could not handshake SSH2 session.");
 
     if (libssh2_userauth_publickey_fromfile(session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
-        berk_panic("Could not authorize keyfile.");
+        error(ERROR_PANIC, "Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
 
     return 0;
 
@@ -39,7 +39,7 @@ int con_ssh_disconnect(struct remote *remote)
     libssh2_exit();
 
     if (con_disconnect(remote) < 0)
-        berk_panic("Could not disconnect.");
+        error(ERROR_PANIC, "Could not disconnect from '%s'.", remote->name);
 
     return 0;
 
@@ -55,10 +55,10 @@ int con_ssh_exec(struct remote *remote, char *commandline)
     channel = libssh2_channel_open_session(session);
 
     if (channel == NULL)
-        berk_panic("Could not open SSH2 channel.");
+        error(ERROR_PANIC, "Could not open SSH2 channel.");
 
     if (libssh2_channel_exec(channel, commandline) < 0)
-        berk_panic("Could not execute command over SSH2 channel.");
+        error(ERROR_PANIC, "Could not execute command over SSH2 channel.");
 
     do
     {
@@ -69,7 +69,7 @@ int con_ssh_exec(struct remote *remote, char *commandline)
         count = libssh2_channel_read(channel, buffer, 4096);
 
         if (count < 0)
-            berk_panic("Could not read from SSH2 channel.");
+            error(ERROR_PANIC, "Could not read from SSH2 channel.");
 
         for (i = 0; i < count; i++)
             fputc(buffer[i], stdout);

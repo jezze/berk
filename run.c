@@ -17,12 +17,12 @@ void run(struct job *job, struct remote *remote)
     int status;
 
     if (con_ssh_connect(remote) < 0)
-        berk_panic("Could not connect to remote.");
+        error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
 
     status = con_ssh_exec(remote, job->exec);
 
     if (con_ssh_disconnect(remote) < 0)
-        berk_panic("Could not disconnect from remote.");
+        error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
     fprintf(stdout, "status: %d\n", status);
 

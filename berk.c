@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "config.h"
+#include "error.h"
 #include "init.h"
 #include "job.h"
 #include "remote.h"
@@ -20,7 +21,7 @@ struct command
 static int errorresource(char *name)
 {
 
-    fprintf(stderr, "%s: Could not find resource '%s'\n", BERK_NAME, name);
+    error(ERROR_NORMAL, "Could not find resource '%s'.", name);
 
     return EXIT_FAILURE;
 
@@ -29,7 +30,7 @@ static int errorresource(char *name)
 static int errorarguments()
 {
 
-    fprintf(stderr, "%s: Too many arguments\n", BERK_NAME);
+    error(ERROR_NORMAL, "Too many arguments.");
 
     return EXIT_FAILURE;
 
@@ -44,23 +45,23 @@ static int checkargs(char *name, struct command *commands, int argc, char **argv
     {
 
         if (name)
-            fprintf(stderr, "Usage: %s %s <command> [<args>]\n\n", BERK_NAME, name);
+            fprintf(stdout, "Usage: %s %s <command> [<args>]\n\n", BERK_NAME, name);
         else
-            fprintf(stderr, "Usage: %s <command> [<args>]\n\n", BERK_NAME);
+            fprintf(stdout, "Usage: %s <command> [<args>]\n\n", BERK_NAME);
 
-        fprintf(stderr, "List of commands:\n");
+        fprintf(stdout, "List of commands:\n");
 
         for (i = 0; commands[i].name; i++)
         {
 
             if (commands[i].description)
-                fprintf(stderr, "    %s %s\n", commands[i].name, commands[i].description);
+                fprintf(stdout, "    %s %s\n", commands[i].name, commands[i].description);
             else
-                fprintf(stderr, "    %s\n", commands[i].name);
+                fprintf(stdout, "    %s\n", commands[i].name);
 
         }
 
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
 
     }
 
@@ -74,11 +75,11 @@ static int checkargs(char *name, struct command *commands, int argc, char **argv
         {
 
             if (commands[i].description)
-                fprintf(stderr, "Usage: %s %s %s %s\n", BERK_NAME, name, commands[i].name, commands[i].description);
+                fprintf(stdout, "Usage: %s %s %s %s\n", BERK_NAME, name, commands[i].name, commands[i].description);
             else
-                fprintf(stderr, "Usage: %s %s %s\n", BERK_NAME, name, commands[i].name);
+                fprintf(stdout, "Usage: %s %s %s\n", BERK_NAME, name, commands[i].name);
 
-            return EXIT_FAILURE;
+            return EXIT_SUCCESS;
 
         }
 
@@ -86,7 +87,7 @@ static int checkargs(char *name, struct command *commands, int argc, char **argv
 
     }
 
-    fprintf(stderr, "%s: Invalid argument '%s'\n", BERK_NAME, argv[0]);
+    error(ERROR_NORMAL, "Invalid argument '%s'.", argv[0]);
 
     return EXIT_FAILURE;
 

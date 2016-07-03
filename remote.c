@@ -88,7 +88,7 @@ void remote_copy(struct remote *remote, char *name)
     getconfigpath(path, 1024, remote->name);
 
     if (remote_save(path, remote))
-        berk_panic("Failed to save.");
+        error(ERROR_PANIC, "Could not save '%s'.", path);
 
     remote->name = temp;
 
@@ -118,7 +118,7 @@ void remote_create(char *name, char *hostname, char *username)
     getconfigpath(path, 1024, remote.name);
 
     if (remote_save(path, &remote))
-        berk_panic("Failed to save.");
+        error(ERROR_PANIC, "Could not save '%s'.", path);
 
     fprintf(stdout, "Remote '%s' created in '%s'\n", remote.name, path);
 
@@ -133,7 +133,7 @@ void remote_list()
     dir = opendir(BERK_REMOTES_BASE);
 
     if (dir == NULL)
-        berk_panic("Could not open dir.");
+        error(ERROR_PANIC, "Could not open '%s'.", BERK_REMOTES_BASE);
 
     while ((entry = readdir(dir)) != NULL)
     {
@@ -155,7 +155,7 @@ void remote_remove(struct remote *remote)
     getconfigpath(path, 1024, remote->name);
 
     if (unlink(path) < 0)
-        berk_panic("Could not remove file.");
+        error(ERROR_PANIC, "Could not remove '%s'.", path);
 
     fprintf(stdout, "Host '%s' removed from '%s'\n", remote->name, path);
 
