@@ -38,7 +38,7 @@ void init_setup()
     char path[1024];
 
     if (mkdir(BERK_ROOT, 0775) < 0)
-        berk_panic("Ewok already initialized.");
+        berk_panic("Already initialized.");
 
     if (snprintf(path, 1024, "%s", BERK_CONFIG) < 0)
         berk_panic("Could not copy string.");
