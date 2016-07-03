@@ -56,7 +56,12 @@ int job_save(char *filename, struct job *job)
 
 }
 
-void job_add(char *job_name)
+void job_copy(char *old_job_name, char *new_job_name)
+{
+
+}
+
+void job_create(char *job_name)
 {
 
     struct job job;
@@ -71,11 +76,6 @@ void job_add(char *job_name)
 
     job_save(path, &job);
     fprintf(stdout, "Job '%s' created in '%s'\n", job_name, path);
-
-}
-
-void job_copy(char *old_job_name, char *new_job_name)
-{
 
 }
 
@@ -121,39 +121,7 @@ void job_remove(char *job_name)
 
 }
 
-void job_start(char *job_name, char *remote_name)
-{
-
-    struct job job;
-    struct remote remote;
-    char exec[2048];
-    unsigned int jobno = 583;
-    int status;
-
-    init_assert();
-
-    if (job_load(job_name, &job) < 0)
-        berk_panic("Could not load job.");
-
-    if (remote_load(remote_name, &remote) < 0)
-        berk_panic("Could not load remote.");
-
-    if (snprintf(exec, 2048, "mkdir -p berk/%u && cd berk/%u && %s", jobno, jobno, job.exec) < 0)
-        berk_panic("Could not copy string.");
-
-    if (con_ssh_connect(&remote) < 0)
-        berk_panic("Could not connect to remote.");
-
-    status = con_ssh_exec(&remote, exec);
-
-    if (con_ssh_disconnect(&remote) < 0)
-        berk_panic("Could not disconnect from remote.");
-
-    fprintf(stdout, "status: %d\n", status);
-
-}
-
-void job_stop(char *job_name)
+void job_show(char *job_name)
 {
 
     struct job job;
@@ -163,17 +131,8 @@ void job_stop(char *job_name)
     if (job_load(job_name, &job) < 0)
         berk_panic("Could not load job.");
 
-}
-
-static int job_parse_add(int argc, char **argv)
-{
-
-    if (argc < 1)
-        return berk_error_missing();
-
-    job_add(argv[0]);
-
-    return EXIT_SUCCESS;
+    fprintf(stdout, "name: %s\n", job.name);
+    fprintf(stdout, "exec: %s\n", job.exec);
 
 }
 
@@ -184,6 +143,18 @@ static int job_parse_copy(int argc, char **argv)
         return berk_error_missing();
 
     job_copy(argv[0], argv[1]);
+
+    return EXIT_SUCCESS;
+
+}
+
+static int job_parse_create(int argc, char **argv)
+{
+
+    if (argc < 1)
+        return berk_error_missing();
+
+    job_create(argv[0]);
 
     return EXIT_SUCCESS;
 
@@ -213,25 +184,13 @@ static int job_parse_remove(int argc, char **argv)
 
 }
 
-static int job_parse_start(int argc, char **argv)
-{
-
-    if (argc < 2)
-        return berk_error_missing();
-
-    job_start(argv[0], argv[1]);
-
-    return EXIT_SUCCESS;
-
-}
-
-static int job_parse_stop(int argc, char **argv)
+static int job_parse_show(int argc, char **argv)
 {
 
     if (argc < 1)
         return berk_error_missing();
 
-    job_stop(argv[0]);
+    job_show(argv[0]);
 
     return EXIT_SUCCESS;
 
@@ -241,12 +200,11 @@ int job_parse(int argc, char **argv)
 {
 
     static struct berk_command cmds[] = {
-        {"add", job_parse_add, "<job-name>"},
-        {"copy", job_parse_copy, "<old-job-name> <new-job-name>"},
         {"list", job_parse_list},
-        {"remove", job_parse_remove, "<job-name>"},
-        {"start", job_parse_start, "<job-name> <remote-name>"},
-        {"stop", job_parse_stop, "<job-name>"},
+        {"show", job_parse_show, "<id>"},
+        {"create", job_parse_create, "<id>"},
+        {"remove", job_parse_remove, "<id>"},
+        {"copy", job_parse_copy, "<id> <new-id>"},
         {0}
     };
     unsigned int i;

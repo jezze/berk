@@ -5,6 +5,7 @@
 #include "init.h"
 #include "job.h"
 #include "remote.h"
+#include "run.h"
 #include "version.h"
 
 int berk_error_command(char *name, struct berk_command *cmds)
@@ -84,6 +85,7 @@ int main(int argc, char **argv)
         {"init", init_parse, 0},
         {"job", job_parse, "[...]"},
         {"remote", remote_parse, "[...]"},
+        {"run", run_parse, "<job-id> <remote-id>"},
         {"version", version_parse, 0},
         {0}
     };

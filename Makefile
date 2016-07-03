@@ -1,8 +1,9 @@
 .PHONY: all clean
 
 BIN:=berk
-OBJ:=con.o con_ssh.o berk.o ini.o init.o job.o remote.o version.o
+OBJ:=con.o con_ssh.o berk.o ini.o init.o job.o remote.o run.o version.o
 CFLAGS:=-Wall -Werror
+PREFIX:=/usr/local/bin
 
 all: $(BIN)
 
@@ -17,5 +18,5 @@ clean:
 	rm -rf $(OBJ)
 
 install: $(BIN)
-	install -m 755 $(BIN) /usr/bin/
+	install -m 755 $(BIN) $(PREFIX)
 

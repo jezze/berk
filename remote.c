@@ -70,7 +70,12 @@ int remote_save(char *filename, struct remote *remote)
 
 }
 
-void remote_add(char *remote_name, char *remote_hostname, char *remote_username)
+void remote_copy(char *old_remote_name, char *new_remote_name)
+{
+
+}
+
+void remote_create(char *remote_name, char *remote_hostname, char *remote_username)
 {
 
     struct remote remote;
@@ -93,35 +98,6 @@ void remote_add(char *remote_name, char *remote_hostname, char *remote_username)
 
     remote_save(path, &remote);
     fprintf(stdout, "Remote '%s' created in '%s'\n", remote_name, path);
-
-}
-
-void remote_copy(char *old_remote_name, char *new_remote_name)
-{
-
-}
-
-void remote_disable(char *remote_name)
-{
-
-    struct remote remote;
-
-    init_assert();
-
-    if (remote_load(remote_name, &remote) < 0)
-        berk_panic("Could not load remote.");
-
-}
-
-void remote_enable(char *remote_name)
-{
-
-    struct remote remote;
-
-    init_assert();
-
-    if (remote_load(remote_name, &remote) < 0)
-        berk_panic("Could not load remote.");
 
 }
 
@@ -167,15 +143,21 @@ void remote_remove(char *remote_name)
 
 }
 
-static int remote_parse_add(int argc, char **argv)
+void remote_show(char *remote_name)
 {
 
-    if (argc < 2)
-        return berk_error_missing();
+    struct remote remote;
 
-    remote_add(argv[0], argv[1], getenv("USER"));
+    init_assert();
 
-    return EXIT_SUCCESS;
+    if (remote_load(remote_name, &remote) < 0)
+        berk_panic("Could not load remote.");
+
+    fprintf(stdout, "name: %s\n", remote.name);
+    fprintf(stdout, "hostname: %s\n", remote.hostname);
+    fprintf(stdout, "port: %d\n", remote.port);
+    fprintf(stdout, "privatekey: %s\n", remote.privatekey);
+    fprintf(stdout, "publickey: %s\n", remote.publickey);
 
 }
 
@@ -191,25 +173,13 @@ static int remote_parse_copy(int argc, char **argv)
 
 }
 
-static int remote_parse_disable(int argc, char **argv)
+static int remote_parse_create(int argc, char **argv)
 {
 
-    if (argc < 1)
+    if (argc < 2)
         return berk_error_missing();
 
-    remote_disable(argv[0]);
-
-    return EXIT_SUCCESS;
-
-}
-
-static int remote_parse_enable(int argc, char **argv)
-{
-
-    if (argc < 1)
-        return berk_error_missing();
-
-    remote_enable(argv[0]);
+    remote_create(argv[0], argv[1], getenv("USER"));
 
     return EXIT_SUCCESS;
 
@@ -239,16 +209,27 @@ static int remote_parse_remove(int argc, char **argv)
 
 }
 
+static int remote_parse_show(int argc, char **argv)
+{
+
+    if (argc < 1)
+        return berk_error_missing();
+
+    remote_show(argv[0]);
+
+    return EXIT_SUCCESS;
+
+}
+
 int remote_parse(int argc, char **argv)
 {
 
     static struct berk_command cmds[] = {
-        {"add", remote_parse_add, "<remote-name> <remote-hostname>"},
-        {"copy", remote_parse_copy, "<old-remote-name> <new-remote-name>"},
-        {"disable", remote_parse_disable, "<remote-name>"},
-        {"enable", remote_parse_enable, "<remote-name>"},
         {"list", remote_parse_list, 0},
-        {"remove", remote_parse_remove, "<remote-name>"},
+        {"show", remote_parse_show, "<id>"},
+        {"create", remote_parse_create, "<id> <hostname>"},
+        {"remove", remote_parse_remove, "<id>"},
+        {"copy", remote_parse_copy, "<id> <new-id>"},
         {0}
     };
     unsigned int i;
