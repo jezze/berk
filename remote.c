@@ -106,12 +106,12 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_log_open(struct remote *remote, unsigned int num)
+int remote_log_open(struct remote *remote)
 {
 
     char path[BUFSIZ];
 
-    if (getlogpath(path, BUFSIZ, remote->name, num))
+    if (getlogpath(path, BUFSIZ, remote->name, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

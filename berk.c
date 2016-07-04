@@ -142,7 +142,7 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, argv[0]))
                 return errorresource(argv[0]);
 
-            command_exec(&remote, i, argv[2]);
+            command_exec(&remote, getpid(), argv[2]);
 
             return EXIT_SUCCESS;
 

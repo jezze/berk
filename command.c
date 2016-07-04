@@ -80,13 +80,15 @@ void command_create(char *name, char *hostname, char *username)
 
 }
 
-void command_exec(struct remote *remote, unsigned int num, char *command)
+void command_exec(struct remote *remote, unsigned int pid, char *command)
 {
 
     int status;
 
-    remote_log_open(remote, num);
-    fprintf(stdout, "[%s] Exec begin\n", remote->name);
+    remote->pid = pid;
+
+    remote_log_open(remote);
+    fprintf(stdout, "[%s.%d] Exec begin\n", remote->name, remote->pid);
 
     if (con_ssh_connect(remote) < 0)
         error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
@@ -96,7 +98,7 @@ void command_exec(struct remote *remote, unsigned int num, char *command)
     if (con_ssh_disconnect(remote) < 0)
         error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
-    fprintf(stdout, "[%s] Exec complete (%d)\n", remote->name, status);
+    fprintf(stdout, "[%s.%d] Exec complete (%d)\n", remote->name, remote->pid, status);
     remote_log_close(remote);
 
 }
