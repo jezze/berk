@@ -8,14 +8,13 @@ struct remote
     char *publickey;
     char *privatekey;
     int sock;
+    int logfd;
 
 };
 
 int remote_load(struct remote *remote, char *name);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
-void remote_copy(struct remote *remote, char *name);
-void remote_create(char *name, char *hostname, char *username);
-void remote_list();
-void remote_remove(struct remote *remote);
-void remote_show(struct remote *remote);
+int remote_log_open(struct remote *remote);
+void remote_log_close(struct remote *remote);
+int remote_log(struct remote *remote, char *buffer, unsigned int size);

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include "config.h"
 #include "error.h"
 #include "ini.h"
@@ -11,7 +12,14 @@
 static int getconfigpath(char *path, unsigned int length, char *filename)
 {
 
-    return snprintf(path, 1024, "%s/%s", BERK_REMOTES_BASE, filename) < 0;
+    return snprintf(path, length, "%s/%s", BERK_REMOTES_BASE, filename) < 0;
+
+}
+
+static int getlogpath(char *path, unsigned int length, char *filename)
+{
+
+    return snprintf(path, length, "%s/%s", BERK_LOGS_BASE, filename) < 0;
 
 }
 
@@ -45,9 +53,9 @@ static int loadcallback(void *user, const char *section, const char *name, const
 int remote_load(struct remote *remote, char *name)
 {
 
-    char path[1024];
+    char path[BUFSIZ];
 
-    if (getconfigpath(path, 1024, name))
+    if (getconfigpath(path, BUFSIZ, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -60,9 +68,9 @@ int remote_save(struct remote *remote)
 {
 
     FILE *file;
-    char path[1024];
+    char path[BUFSIZ];
 
-    if (getconfigpath(path, 1024, remote->name))
+    if (getconfigpath(path, BUFSIZ, remote->name))
         return -1;
 
     file = fopen(path, "w");
@@ -86,9 +94,9 @@ int remote_save(struct remote *remote)
 int remote_erase(struct remote *remote)
 {
 
-    char path[1024];
+    char path[BUFSIZ];
 
-    if (getconfigpath(path, 1024, remote->name))
+    if (getconfigpath(path, BUFSIZ, remote->name))
         return -1;
 
     if (unlink(path) < 0)
@@ -98,88 +106,33 @@ int remote_erase(struct remote *remote)
 
 }
 
-void remote_copy(struct remote *remote, char *name)
+int remote_log_open(struct remote *remote)
 {
 
-    char *temp = remote->name;
+    char path[BUFSIZ];
 
-    remote->name = name;
+    if (getlogpath(path, BUFSIZ, remote->name))
+        return -1;
 
-    if (remote_save(remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote->name);
+    remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    remote->name = temp;
-
-    fprintf(stdout, "Remote '%s' (copied from '%s') created\n", name, remote->name);
+    return remote->logfd;
 
 }
 
-void remote_create(char *name, char *hostname, char *username)
+void remote_log_close(struct remote *remote)
 {
 
-    struct remote remote;
-    char privatekey[512];
-    char publickey[512];
-
-    memset(&remote, 0, sizeof (struct remote));
-    snprintf(privatekey, 512, "/home/%s/.ssh/%s", username, "id_rsa");
-    snprintf(publickey, 512, "/home/%s/.ssh/%s", username, "id_rsa.pub");
-
-    remote.name = name;
-    remote.hostname = hostname;
-    remote.port = 22;
-    remote.username = username;
-    remote.privatekey = privatekey;
-    remote.publickey = publickey;
-
-    if (remote_save(&remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote.name);
-
-    fprintf(stdout, "Remote '%s' created\n", remote.name);
+    close(remote->logfd);
 
 }
 
-void remote_list()
+int remote_log(struct remote *remote, char *buffer, unsigned int size)
 {
 
-    DIR *dir;
-    struct dirent *entry;
-
-    dir = opendir(BERK_REMOTES_BASE);
-
-    if (dir == NULL)
-        error(ERROR_PANIC, "Could not open '%s'.", BERK_REMOTES_BASE);
-
-    while ((entry = readdir(dir)) != NULL)
-    {
-
-        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
-            continue;
-
-        fprintf(stdout, "%s\n", entry->d_name);
-
-    }
+    return write(remote->logfd, buffer, size);
 
 }
 
-void remote_remove(struct remote *remote)
-{
 
-    if (remote_erase(remote))
-        error(ERROR_PANIC, "Could not remove '%s'.", remote->name);
-
-    fprintf(stdout, "Remote '%s' removed'\n", remote->name);
-
-}
-
-void remote_show(struct remote *remote)
-{
-
-    fprintf(stdout, "name: %s\n", remote->name);
-    fprintf(stdout, "hostname: %s\n", remote->hostname);
-    fprintf(stdout, "port: %d\n", remote->port);
-    fprintf(stdout, "privatekey: %s\n", remote->privatekey);
-    fprintf(stdout, "publickey: %s\n", remote->publickey);
-
-}
 

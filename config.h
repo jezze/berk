@@ -1,6 +1,6 @@
 #define BERK_ROOT                       ".berk"
 #define BERK_CONFIG                     BERK_ROOT "/config"
+#define BERK_LOGS_BASE                  BERK_ROOT "/logs"
 #define BERK_REMOTES_BASE               BERK_ROOT "/remotes"
-#define BERK_JOBS_BASE                  BERK_ROOT "/jobs"
 #define BERK_NAME                       "berk"
 #define BERK_VERSION                    "0.0.1"
