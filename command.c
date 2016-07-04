@@ -80,12 +80,12 @@ void command_create(char *name, char *hostname, char *username)
 
 }
 
-void command_exec(struct remote *remote, char *command)
+void command_exec(struct remote *remote, unsigned int num, char *command)
 {
 
     int status;
 
-    remote_log_open(remote);
+    remote_log_open(remote, num);
     fprintf(stdout, "[%s] Exec begin\n", remote->name);
 
     if (con_ssh_connect(remote) < 0)

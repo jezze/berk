@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include "config.h"
 #include "error.h"
 #include "remote.h"
@@ -123,14 +124,33 @@ static int parsecreate(int argc, char **argv)
 static int parseexec(int argc, char **argv)
 {
 
-    struct remote remote;
+    unsigned int count = atoi(argv[1]);
+    unsigned int i;
 
     checkinit();
 
-    if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+    for (i = 0; i < count; i++)
+    {
 
-    command_exec(&remote, argv[1]);
+        pid_t pid = fork();
+
+        if (pid == 0)
+        {
+
+            struct remote remote;
+
+            if (remote_load(&remote, argv[0]))
+                return errorresource(argv[0]);
+
+            command_exec(&remote, i, argv[2]);
+
+            return EXIT_SUCCESS;
+
+        }
+
+    }
+
+    while (wait(NULL) > 0);
 
     return EXIT_SUCCESS;
 
@@ -219,7 +239,7 @@ int main(int argc, char **argv)
         {"config", parseconfig, 3, " <name> <key> <value>"},
         {"copy", parsecopy, 2, " <name> <new-name>"},
         {"create", parsecreate, 2, " <name> <hostname>"},
-        {"exec", parseexec, 2, " <name> <command>"},
+        {"exec", parseexec, 3, " <name> <num> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
         {"remove", parseremove, 1, " <name>"},

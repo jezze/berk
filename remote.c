@@ -16,10 +16,10 @@ static int getconfigpath(char *path, unsigned int length, char *filename)
 
 }
 
-static int getlogpath(char *path, unsigned int length, char *filename)
+static int getlogpath(char *path, unsigned int length, char *filename, unsigned int num)
 {
 
-    return snprintf(path, length, "%s/%s", BERK_LOGS_BASE, filename) < 0;
+    return snprintf(path, length, "%s/%s.%d", BERK_LOGS_BASE, filename, num) < 0;
 
 }
 
@@ -106,12 +106,12 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_log_open(struct remote *remote)
+int remote_log_open(struct remote *remote, unsigned int num)
 {
 
     char path[BUFSIZ];
 
-    if (getlogpath(path, BUFSIZ, remote->name))
+    if (getlogpath(path, BUFSIZ, remote->name, num))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
