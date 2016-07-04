@@ -107,10 +107,10 @@ void command_init()
     FILE *file;
     char path[BUFSIZ];
 
-    if (mkdir(BERK_ROOT, 0775) < 0)
+    if (mkdir(CONFIG_ROOT, 0775) < 0)
         error(ERROR_PANIC, "Already initialized.");
 
-    if (snprintf(path, BUFSIZ, "%s", BERK_CONFIG) < 0)
+    if (snprintf(path, BUFSIZ, "%s", CONFIG_MAIN) < 0)
         error(ERROR_PANIC, "Could not copy string.");
 
     file = fopen(path, "w");
@@ -119,22 +119,22 @@ void command_init()
         error(ERROR_PANIC, "Could not create config file.");
 
     ini_writesection(file, "core");
-    ini_writestring(file, "version", BERK_VERSION);
+    ini_writestring(file, "version", CONFIG_VERSION);
     fclose(file);
 
-    if (snprintf(path, BUFSIZ, "%s", BERK_REMOTES_BASE) < 0)
+    if (snprintf(path, BUFSIZ, "%s", CONFIG_REMOTES) < 0)
         error(ERROR_PANIC, "Could not copy string.");
 
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory.");
 
-    if (snprintf(path, BUFSIZ, "%s", BERK_LOGS_BASE) < 0)
+    if (snprintf(path, BUFSIZ, "%s", CONFIG_LOGS) < 0)
         error(ERROR_PANIC, "Could not copy string.");
 
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory.");
 
-    fprintf(stdout, "Initialized %s in '%s'\n", BERK_NAME, BERK_ROOT);
+    fprintf(stdout, "Initialized %s in '%s'\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
 }
 
@@ -144,10 +144,10 @@ void command_list()
     DIR *dir;
     struct dirent *entry;
 
-    dir = opendir(BERK_REMOTES_BASE);
+    dir = opendir(CONFIG_REMOTES);
 
     if (dir == NULL)
-        error(ERROR_PANIC, "Could not open '%s'.", BERK_REMOTES_BASE);
+        error(ERROR_PANIC, "Could not open '%s'.", CONFIG_REMOTES);
 
     while ((entry = readdir(dir)) != NULL)
     {

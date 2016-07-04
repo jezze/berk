@@ -22,8 +22,8 @@ struct command
 static void checkinit()
 {
 
-    if (access(BERK_CONFIG, F_OK) < 0)
-        error(ERROR_PANIC, "Could not find '%s' directory.", BERK_ROOT);
+    if (access(CONFIG_MAIN, F_OK) < 0)
+        error(ERROR_PANIC, "Could not find '%s' directory.", CONFIG_ROOT);
 
 }
 
@@ -44,7 +44,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
     if (!argc)
     {
 
-        fprintf(stdout, "Usage: %s <command> [<args>]\n\n", BERK_NAME);
+        fprintf(stdout, "Usage: %s <command> [<args>]\n\n", CONFIG_PROGNAME);
         fprintf(stdout, "List of commands:\n");
 
         for (i = 0; commands[i].name; i++)
@@ -63,7 +63,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
         if ((argc - 1) < commands[i].argc)
         {
 
-            fprintf(stdout, "Usage: %s %s%s\n", BERK_NAME, commands[i].name, commands[i].description);
+            fprintf(stdout, "Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].description);
 
             return EXIT_SUCCESS;
 
@@ -226,7 +226,7 @@ static int parseshow(int argc, char **argv)
 static int parseversion(int argc, char **argv)
 {
 
-    fprintf(stdout, "%s: version %s\n", BERK_NAME, BERK_VERSION);
+    fprintf(stdout, "%s: version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
 
     return EXIT_SUCCESS;
 

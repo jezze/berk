@@ -11,7 +11,7 @@ void error(int level, char *format, ...)
     va_list args;
 
     va_start(args, format);
-    fprintf(stderr, "%s: ", BERK_NAME);
+    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
     va_end(args);

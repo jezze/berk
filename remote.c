@@ -12,14 +12,14 @@
 static int getconfigpath(char *path, unsigned int length, char *filename)
 {
 
-    return snprintf(path, length, "%s/%s", BERK_REMOTES_BASE, filename) < 0;
+    return snprintf(path, length, "%s/%s", CONFIG_REMOTES, filename) < 0;
 
 }
 
 static int getlogpath(char *path, unsigned int length, char *filename, unsigned int num)
 {
 
-    return snprintf(path, length, "%s/%s.%d", BERK_LOGS_BASE, filename, num) < 0;
+    return snprintf(path, length, "%s/%s.%d", CONFIG_LOGS, filename, num) < 0;
 
 }
 
