@@ -64,7 +64,14 @@ void command_config(struct remote *remote, char *key, char *value)
         remote->hostname = value;
 
     if (!strcmp(key, "port"))
-        remote->port = atoi(value);
+    {
+
+        remote->port = strtoul(value, NULL, 10);
+
+        if (!remote->port)
+            error(ERROR_PANIC, "Invalid port '%d'.", remote->port);
+
+    }
 
     if (!strcmp(key, "username"))
         remote->username = value;

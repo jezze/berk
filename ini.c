@@ -133,7 +133,7 @@ static int ini_parse_file(FILE *file, int (*handler)(void *user, const char *sec
                 rstrip(value);
                 strncpy0(prev_name, name, sizeof (prev_name));
 
-                if (!handler(user, section, name, value) && !error)
+                if (handler(user, section, name, value) && !error)
                     error = lineno;
 
             }

@@ -35,7 +35,14 @@ static int loadcallback(void *user, const char *section, const char *name, const
         remote->hostname = strdup(value);
 
     if (!strcmp(section, "remote") && !strcmp(name, "port"))
-        remote->port = atoi(value);
+    {
+
+        remote->port = strtoul(value, NULL, 10);
+
+        if (!remote->port)
+            return -1;
+
+    }
 
     if (!strcmp(section, "remote") && !strcmp(name, "username"))
         remote->username = strdup(value);
@@ -46,7 +53,7 @@ static int loadcallback(void *user, const char *section, const char *name, const
     if (!strcmp(section, "remote") && !strcmp(name, "publickey"))
         remote->publickey = strdup(value);
 
-    return 1;
+    return 0;
 
 }
 

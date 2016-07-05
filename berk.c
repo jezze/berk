@@ -124,13 +124,19 @@ static int parseclone(int argc, char **argv)
 static int parseexec(int argc, char **argv)
 {
 
-    unsigned int total = atoi(argv[1]);
     unsigned int complete = 0;
     unsigned int success = 0;
+    unsigned int total;
     unsigned int i;
     int status;
 
     checkinit();
+
+    total = strtoul(argv[1], NULL, 10);
+
+    if (!total)
+        return EXIT_FAILURE;
+
     fprintf(stdout, "event=begin total=%d\n", total);
 
     for (i = 0; i < total; i++)
@@ -196,13 +202,19 @@ static int parselog(int argc, char **argv)
 {
 
     struct remote remote;
+    unsigned int pid;
 
     checkinit();
+
+    pid = strtoul(argv[1], NULL, 10);
+
+    if (!pid)
+        return EXIT_FAILURE;
 
     if (remote_load(&remote, argv[0]))
         return errorresource(argv[0]);
 
-    command_log(&remote, atoi(argv[1]));
+    command_log(&remote, pid);
 
     return EXIT_SUCCESS;
 
