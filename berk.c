@@ -27,10 +27,10 @@ static void checkinit()
 
 }
 
-static int errorresource(char *name)
+static int errorremote(char *name)
 {
 
-    error(ERROR_NORMAL, "Could not find resource '%s'.", name);
+    error(ERROR_NORMAL, "Could not find remote '%s'.", name);
 
     return EXIT_FAILURE;
 
@@ -106,7 +106,7 @@ static int parseconfig(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     command_config(&remote, argv[1], argv[2]);
 
@@ -122,7 +122,7 @@ static int parseclone(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     command_clone(&remote, argv[1]);
 
@@ -159,7 +159,7 @@ static int parseexec(int argc, char **argv)
             struct remote remote;
 
             if (remote_load(&remote, argv[0]))
-                return errorresource(argv[0]);
+                return errorremote(argv[0]);
 
             return command_exec(&remote, getpid(), argv[2]);
 
@@ -216,7 +216,7 @@ static int parselog(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     pid = strtoul(argv[1], NULL, 10);
 
@@ -237,7 +237,7 @@ static int parseremove(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     command_remove(&remote);
 
@@ -253,7 +253,7 @@ static int parseshell(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     command_shell(&remote);
 
@@ -269,7 +269,7 @@ static int parseshow(int argc, char **argv)
     checkinit();
 
     if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorremote(argv[0]);
 
     command_show(&remote);
 
