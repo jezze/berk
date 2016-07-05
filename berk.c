@@ -269,9 +269,9 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
+        {"add", parseadd, 2, " <name> <hostname>"},
         {"config", parseconfig, 3, " <name> <key> <value>"},
         {"copy", parsecopy, 2, " <name> <new-name>"},
-        {"add", parseadd, 2, " <name> <hostname>"},
         {"exec", parseexec, 3, " <name> <num> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
