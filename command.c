@@ -13,6 +13,31 @@
 #include "con.h"
 #include "con_ssh.h"
 
+void command_add(char *name, char *hostname, char *username)
+{
+
+    struct remote remote;
+    char privatekey[512];
+    char publickey[512];
+
+    memset(&remote, 0, sizeof (struct remote));
+    snprintf(privatekey, 512, "/home/%s/.ssh/%s", username, "id_rsa");
+    snprintf(publickey, 512, "/home/%s/.ssh/%s", username, "id_rsa.pub");
+
+    remote.name = name;
+    remote.hostname = hostname;
+    remote.port = 22;
+    remote.username = username;
+    remote.privatekey = privatekey;
+    remote.publickey = publickey;
+
+    if (remote_save(&remote))
+        error(ERROR_PANIC, "Could not save '%s'.", remote.name);
+
+    fprintf(stdout, "Remote '%s' added.\n", remote.name);
+
+}
+
 void command_config(struct remote *remote, char *key, char *value)
 {
 
@@ -51,32 +76,7 @@ void command_copy(struct remote *remote, char *name)
 
     remote->name = temp;
 
-    fprintf(stdout, "Remote '%s' (copied from '%s') created\n", name, remote->name);
-
-}
-
-void command_create(char *name, char *hostname, char *username)
-{
-
-    struct remote remote;
-    char privatekey[512];
-    char publickey[512];
-
-    memset(&remote, 0, sizeof (struct remote));
-    snprintf(privatekey, 512, "/home/%s/.ssh/%s", username, "id_rsa");
-    snprintf(publickey, 512, "/home/%s/.ssh/%s", username, "id_rsa.pub");
-
-    remote.name = name;
-    remote.hostname = hostname;
-    remote.port = 22;
-    remote.username = username;
-    remote.privatekey = privatekey;
-    remote.publickey = publickey;
-
-    if (remote_save(&remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote.name);
-
-    fprintf(stdout, "Remote '%s' created\n", remote.name);
+    fprintf(stdout, "Remote '%s' (copy of '%s') added.\n", name, remote->name);
 
 }
 
@@ -138,7 +138,7 @@ void command_init()
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory.");
 
-    fprintf(stdout, "Initialized %s in '%s'\n", CONFIG_PROGNAME, CONFIG_ROOT);
+    fprintf(stdout, "Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
 }
 
@@ -180,7 +180,7 @@ void command_remove(struct remote *remote)
     if (remote_erase(remote))
         error(ERROR_PANIC, "Could not remove '%s'.", remote->name);
 
-    fprintf(stdout, "Remote '%s' removed'\n", remote->name);
+    fprintf(stdout, "Remote '%s' removed.\n", remote->name);
 
 }
 

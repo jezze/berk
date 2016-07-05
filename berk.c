@@ -79,6 +79,16 @@ static int checkargs(struct command *commands, int argc, char **argv)
 
 }
 
+static int parseadd(int argc, char **argv)
+{
+
+    checkinit();
+    command_add(argv[0], argv[1], getenv("USER"));
+
+    return EXIT_SUCCESS;
+
+}
+
 static int parseconfig(int argc, char **argv)
 {
 
@@ -106,16 +116,6 @@ static int parsecopy(int argc, char **argv)
         return errorresource(argv[0]);
 
     command_copy(&remote, argv[1]);
-
-    return EXIT_SUCCESS;
-
-}
-
-static int parsecreate(int argc, char **argv)
-{
-
-    checkinit();
-    command_create(argv[0], argv[1], getenv("USER"));
 
     return EXIT_SUCCESS;
 
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
     static struct command commands[] = {
         {"config", parseconfig, 3, " <name> <key> <value>"},
         {"copy", parsecopy, 2, " <name> <new-name>"},
-        {"create", parsecreate, 2, " <name> <hostname>"},
+        {"add", parseadd, 2, " <name> <hostname>"},
         {"exec", parseexec, 3, " <name> <num> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
