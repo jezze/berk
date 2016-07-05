@@ -17,7 +17,7 @@ int con_connect(struct remote *remote)
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(remote->hostname, "ssh", &hints, &servinfo) != 0)
+    if (getaddrinfo(remote->hostname, remote->port, &hints, &servinfo) != 0)
         return -1;
 
     remote->sock = socket(servinfo->ai_family, servinfo->ai_socktype, 0);

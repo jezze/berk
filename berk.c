@@ -7,6 +7,7 @@
 #include "config.h"
 #include "error.h"
 #include "remote.h"
+#include "event.h"
 #include "command.h"
 
 struct command
@@ -146,7 +147,7 @@ static int parseexec(int argc, char **argv)
     if (!total)
         return errorvalue(argv[1]);
 
-    fprintf(stdout, "event=begin total=%d\n", total);
+    event_begin(total);
 
     for (i = 0; i < total; i++)
     {
@@ -182,7 +183,7 @@ static int parseexec(int argc, char **argv)
 
     }
 
-    fprintf(stdout, "event=end total=%d complete=%d success=%d\n", total, complete, success);
+    event_end(total, complete, success);
 
     return EXIT_SUCCESS;
 

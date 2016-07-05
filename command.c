@@ -9,6 +9,7 @@
 #include "error.h"
 #include "ini.h"
 #include "remote.h"
+#include "event.h"
 #include "command.h"
 #include "con.h"
 #include "con_ssh.h"
@@ -26,7 +27,7 @@ void command_add(char *name, char *hostname, char *username)
 
     remote.name = name;
     remote.hostname = hostname;
-    remote.port = 22;
+    remote.port = "22";
     remote.username = username;
     remote.privatekey = privatekey;
     remote.publickey = publickey;
@@ -64,14 +65,7 @@ void command_config(struct remote *remote, char *key, char *value)
         remote->hostname = value;
 
     if (!strcmp(key, "port"))
-    {
-
-        remote->port = strtoul(value, NULL, 10);
-
-        if (!remote->port)
-            error(ERROR_PANIC, "Invalid port '%d'.", remote->port);
-
-    }
+        remote->port = value;
 
     if (!strcmp(key, "username"))
         remote->username = value;
@@ -95,7 +89,7 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     remote->pid = pid;
 
     remote_log_open(remote);
-    fprintf(stdout, "event=start name=%s pid=%d\n", remote->name, remote->pid);
+    event_start(remote);
 
     if (con_ssh_connect(remote) < 0)
         error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
@@ -105,7 +99,7 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     if (con_ssh_disconnect(remote) < 0)
         error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
-    fprintf(stdout, "event=stop name=%s pid=%d status=%d\n", remote->name, remote->pid, status);
+    event_stop(remote, status);
     remote_log_close(remote);
 
     return status;
@@ -137,13 +131,19 @@ void command_init()
         error(ERROR_PANIC, "Could not copy string.");
 
     if (mkdir(path, 0775) < 0)
-        error(ERROR_PANIC, "Could not create directory.");
+        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_REMOTES);
 
     if (snprintf(path, BUFSIZ, "%s", CONFIG_LOGS) < 0)
         error(ERROR_PANIC, "Could not copy string.");
 
     if (mkdir(path, 0775) < 0)
-        error(ERROR_PANIC, "Could not create directory.");
+        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_LOGS);
+
+    if (snprintf(path, BUFSIZ, "%s", CONFIG_HOOKS) < 0)
+        error(ERROR_PANIC, "Could not copy string.");
+
+    if (mkdir(path, 0775) < 0)
+        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_HOOKS);
 
     fprintf(stdout, "Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
@@ -216,7 +216,7 @@ void command_show(struct remote *remote)
 
     fprintf(stdout, "name=%s\n", remote->name);
     fprintf(stdout, "hostname=%s\n", remote->hostname);
-    fprintf(stdout, "port=%d\n", remote->port);
+    fprintf(stdout, "port=%s\n", remote->port);
     fprintf(stdout, "username=%s\n", remote->username);
     fprintf(stdout, "privatekey=%s\n", remote->privatekey);
     fprintf(stdout, "publickey=%s\n", remote->publickey);

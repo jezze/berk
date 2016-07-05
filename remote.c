@@ -9,7 +9,7 @@
 #include "ini.h"
 #include "remote.h"
 
-static int getconfigpath(char *path, unsigned int length, char *filename)
+static int getremotepath(char *path, unsigned int length, char *filename)
 {
 
     return snprintf(path, length, "%s/%s", CONFIG_REMOTES, filename) < 0;
@@ -35,14 +35,7 @@ static int loadcallback(void *user, const char *section, const char *name, const
         remote->hostname = strdup(value);
 
     if (!strcmp(section, "remote") && !strcmp(name, "port"))
-    {
-
-        remote->port = strtoul(value, NULL, 10);
-
-        if (!remote->port)
-            return -1;
-
-    }
+        remote->port = strdup(value);
 
     if (!strcmp(section, "remote") && !strcmp(name, "username"))
         remote->username = strdup(value);
@@ -62,7 +55,7 @@ int remote_load(struct remote *remote, char *name)
 
     char path[BUFSIZ];
 
-    if (getconfigpath(path, BUFSIZ, name))
+    if (getremotepath(path, BUFSIZ, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -77,7 +70,7 @@ int remote_save(struct remote *remote)
     FILE *file;
     char path[BUFSIZ];
 
-    if (getconfigpath(path, BUFSIZ, remote->name))
+    if (getremotepath(path, BUFSIZ, remote->name))
         return -1;
 
     file = fopen(path, "w");
@@ -88,7 +81,7 @@ int remote_save(struct remote *remote)
     ini_writesection(file, "remote");
     ini_writestring(file, "name", remote->name);
     ini_writestring(file, "hostname", remote->hostname);
-    ini_writeint(file, "port", remote->port);
+    ini_writestring(file, "port", remote->port);
     ini_writestring(file, "username", remote->username);
     ini_writestring(file, "privatekey", remote->privatekey);
     ini_writestring(file, "publickey", remote->publickey);
@@ -103,7 +96,7 @@ int remote_erase(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (getconfigpath(path, BUFSIZ, remote->name))
+    if (getremotepath(path, BUFSIZ, remote->name))
         return -1;
 
     if (unlink(path) < 0)

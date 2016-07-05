@@ -4,3 +4,4 @@
 #define CONFIG_MAIN                     CONFIG_ROOT "/config"
 #define CONFIG_LOGS                     CONFIG_ROOT "/logs"
 #define CONFIG_REMOTES                  CONFIG_ROOT "/remotes"
+#define CONFIG_HOOKS                    CONFIG_ROOT "/hooks"

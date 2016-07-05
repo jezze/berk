@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 BIN:=berk
-OBJ:=berk.o con.o con_ssh.o command.o error.o ini.o remote.o
+OBJ:=berk.o con.o con_ssh.o command.o error.o event.o ini.o remote.o
 CFLAGS:=-Wall -Werror
 PREFIX:=/usr/local/bin
 

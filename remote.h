@@ -3,7 +3,7 @@ struct remote
 
     char *name;
     char *hostname;
-    unsigned int port;
+    char *port;
     char *username;
     char *publickey;
     char *privatekey;
