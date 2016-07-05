@@ -54,8 +54,6 @@ int con_ssh_exec(struct remote *remote, char *command)
     struct pollfd pfds[1];
     int exitcode;
 
-    memset(pfds, 0, sizeof(struct pollfd) * 1);
-
     pfds[0].fd = remote->sock;
     pfds[0].events = POLLIN;
     pfds[0].revents = 0;
@@ -106,8 +104,6 @@ int con_ssh_shell(struct remote *remote)
     LIBSSH2_CHANNEL *channel;
     struct pollfd pfds[2];
     int exitcode;
-
-    memset(pfds, 0, sizeof(struct pollfd) * 2);
 
     pfds[0].fd = remote->sock;
     pfds[0].events = POLLIN;
