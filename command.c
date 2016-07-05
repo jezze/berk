@@ -88,7 +88,7 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     remote->pid = pid;
 
     remote_log_open(remote);
-    fprintf(stdout, "type: start, name: %s, pid: %d\n", remote->name, remote->pid);
+    fprintf(stdout, "type=start name=%s pid=%d\n", remote->name, remote->pid);
 
     if (con_ssh_connect(remote) < 0)
         error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
@@ -98,7 +98,7 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     if (con_ssh_disconnect(remote) < 0)
         error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
-    fprintf(stdout, "type: stop, name: %s, pid: %d, status: %d\n", remote->name, remote->pid, status);
+    fprintf(stdout, "type=stop name=%s pid=%d status=%d\n", remote->name, remote->pid, status);
     remote_log_close(remote);
 
     return status;
@@ -198,12 +198,12 @@ void command_shell(struct remote *remote)
 void command_show(struct remote *remote)
 {
 
-    fprintf(stdout, "name: %s\n", remote->name);
-    fprintf(stdout, "hostname: %s\n", remote->hostname);
-    fprintf(stdout, "port: %d\n", remote->port);
-    fprintf(stdout, "username: %s\n", remote->username);
-    fprintf(stdout, "privatekey: %s\n", remote->privatekey);
-    fprintf(stdout, "publickey: %s\n", remote->publickey);
+    fprintf(stdout, "name=%s\n", remote->name);
+    fprintf(stdout, "hostname=%s\n", remote->hostname);
+    fprintf(stdout, "port=%d\n", remote->port);
+    fprintf(stdout, "username=%s\n", remote->username);
+    fprintf(stdout, "privatekey=%s\n", remote->privatekey);
+    fprintf(stdout, "publickey=%s\n", remote->publickey);
 
 }
 
