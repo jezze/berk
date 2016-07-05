@@ -124,12 +124,16 @@ static int parsecreate(int argc, char **argv)
 static int parseexec(int argc, char **argv)
 {
 
-    unsigned int count = atoi(argv[1]);
+    unsigned int total = atoi(argv[1]);
+    unsigned int complete = 0;
+    unsigned int success = 0;
     unsigned int i;
+    int status;
 
     checkinit();
+    fprintf(stdout, "type: begin, total: %d\n", total);
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < total; i++)
     {
 
         pid_t pid = fork();
@@ -142,15 +146,28 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, argv[0]))
                 return errorresource(argv[0]);
 
-            command_exec(&remote, getpid(), argv[2]);
-
-            return EXIT_SUCCESS;
+            return command_exec(&remote, getpid(), argv[2]);
 
         }
 
     }
 
-    while (wait(NULL) > 0);
+    while (wait(&status) > 0)
+    {
+
+        if (WIFEXITED(status))
+        {
+
+            complete++;
+
+            if (WEXITSTATUS(status) == 0)
+                success++;
+
+        }
+
+    }
+
+    fprintf(stdout, "type: done, total: %d, complete: %d, success: %d\n", total, complete, success);
 
     return EXIT_SUCCESS;
 
