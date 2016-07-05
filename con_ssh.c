@@ -74,7 +74,7 @@ int con_ssh_exec(struct remote *remote, char *commandline)
 
         count = remote_log(remote, buffer, count);
 
-    } while (1);
+    } while (!libssh2_channel_eof(channel));
 
     libssh2_channel_close(channel);
     libssh2_channel_wait_closed(channel);
