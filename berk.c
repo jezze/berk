@@ -36,6 +36,15 @@ static int errorresource(char *name)
 
 }
 
+static int errorvalue(char *value)
+{
+
+    error(ERROR_NORMAL, "Could not parse value '%s'.", value);
+
+    return EXIT_FAILURE;
+
+}
+
 static int checkargs(struct command *commands, int argc, char **argv)
 {
 
@@ -135,7 +144,7 @@ static int parseexec(int argc, char **argv)
     total = strtoul(argv[1], NULL, 10);
 
     if (!total)
-        return EXIT_FAILURE;
+        return errorvalue(argv[1]);
 
     fprintf(stdout, "event=begin total=%d\n", total);
 
@@ -206,13 +215,13 @@ static int parselog(int argc, char **argv)
 
     checkinit();
 
+    if (remote_load(&remote, argv[0]))
+        return errorresource(argv[0]);
+
     pid = strtoul(argv[1], NULL, 10);
 
     if (!pid)
-        return EXIT_FAILURE;
-
-    if (remote_load(&remote, argv[0]))
-        return errorresource(argv[0]);
+        return errorvalue(argv[1]);
 
     command_log(&remote, pid);
 
