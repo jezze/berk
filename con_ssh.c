@@ -91,15 +91,15 @@ int con_ssh_shell(struct remote *remote)
 {
 
     LIBSSH2_CHANNEL *channel;
-    int exitcode;
     struct pollfd pfds[2];
+    int exitcode;
 
     memset(pfds, 0, sizeof(struct pollfd) * 2);
 
     pfds[0].fd = remote->sock;
     pfds[0].events = POLLIN;
     pfds[0].revents = 0;
-    pfds[1].fd = 0;
+    pfds[1].fd = STDIN_FILENO;
     pfds[1].events = POLLIN;
     pfds[1].revents = 0;
 
@@ -131,7 +131,7 @@ int con_ssh_shell(struct remote *remote)
             int count;
 
             count = libssh2_channel_read(channel, buffer, BUFSIZ);
-            count = write(1, buffer, count);
+            count = write(STDOUT_FILENO, buffer, count);
 
         }
 
@@ -141,7 +141,7 @@ int con_ssh_shell(struct remote *remote)
             char buffer[BUFSIZ];
             int count;
 
-            count = read(0, buffer, BUFSIZ);
+            count = read(STDIN_FILENO, buffer, BUFSIZ);
             count = libssh2_channel_write(channel, buffer, count);
 
         }
