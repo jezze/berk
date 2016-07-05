@@ -38,6 +38,22 @@ void command_add(char *name, char *hostname, char *username)
 
 }
 
+void command_clone(struct remote *remote, char *name)
+{
+
+    char *temp = remote->name;
+
+    remote->name = name;
+
+    if (remote_save(remote))
+        error(ERROR_PANIC, "Could not save '%s'.", remote->name);
+
+    remote->name = temp;
+
+    fprintf(stdout, "Remote '%s' (clone of '%s') added.\n", name, remote->name);
+
+}
+
 void command_config(struct remote *remote, char *key, char *value)
 {
 
@@ -61,22 +77,6 @@ void command_config(struct remote *remote, char *key, char *value)
 
     if (remote_save(remote))
         error(ERROR_PANIC, "Could not save '%s'.", remote->name);
-
-}
-
-void command_copy(struct remote *remote, char *name)
-{
-
-    char *temp = remote->name;
-
-    remote->name = name;
-
-    if (remote_save(remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote->name);
-
-    remote->name = temp;
-
-    fprintf(stdout, "Remote '%s' (copy of '%s') added.\n", name, remote->name);
 
 }
 

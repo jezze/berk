@@ -105,7 +105,7 @@ static int parseconfig(int argc, char **argv)
 
 }
 
-static int parsecopy(int argc, char **argv)
+static int parseclone(int argc, char **argv)
 {
 
     struct remote remote;
@@ -115,7 +115,7 @@ static int parsecopy(int argc, char **argv)
     if (remote_load(&remote, argv[0]))
         return errorresource(argv[0]);
 
-    command_copy(&remote, argv[1]);
+    command_clone(&remote, argv[1]);
 
     return EXIT_SUCCESS;
 
@@ -270,8 +270,8 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
+        {"clone", parseclone, 2, " <name> <new-name>"},
         {"config", parseconfig, 3, " <name> <key> <value>"},
-        {"copy", parsecopy, 2, " <name> <new-name>"},
         {"exec", parseexec, 3, " <name> <num> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
