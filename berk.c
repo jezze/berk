@@ -131,7 +131,7 @@ static int parseexec(int argc, char **argv)
     int status;
 
     checkinit();
-    fprintf(stdout, "type=begin total=%d\n", total);
+    fprintf(stdout, "event=begin total=%d\n", total);
 
     for (i = 0; i < total; i++)
     {
@@ -167,7 +167,7 @@ static int parseexec(int argc, char **argv)
 
     }
 
-    fprintf(stdout, "type=done total=%d complete=%d success=%d\n", total, complete, success);
+    fprintf(stdout, "event=done total=%d complete=%d success=%d\n", total, complete, success);
 
     return EXIT_SUCCESS;
 
