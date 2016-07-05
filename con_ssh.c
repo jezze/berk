@@ -47,7 +47,7 @@ int con_ssh_disconnect(struct remote *remote)
 
 }
 
-int con_ssh_exec(struct remote *remote, char *commandline)
+int con_ssh_exec(struct remote *remote, char *command)
 {
 
     LIBSSH2_CHANNEL *channel;
@@ -65,7 +65,7 @@ int con_ssh_exec(struct remote *remote, char *commandline)
     if (channel == NULL)
         error(ERROR_PANIC, "Could not open SSH2 channel.");
 
-    if (libssh2_channel_exec(channel, commandline) < 0)
+    if (libssh2_channel_exec(channel, command) < 0)
         error(ERROR_PANIC, "Could not execute command over SSH2 channel.");
 
     do
