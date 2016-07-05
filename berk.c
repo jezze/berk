@@ -167,7 +167,7 @@ static int parseexec(int argc, char **argv)
 
     }
 
-    fprintf(stdout, "event=done total=%d complete=%d success=%d\n", total, complete, success);
+    fprintf(stdout, "event=end total=%d complete=%d success=%d\n", total, complete, success);
 
     return EXIT_SUCCESS;
 
