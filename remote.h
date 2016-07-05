@@ -19,3 +19,4 @@ int remote_erase(struct remote *remote);
 int remote_log_open(struct remote *remote);
 void remote_log_close(struct remote *remote);
 int remote_log(struct remote *remote, char *buffer, unsigned int size);
+int remote_log_print(struct remote *remote);

@@ -165,6 +165,15 @@ void command_list()
 
 }
 
+void command_log(struct remote *remote, int pid)
+{
+
+    remote->pid = pid;
+
+    remote_log_print(remote);
+
+}
+
 void command_remove(struct remote *remote)
 {
 

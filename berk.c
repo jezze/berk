@@ -192,6 +192,22 @@ static int parselist(int argc, char **argv)
 
 }
 
+static int parselog(int argc, char **argv)
+{
+
+    struct remote remote;
+
+    checkinit();
+
+    if (remote_load(&remote, argv[0]))
+        return errorresource(argv[0]);
+
+    command_log(&remote, atoi(argv[1]));
+
+    return EXIT_SUCCESS;
+
+}
+
 static int parseremove(int argc, char **argv)
 {
 
@@ -259,6 +275,7 @@ int main(int argc, char **argv)
         {"exec", parseexec, 3, " <name> <num> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
+        {"log", parselog, 2, " <name> <pid>"},
         {"remove", parseremove, 1, " <name>"},
         {"shell", parseshell, 1, " <name>"},
         {"show", parseshow, 1, " <name>"},
