@@ -60,6 +60,9 @@ void command_config(struct remote *remote, char *key, char *value)
     if (!strcmp(key, "publickey"))
         remote->publickey = value;
 
+    if (!strcmp(key, "label"))
+        remote->label = value;
+
     if (remote_save(remote))
         error(ERROR_PANIC, "Could not save '%s'.", remote->name);
 
@@ -200,10 +203,21 @@ void command_show(struct remote *remote)
 
     fprintf(stdout, "name=%s\n", remote->name);
     fprintf(stdout, "hostname=%s\n", remote->hostname);
-    fprintf(stdout, "port=%s\n", remote->port);
-    fprintf(stdout, "username=%s\n", remote->username);
-    fprintf(stdout, "privatekey=%s\n", remote->privatekey);
-    fprintf(stdout, "publickey=%s\n", remote->publickey);
+
+    if (remote->port)
+        fprintf(stdout, "port=%s\n", remote->port);
+
+    if (remote->username)
+        fprintf(stdout, "username=%s\n", remote->username);
+
+    if (remote->privatekey)
+        fprintf(stdout, "privatekey=%s\n", remote->privatekey);
+
+    if (remote->publickey)
+        fprintf(stdout, "publickey=%s\n", remote->publickey);
+
+    if (remote->label)
+        fprintf(stdout, "label=%s\n", remote->label);
 
 }
 

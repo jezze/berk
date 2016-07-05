@@ -7,6 +7,7 @@ struct remote
     char *username;
     char *publickey;
     char *privatekey;
+    char *label;
     int sock;
     int logfd;
     int pid;

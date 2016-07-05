@@ -46,6 +46,9 @@ static int loadcallback(void *user, const char *section, const char *name, const
     if (!strcmp(section, "remote") && !strcmp(name, "publickey"))
         remote->publickey = strdup(value);
 
+    if (!strcmp(section, "remote") && !strcmp(name, "label"))
+        remote->label = strdup(value);
+
     return 0;
 
 }
@@ -81,10 +84,22 @@ int remote_save(struct remote *remote)
     ini_writesection(file, "remote");
     ini_writestring(file, "name", remote->name);
     ini_writestring(file, "hostname", remote->hostname);
-    ini_writestring(file, "port", remote->port);
-    ini_writestring(file, "username", remote->username);
-    ini_writestring(file, "privatekey", remote->privatekey);
-    ini_writestring(file, "publickey", remote->publickey);
+
+    if (remote->port)
+        ini_writestring(file, "port", remote->port);
+
+    if (remote->username)
+        ini_writestring(file, "username", remote->username);
+
+    if (remote->privatekey)
+        ini_writestring(file, "privatekey", remote->privatekey);
+
+    if (remote->publickey)
+        ini_writestring(file, "publickey", remote->publickey);
+
+    if (remote->label)
+        ini_writestring(file, "label", remote->label);
+
     fclose(file);
 
     return 0;
