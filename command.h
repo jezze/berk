@@ -1,5 +1,4 @@
 void command_add(char *name, char *hostname, char *username);
-void command_clone(struct remote *remote, char *name);
 void command_config(struct remote *remote, char *key, char *value);
 int command_exec(struct remote *remote, unsigned int pid, char *command);
 void command_init();
