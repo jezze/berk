@@ -203,21 +203,11 @@ void command_show(struct remote *remote)
 
     fprintf(stdout, "name=%s\n", remote->name);
     fprintf(stdout, "hostname=%s\n", remote->hostname);
-
-    if (remote->port)
-        fprintf(stdout, "port=%s\n", remote->port);
-
-    if (remote->username)
-        fprintf(stdout, "username=%s\n", remote->username);
-
-    if (remote->privatekey)
-        fprintf(stdout, "privatekey=%s\n", remote->privatekey);
-
-    if (remote->publickey)
-        fprintf(stdout, "publickey=%s\n", remote->publickey);
-
-    if (remote->label)
-        fprintf(stdout, "label=%s\n", remote->label);
+    fprintf(stdout, "port=%s\n", remote->port ? remote->port : "");
+    fprintf(stdout, "username=%s\n", remote->username ? remote->username : "");
+    fprintf(stdout, "privatekey=%s\n", remote->privatekey ? remote->privatekey : "");
+    fprintf(stdout, "publickey=%s\n", remote->publickey ? remote->publickey : "");
+    fprintf(stdout, "label=%s\n", remote->label ? remote->label : "");
 
 }
 
