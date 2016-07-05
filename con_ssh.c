@@ -51,7 +51,14 @@ int con_ssh_exec(struct remote *remote, char *commandline)
 {
 
     LIBSSH2_CHANNEL *channel;
+    struct pollfd pfds[1];
     int exitcode;
+
+    memset(pfds, 0, sizeof(struct pollfd) * 1);
+
+    pfds[0].fd = remote->sock;
+    pfds[0].events = POLLIN;
+    pfds[0].revents = 0;
 
     channel = libssh2_channel_open_session(session);
 
@@ -64,15 +71,21 @@ int con_ssh_exec(struct remote *remote, char *commandline)
     do
     {
 
-        char buffer[BUFSIZ];
-        int count;
+        int status = poll(pfds, 1, -1);
 
-        count = libssh2_channel_read(channel, buffer, BUFSIZ);
-
-        if (!count)
+        if (status == -1)
             break;
 
-        count = remote_log(remote, buffer, count);
+        if (pfds[0].revents & POLLIN)
+        {
+
+            char buffer[BUFSIZ];
+            int count;
+
+            count = libssh2_channel_read(channel, buffer, BUFSIZ);
+            count = remote_log(remote, buffer, count);
+
+        }
 
     } while (!libssh2_channel_eof(channel));
 
