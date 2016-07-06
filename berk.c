@@ -112,6 +112,7 @@ static int parsecopy(int argc, char **argv)
 {
 
     config_init();
+    error(ERROR_NORMAL, "Copy not implemented.");
 
     return EXIT_SUCCESS;
 
@@ -241,6 +242,16 @@ static int parseremove(int argc, char **argv)
 
 }
 
+static int parsesend(int argc, char **argv)
+{
+
+    config_init();
+    error(ERROR_NORMAL, "Send not implemented.");
+
+    return EXIT_SUCCESS;
+
+}
+
 static int parseshell(int argc, char **argv)
 {
 
@@ -291,12 +302,13 @@ int main(int argc, char **argv)
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
         {"config", parseconfig, 3, " <name> <key> <value>"},
-        {"copy", parsecopy, 2, " [<name>:]<path> [<name>:]<path>"},
+        {"copy", parsecopy, 2, " <name>:<path> <name>:<path>"},
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, " [<label>]"},
         {"log", parselog, 2, " <name> <pid>"},
         {"remove", parseremove, 1, " <name>"},
+        {"send", parsesend, 2, " <namelist> <path>"},
         {"shell", parseshell, 1, " <name>"},
         {"show", parseshow, 1, " <name> [<key>]"},
         {"version", parseversion, 0, ""},
