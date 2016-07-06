@@ -129,12 +129,6 @@ void command_init()
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_REMOTES);
 
-    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
-        error(ERROR_PANIC, "Could not get path.");
-
-    if (mkdir(path, 0775) < 0)
-        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_LOGS);
-
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS))
         error(ERROR_PANIC, "Could not get path.");
 

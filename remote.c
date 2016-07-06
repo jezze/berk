@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "config.h"
-#include "error.h"
 #include "ini.h"
 #include "remote.h"
 
@@ -111,6 +111,17 @@ int remote_log_open(struct remote *remote)
 {
 
     char path[BUFSIZ];
+
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+        return -1;
+
+    if (access(path, F_OK))
+    {
+
+        if (mkdir(path, 0775) < 0)
+            return -1;
+
+    }
 
     if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
         return -1;
