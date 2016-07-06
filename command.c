@@ -20,12 +20,12 @@ void command_add(char *name, char *hostname, char *username)
 {
 
     struct remote remote;
-    char privatekey[512];
-    char publickey[512];
+    char privatekey[BUFSIZ];
+    char publickey[BUFSIZ];
 
     memset(&remote, 0, sizeof (struct remote));
-    snprintf(privatekey, 512, "/home/%s/.ssh/%s", username, "id_rsa");
-    snprintf(publickey, 512, "/home/%s/.ssh/%s", username, "id_rsa.pub");
+    snprintf(privatekey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa");
+    snprintf(publickey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa.pub");
 
     remote.name = name;
     remote.hostname = hostname;
@@ -122,12 +122,6 @@ void command_init()
     ini_writesection(file, "core");
     ini_writestring(file, "version", CONFIG_VERSION);
     fclose(file);
-
-    if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
-        error(ERROR_PANIC, "Could not get path.");
-
-    if (mkdir(path, 0775) < 0)
-        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_REMOTES);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS))
         error(ERROR_PANIC, "Could not get path.");
