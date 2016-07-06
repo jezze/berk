@@ -108,6 +108,15 @@ static int parseconfig(int argc, char **argv)
 
 }
 
+static int parsecopy(int argc, char **argv)
+{
+
+    config_init();
+
+    return EXIT_SUCCESS;
+
+}
+
 static int parseexec(int argc, char **argv)
 {
 
@@ -278,6 +287,7 @@ int main(int argc, char **argv)
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
         {"config", parseconfig, 3, " <name> <key> <value>"},
+        {"copy", parsecopy, 2, " [<name>:]<path> [<name>:]<path>"},
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, " [<label>]"},
