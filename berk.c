@@ -130,8 +130,9 @@ static int parseexec(int argc, char **argv)
 
     config_init();
     util_trim(word);
+    util_strip(word);
 
-    words = util_seperatewords(word);
+    words = util_split(word);
 
     if (event_begin())
         error(ERROR_PANIC, "Could not run event.");

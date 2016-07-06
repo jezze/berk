@@ -5,10 +5,10 @@
 #include "error.h"
 #include "util.h"
 
-void util_trim(char *a)
+void util_trim(char *str)
 {
 
-    char *p = a, *q = a;
+    char *p = str, *q = str;
 
     while (isspace(*q))
         ++q;
@@ -18,44 +18,51 @@ void util_trim(char *a)
 
     *p = '\0';
 
-    while (p > a && isspace(*--p))
+    while (p > str && isspace(*--p))
         *p = '\0';
 
 }
 
-unsigned int util_seperatewords(char *buffer)
+void util_strip(char *str)
 {
 
-    unsigned int total = 0;
-    unsigned int blank = 0;
+    char *dest = str;
 
-    while (*buffer != '\0')
+    while (*str)
     {
 
-        if (isspace(*buffer))
-        {
+        while (isspace(*str) && isspace(*(str + 1)))
+            str++;
 
-            *buffer = '\0';
-
-            if (!blank)
-                total++;
-
-            blank = 1;
-
-        }
-
-        else
-        {
-
-            blank = 0;
-
-        }
-
-        buffer++;
+       *dest++ = *str++;
 
     }
 
-    return total + 1;
+    *dest = '\0';
+
+}
+
+unsigned int util_split(char *str)
+{
+
+    unsigned int total = 1;
+
+    while (*str)
+    {
+
+        if (isspace(*str))
+        {
+
+            *str = '\0';
+            total++;
+
+        }
+
+        str++;
+
+    }
+
+    return total;
 
 }
 

@@ -236,7 +236,7 @@ void command_list(char *label)
         if (!remote.label)
             continue;
 
-        words = util_seperatewords(remote.label);
+        words = util_split(remote.label);
 
         for (i = 0; (remote.label = util_nextword(remote.label, i, words)); i++)
         {
