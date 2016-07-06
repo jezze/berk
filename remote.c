@@ -9,20 +9,6 @@
 #include "ini.h"
 #include "remote.h"
 
-static int getremotepath(char *path, unsigned int length, char *filename)
-{
-
-    return snprintf(path, length, "%s/%s", CONFIG_REMOTES, filename) < 0;
-
-}
-
-static int getlogpath(char *path, unsigned int length, char *filename, unsigned int num)
-{
-
-    return snprintf(path, length, "%s/%s.%d", CONFIG_LOGS, filename, num) < 0;
-
-}
-
 static int loadcallback(void *user, const char *section, const char *name, const char *value)
 {
 
@@ -58,7 +44,7 @@ int remote_load(struct remote *remote, char *name)
 
     char path[BUFSIZ];
 
-    if (getremotepath(path, BUFSIZ, name))
+    if (config_getremotepath(path, BUFSIZ, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -73,7 +59,7 @@ int remote_save(struct remote *remote)
     FILE *file;
     char path[BUFSIZ];
 
-    if (getremotepath(path, BUFSIZ, remote->name))
+    if (config_getremotepath(path, BUFSIZ, remote->name))
         return -1;
 
     file = fopen(path, "w");
@@ -111,7 +97,7 @@ int remote_erase(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (getremotepath(path, BUFSIZ, remote->name))
+    if (config_getremotepath(path, BUFSIZ, remote->name))
         return -1;
 
     if (unlink(path) < 0)
@@ -126,7 +112,7 @@ int remote_log_open(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (getlogpath(path, BUFSIZ, remote->name, remote->pid))
+    if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -156,7 +142,7 @@ int remote_log_print(struct remote *remote)
     char buffer[BUFSIZ];
     unsigned int count;
 
-    if (getlogpath(path, BUFSIZ, remote->name, remote->pid))
+    if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_RDONLY, 0644);

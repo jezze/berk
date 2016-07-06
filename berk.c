@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include "config.h"
 #include "error.h"
+#include "util.h"
 #include "remote.h"
 #include "event.h"
 #include "command.h"
@@ -20,14 +20,6 @@ struct command
     char *description;
 
 };
-
-static void checkinit()
-{
-
-    if (access(CONFIG_MAIN, F_OK) < 0)
-        error(ERROR_PANIC, "Could not find '%s' directory.", CONFIG_ROOT);
-
-}
 
 static int errorremote(char *name)
 {
@@ -93,7 +85,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
 static int parseadd(int argc, char **argv)
 {
 
-    checkinit();
+    config_init();
     command_add(argv[0], argv[1], getenv("USER"));
 
     return EXIT_SUCCESS;
@@ -105,7 +97,7 @@ static int parseconfig(int argc, char **argv)
 
     struct remote remote;
 
-    checkinit();
+    config_init();
 
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
@@ -113,79 +105,6 @@ static int parseconfig(int argc, char **argv)
     command_config(&remote, argv[1], argv[2]);
 
     return EXIT_SUCCESS;
-
-}
-
-static void trim(char *a)
-{
-
-    char *p = a, *q = a;
-
-    while (isspace(*q))
-        ++q;
-
-    while (*q)
-        *p++ = *q++;
-
-    *p = '\0';
-
-    while (p > a && isspace(*--p))
-        *p = '\0';
-
-}
-
-static unsigned int seperatewords(char *buffer)
-{
-
-    unsigned int total = 0;
-    unsigned int blank = 0;
-
-    while (*buffer != '\0')
-    {
-
-        if (isspace(*buffer))
-        {
-
-            *buffer = '\0';
-
-            if (!blank)
-                total++;
-
-            blank = 1;
-
-        }
-
-        else
-        {
-
-            blank = 0;
-
-        }
-
-        buffer++;
-
-    }
-
-    return total + 1;
-
-}
-
-static char *nextword(char *buffer, unsigned int index, unsigned int words)
-{
-
-    if (!index)
-        return buffer;
-
-    if (index >= words)
-        return NULL;
-
-    while (*buffer != '\0')
-        buffer++;
-
-    while (*buffer == '\0')
-        buffer++;
-
-    return buffer;
 
 }
 
@@ -200,14 +119,15 @@ static int parseexec(int argc, char **argv)
     char *word = argv[0];
     int status;
 
-    checkinit();
-    trim(word);
+    config_init();
+    util_trim(word);
 
-    words = seperatewords(word);
+    words = util_seperatewords(word);
 
-    event_begin();
+    if (event_begin())
+        error(ERROR_PANIC, "Could not run event.");
 
-    for (i = 0; (word = nextword(word, i, words)); i++)
+    for (i = 0; (word = util_nextword(word, i, words)); i++)
     {
 
         pid_t pid = fork();
@@ -243,7 +163,8 @@ static int parseexec(int argc, char **argv)
 
     }
 
-    event_end(total, complete, success);
+    if (event_end(total, complete, success))
+        error(ERROR_PANIC, "Could not run event.");
 
     return EXIT_SUCCESS;
 
@@ -261,8 +182,12 @@ static int parseinit(int argc, char **argv)
 static int parselist(int argc, char **argv)
 {
 
-    checkinit();
-    command_list();
+    config_init();
+
+    if (argc)    
+        command_list(argv[0]);
+    else
+        command_list(NULL);
 
     return EXIT_SUCCESS;
 
@@ -274,7 +199,7 @@ static int parselog(int argc, char **argv)
     struct remote remote;
     unsigned int pid;
 
-    checkinit();
+    config_init();
 
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
@@ -295,7 +220,7 @@ static int parseremove(int argc, char **argv)
 
     struct remote remote;
 
-    checkinit();
+    config_init();
 
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
@@ -311,7 +236,7 @@ static int parseshell(int argc, char **argv)
 
     struct remote remote;
 
-    checkinit();
+    config_init();
 
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
@@ -327,7 +252,7 @@ static int parseshow(int argc, char **argv)
 
     struct remote remote;
 
-    checkinit();
+    config_init();
 
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
@@ -355,7 +280,7 @@ int main(int argc, char **argv)
         {"config", parseconfig, 3, " <name> <key> <value>"},
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
-        {"list", parselist, 0, ""},
+        {"list", parselist, 0, " [<label>]"},
         {"log", parselog, 2, " <name> <pid>"},
         {"remove", parseremove, 1, " <name>"},
         {"shell", parseshell, 1, " <name>"},

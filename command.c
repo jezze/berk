@@ -3,10 +3,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <termios.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "error.h"
+#include "util.h"
 #include "ini.h"
 #include "remote.h"
 #include "event.h"
@@ -76,7 +78,9 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     remote->pid = pid;
 
     remote_log_open(remote);
-    event_start(remote);
+
+    if (event_start(remote))
+        error(ERROR_PANIC, "Could not run event.");
 
     if (con_ssh_connect(remote) < 0)
         error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
@@ -86,7 +90,9 @@ int command_exec(struct remote *remote, unsigned int pid, char *command)
     if (con_ssh_disconnect(remote) < 0)
         error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
-    event_stop(remote, status);
+    if (event_stop(remote, status))
+        error(ERROR_PANIC, "Could not run event.");
+
     remote_log_close(remote);
 
     return status;
@@ -98,12 +104,15 @@ void command_init()
 
     FILE *file;
     char path[BUFSIZ];
+    int fd;
 
     if (mkdir(CONFIG_ROOT, 0775) < 0)
         error(ERROR_PANIC, "Already initialized.");
 
-    if (snprintf(path, BUFSIZ, "%s", CONFIG_MAIN) < 0)
-        error(ERROR_PANIC, "Could not copy string.");
+    config_init();
+
+    if (config_getpath(path, BUFSIZ, "config"))
+        error(ERROR_PANIC, "Could not get path.");
 
     file = fopen(path, "w");
 
@@ -114,46 +123,134 @@ void command_init()
     ini_writestring(file, "version", CONFIG_VERSION);
     fclose(file);
 
-    if (snprintf(path, BUFSIZ, "%s", CONFIG_REMOTES) < 0)
-        error(ERROR_PANIC, "Could not copy string.");
+    if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
+        error(ERROR_PANIC, "Could not get path.");
 
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_REMOTES);
 
-    if (snprintf(path, BUFSIZ, "%s", CONFIG_LOGS) < 0)
-        error(ERROR_PANIC, "Could not copy string.");
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+        error(ERROR_PANIC, "Could not get path.");
 
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_LOGS);
 
-    if (snprintf(path, BUFSIZ, "%s", CONFIG_HOOKS) < 0)
-        error(ERROR_PANIC, "Could not copy string.");
+    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS))
+        error(ERROR_PANIC, "Could not get path.");
 
     if (mkdir(path, 0775) < 0)
         error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_HOOKS);
 
+    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/begin.sample"))
+        error(ERROR_PANIC, "Could not get path.");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+
+    if (fd < 0)
+        error(ERROR_PANIC, "Could not create config file.");
+
+    file = fdopen(fd, "w");
+    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "begin");
+    fclose(file);
+    close(fd);
+
+    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/end.sample"))
+        error(ERROR_PANIC, "Could not get path.");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+
+    if (fd < 0)
+        error(ERROR_PANIC, "Could not create config file.");
+
+    file = fdopen(fd, "w");
+    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "end");
+    fclose(file);
+    close(fd);
+
+    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/start.sample"))
+        error(ERROR_PANIC, "Could not get path.");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+
+    if (fd < 0)
+        error(ERROR_PANIC, "Could not create config file.");
+
+    file = fdopen(fd, "w");
+    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "start");
+    fclose(file);
+    close(fd);
+
+    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/stop.sample"))
+        error(ERROR_PANIC, "Could not get path.");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+
+    if (fd < 0)
+        error(ERROR_PANIC, "Could not create config file.");
+
+    file = fdopen(fd, "w");
+    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "stop");
+    fclose(file);
+    close(fd);
     fprintf(stdout, "Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
 }
 
-void command_list()
+void command_list(char *label)
 {
 
     DIR *dir;
+    char path[BUFSIZ];
     struct dirent *entry;
 
-    dir = opendir(CONFIG_REMOTES);
+    if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
+        error(ERROR_PANIC, "Could not get path.");
+
+    dir = opendir(path);
 
     if (dir == NULL)
-        error(ERROR_PANIC, "Could not open '%s'.", CONFIG_REMOTES);
+        error(ERROR_PANIC, "Could not open '%s'.", path);
 
     while ((entry = readdir(dir)) != NULL)
     {
 
+        struct remote remote;
+        unsigned int words;
+        unsigned int i;
+
         if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
             continue;
 
-        fprintf(stdout, "%s\n", entry->d_name);
+        if (remote_load(&remote, entry->d_name))
+            continue;
+
+        if (!label)
+        {
+
+            fprintf(stdout, "%s\n", remote.name);
+
+            continue;
+
+        }
+
+        if (!remote.label)
+            continue;
+
+        words = util_seperatewords(remote.label);
+
+        for (i = 0; (remote.label = util_nextword(remote.label, i, words)); i++)
+        {
+
+            if (!strcmp(remote.label, label))
+            {
+
+                fprintf(stdout, "%s\n", remote.name);
+
+                break;
+
+            }
+
+        }
 
     }
 
