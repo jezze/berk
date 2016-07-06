@@ -62,13 +62,8 @@ int remote_save(struct remote *remote)
     if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
         return -1;
 
-    if (access(path, F_OK))
-    {
-
-        if (mkdir(path, 0775) < 0)
-            return -1;
-
-    }
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
 
     if (config_getremotepath(path, BUFSIZ, remote->name))
         return -1;
@@ -126,13 +121,8 @@ int remote_log_open(struct remote *remote)
     if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
         return -1;
 
-    if (access(path, F_OK))
-    {
-
-        if (mkdir(path, 0775) < 0)
-            return -1;
-
-    }
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
 
     if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
         return -1;
