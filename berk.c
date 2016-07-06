@@ -193,7 +193,7 @@ static int parselist(int argc, char **argv)
 
     config_init();
 
-    if (argc)    
+    if (argc > 0)
         command_list(argv[0]);
     else
         command_list(NULL);
@@ -266,8 +266,11 @@ static int parseshow(int argc, char **argv)
     if (remote_load(&remote, argv[0]))
         return errorremote(argv[0]);
 
-    command_show(&remote);
-
+    if (argc > 1)
+        command_show(&remote, argv[1]);
+    else
+        command_show(&remote, NULL);
+    
     return EXIT_SUCCESS;
 
 }
@@ -294,7 +297,7 @@ int main(int argc, char **argv)
         {"log", parselog, 2, " <name> <pid>"},
         {"remove", parseremove, 1, " <name>"},
         {"shell", parseshell, 1, " <name>"},
-        {"show", parseshow, 1, " <name>"},
+        {"show", parseshow, 1, " <name> [<key>]"},
         {"version", parseversion, 0, ""},
         {0}
     };

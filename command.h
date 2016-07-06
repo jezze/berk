@@ -6,4 +6,4 @@ void command_list(char *label);
 void command_log(struct remote *remote, int pid);
 void command_remove(struct remote *remote);
 void command_shell(struct remote *remote);
-void command_show(struct remote *remote);
+void command_show(struct remote *remote, char *key);

@@ -295,16 +295,47 @@ void command_shell(struct remote *remote)
 
 }
 
-void command_show(struct remote *remote)
+void command_show(struct remote *remote, char *key)
 {
 
-    fprintf(stdout, "name=%s\n", remote->name);
-    fprintf(stdout, "hostname=%s\n", remote->hostname);
-    fprintf(stdout, "port=%s\n", remote->port ? remote->port : "");
-    fprintf(stdout, "username=%s\n", remote->username ? remote->username : "");
-    fprintf(stdout, "privatekey=%s\n", remote->privatekey ? remote->privatekey : "");
-    fprintf(stdout, "publickey=%s\n", remote->publickey ? remote->publickey : "");
-    fprintf(stdout, "label=%s\n", remote->label ? remote->label : "");
+    if (key)
+    {
+
+        if (!strcmp(key, "name"))
+            fprintf(stdout, "%s\n", remote->name);
+
+        if (!strcmp(key, "hostname"))
+            fprintf(stdout, "%s\n", remote->hostname);
+
+        if (!strcmp(key, "port"))
+            fprintf(stdout, "%s\n", remote->port);
+
+        if (!strcmp(key, "username"))
+            fprintf(stdout, "%s\n", remote->username);
+
+        if (!strcmp(key, "privatekey"))
+            fprintf(stdout, "%s\n", remote->privatekey);
+
+        if (!strcmp(key, "publickey"))
+            fprintf(stdout, "%s\n", remote->publickey);
+
+        if (!strcmp(key, "label"))
+            fprintf(stdout, "%s\n", remote->label);
+
+    }
+
+    else
+    {
+
+        fprintf(stdout, "name=%s\n", remote->name);
+        fprintf(stdout, "hostname=%s\n", remote->hostname);
+        fprintf(stdout, "port=%s\n", remote->port ? remote->port : "");
+        fprintf(stdout, "username=%s\n", remote->username ? remote->username : "");
+        fprintf(stdout, "privatekey=%s\n", remote->privatekey ? remote->privatekey : "");
+        fprintf(stdout, "publickey=%s\n", remote->publickey ? remote->publickey : "");
+        fprintf(stdout, "label=%s\n", remote->label ? remote->label : "");
+
+    }
 
 }
 
