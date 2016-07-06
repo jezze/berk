@@ -9,31 +9,86 @@
 #include "ini.h"
 #include "remote.h"
 
-static int loadcallback(void *user, const char *section, const char *name, const char *value)
+int remote_gettype(char *key)
+{
+
+    static struct keynum
+    {
+
+        char *key;
+        unsigned int value;
+
+    } rkn[] = {
+        {"name", REMOTE_NAME},
+        {"hostname", REMOTE_HOSTNAME},
+        {"port", REMOTE_PORT},
+        {"username", REMOTE_USERNAME},
+        {"privatekey", REMOTE_PRIVATEKEY},
+        {"publickey", REMOTE_PUBLICKEY},
+        {"label", REMOTE_LABEL},
+        {0}
+    };
+    unsigned int i;
+
+    for (i = 0; rkn[i].key; i++)
+    {
+
+        if (!strcmp(key, rkn[i].key))
+            return rkn[i].value;
+
+    }
+
+    return -1;
+
+}
+
+static int loadcallback(void *user, char *section, char *key, char *value)
 {
 
     struct remote *remote = user;
 
-    if (!strcmp(section, "remote") && !strcmp(name, "name"))
+    if (strcmp(section, "remote"))
+        return 0;
+
+    switch (remote_gettype(key))
+    {
+
+    case REMOTE_NAME:
         remote->name = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "hostname"))
+        break;
+
+    case REMOTE_HOSTNAME:
         remote->hostname = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "port"))
+        break;
+
+    case REMOTE_PORT:
         remote->port = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "username"))
+        break;
+
+    case REMOTE_USERNAME:
         remote->username = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "privatekey"))
+        break;
+
+    case REMOTE_PRIVATEKEY:
         remote->privatekey = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "publickey"))
+        break;
+
+    case REMOTE_PUBLICKEY:
         remote->publickey = strdup(value);
 
-    if (!strcmp(section, "remote") && !strcmp(name, "label"))
+        break;
+
+    case REMOTE_LABEL:
         remote->label = strdup(value);
+
+        break;
+
+    }
 
     return 0;
 

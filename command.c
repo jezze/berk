@@ -44,26 +44,45 @@ void command_add(char *name, char *hostname, char *username)
 void command_config(struct remote *remote, char *key, char *value)
 {
 
-    if (!strcmp(key, "name"))
+    switch (remote_gettype(key))
+    {
+
+    case REMOTE_NAME:
         remote->name = value;
 
-    if (!strcmp(key, "hostname"))
+        break;
+
+    case REMOTE_HOSTNAME:
         remote->hostname = value;
 
-    if (!strcmp(key, "port"))
+        break;
+
+    case REMOTE_PORT:
         remote->port = value;
 
-    if (!strcmp(key, "username"))
+        break;
+
+    case REMOTE_USERNAME:
         remote->username = value;
 
-    if (!strcmp(key, "privatekey"))
+        break;
+
+    case REMOTE_PRIVATEKEY:
         remote->privatekey = value;
 
-    if (!strcmp(key, "publickey"))
+        break;
+
+    case REMOTE_PUBLICKEY:
         remote->publickey = value;
 
-    if (!strcmp(key, "label"))
+        break;
+
+    case REMOTE_LABEL:
         remote->label = value;
+
+        break;
+
+    }
 
     if (remote_save(remote))
         error(ERROR_PANIC, "Could not save '%s'.", remote->name);
@@ -289,26 +308,45 @@ void command_show(struct remote *remote, char *key)
     if (key)
     {
 
-        if (!strcmp(key, "name"))
+        switch (remote_gettype(key))
+        {
+
+        case REMOTE_NAME:
             fprintf(stdout, "%s\n", remote->name);
 
-        if (!strcmp(key, "hostname"))
+            break;
+
+        case REMOTE_HOSTNAME:
             fprintf(stdout, "%s\n", remote->hostname);
 
-        if (!strcmp(key, "port"))
+            break;
+
+        case REMOTE_PORT:
             fprintf(stdout, "%s\n", remote->port);
 
-        if (!strcmp(key, "username"))
+            break;
+
+        case REMOTE_USERNAME:
             fprintf(stdout, "%s\n", remote->username);
 
-        if (!strcmp(key, "privatekey"))
+            break;
+
+        case REMOTE_PRIVATEKEY:
             fprintf(stdout, "%s\n", remote->privatekey);
 
-        if (!strcmp(key, "publickey"))
+            break;
+
+        case REMOTE_PUBLICKEY:
             fprintf(stdout, "%s\n", remote->publickey);
 
-        if (!strcmp(key, "label"))
+            break;
+
+        case REMOTE_LABEL:
             fprintf(stdout, "%s\n", remote->label);
+
+            break;
+
+        }
 
     }
 

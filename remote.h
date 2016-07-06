@@ -1,3 +1,16 @@
+enum
+{
+
+    REMOTE_NAME,
+    REMOTE_HOSTNAME,
+    REMOTE_PORT,
+    REMOTE_USERNAME,
+    REMOTE_PRIVATEKEY,
+    REMOTE_PUBLICKEY,
+    REMOTE_LABEL
+
+};
+
 struct remote
 {
 
@@ -14,6 +27,7 @@ struct remote
 
 };
 
+int remote_gettype(char *key);
 int remote_load(struct remote *remote, char *name);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);

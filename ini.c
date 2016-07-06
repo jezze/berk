@@ -18,7 +18,7 @@ static char *rstrip(char *s)
 
 }
 
-static char *lskip(const char *s)
+static char *lskip(char *s)
 {
 
     while (*s && isspace((unsigned char)(*s)))
@@ -28,7 +28,7 @@ static char *lskip(const char *s)
 
 }
 
-static char *find_char_or_comment(const char *s, char c)
+static char *find_char_or_comment(char *s, char c)
 {
 
     int was_whitespace = 0;
@@ -46,7 +46,7 @@ static char *find_char_or_comment(const char *s, char c)
 
 }
 
-static char *strncpy0(char *dest, const char *src, size_t size)
+static char *strncpy0(char *dest, char *src, size_t size)
 {
 
     strncpy(dest, src, size);
@@ -57,7 +57,7 @@ static char *strncpy0(char *dest, const char *src, size_t size)
 
 }
 
-static int ini_parse_file(FILE *file, int (*handler)(void *user, const char *section, const char *name, const char *value), void *user)
+static int ini_parse_file(FILE *file, int (*handler)(void *user, char *section, char *key, char *value), void *user)
 {
 
     char line[MAX_LINE];
@@ -156,7 +156,7 @@ static int ini_parse_file(FILE *file, int (*handler)(void *user, const char *sec
 
 }
 
-int ini_parse(const char *filename, int (*handler)(void *user, const char *section, const char *name, const char *value), void *user)
+int ini_parse(char *filename, int (*handler)(void *user, char *section, char *name, char *value), void *user)
 {
 
     FILE *file;
