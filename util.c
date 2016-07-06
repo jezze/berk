@@ -75,13 +75,10 @@ char *util_nextword(char *buffer, unsigned int index, unsigned int words)
     if (index >= words)
         return NULL;
 
-    while (*buffer != '\0')
+    while (*buffer)
         buffer++;
 
-    while (*buffer == '\0')
-        buffer++;
-
-    return buffer;
+    return buffer + 1;
 
 }
 
