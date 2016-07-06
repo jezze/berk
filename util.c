@@ -8,18 +8,18 @@
 void util_trim(char *str)
 {
 
-    char *p = str, *q = str;
+    char *dest = str;
 
-    while (isspace(*q))
-        ++q;
+    while (isspace(*str))
+        str++;
 
-    while (*q)
-        *p++ = *q++;
+    while (*str)
+        *dest++ = *str++;
 
-    *p = '\0';
+    *dest = '\0';
 
-    while (p > str && isspace(*--p))
-        *p = '\0';
+    while (isspace(*--dest))
+        *dest = '\0';
 
 }
 
