@@ -26,10 +26,10 @@ static void runhook(char *name)
 
 }
 
-void event_begin(unsigned int total)
+void event_begin()
 {
 
-    fprintf(stdout, "event=begin total=%d\n", total);
+    fprintf(stdout, "event=begin\n");
     runhook("begin");
 
 }

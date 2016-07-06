@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -115,25 +116,98 @@ static int parseconfig(int argc, char **argv)
 
 }
 
+static void trim(char *a)
+{
+
+    char *p = a, *q = a;
+
+    while (isspace(*q))
+        ++q;
+
+    while (*q)
+        *p++ = *q++;
+
+    *p = '\0';
+
+    while (p > a && isspace(*--p))
+        *p = '\0';
+
+}
+
+static unsigned int seperatewords(char *buffer)
+{
+
+    unsigned int total = 0;
+    unsigned int blank = 0;
+
+    while (*buffer != '\0')
+    {
+
+        if (isspace(*buffer))
+        {
+
+            *buffer = '\0';
+
+            if (!blank)
+                total++;
+
+            blank = 1;
+
+        }
+
+        else
+        {
+
+            blank = 0;
+
+        }
+
+        buffer++;
+
+    }
+
+    return total + 1;
+
+}
+
+static char *nextword(char *buffer, unsigned int index, unsigned int words)
+{
+
+    if (!index)
+        return buffer;
+
+    if (index >= words)
+        return NULL;
+
+    while (*buffer != '\0')
+        buffer++;
+
+    while (*buffer == '\0')
+        buffer++;
+
+    return buffer;
+
+}
+
 static int parseexec(int argc, char **argv)
 {
 
+    unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
-    unsigned int total;
+    unsigned int words;
     unsigned int i;
+    char *word = argv[0];
     int status;
 
     checkinit();
+    trim(word);
 
-    total = strtoul(argv[1], NULL, 10);
+    words = seperatewords(word);
 
-    if (!total)
-        return errorvalue(argv[1]);
+    event_begin();
 
-    event_begin(total);
-
-    for (i = 0; i < total; i++)
+    for (i = 0; (word = nextword(word, i, words)); i++)
     {
 
         pid_t pid = fork();
@@ -143,10 +217,10 @@ static int parseexec(int argc, char **argv)
 
             struct remote remote;
 
-            if (remote_load(&remote, argv[0]))
-                return errorremote(argv[0]);
+            if (remote_load(&remote, word))
+                return errorremote(word);
 
-            return command_exec(&remote, getpid(), argv[2]);
+            return command_exec(&remote, getpid(), argv[1]);
 
         }
 
@@ -154,6 +228,8 @@ static int parseexec(int argc, char **argv)
 
     while (wait(&status) > 0)
     {
+
+        total++;
 
         if (WIFEXITED(status))
         {
@@ -277,7 +353,7 @@ int main(int argc, char **argv)
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
         {"config", parseconfig, 3, " <name> <key> <value>"},
-        {"exec", parseexec, 3, " <name> <num> <command>"},
+        {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, ""},
         {"log", parselog, 2, " <name> <pid>"},
