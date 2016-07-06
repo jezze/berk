@@ -66,19 +66,19 @@ unsigned int util_split(char *str)
 
 }
 
-char *util_nextword(char *buffer, unsigned int index, unsigned int words)
+char *util_nextword(char *str, unsigned int index, unsigned int total)
 {
 
     if (!index)
-        return buffer;
+        return str;
 
-    if (index >= words)
+    if (index >= total)
         return NULL;
 
-    while (*buffer)
-        buffer++;
+    while (*str)
+        str++;
 
-    return buffer + 1;
+    return str + 1;
 
 }
 
