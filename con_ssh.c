@@ -66,6 +66,8 @@ int con_ssh_exec(struct remote *remote, char *command)
     if (libssh2_channel_exec(channel, command) < 0)
         error(ERROR_PANIC, "Could not execute command over SSH2 channel.");
 
+    libssh2_channel_set_blocking(channel, 0);
+
     do
     {
 
@@ -81,10 +83,6 @@ int con_ssh_exec(struct remote *remote, char *command)
             int count;
 
             count = libssh2_channel_read(channel, buffer, BUFSIZ);
-
-            if (!count)
-                break;
-
             count = remote_log(remote, buffer, count);
 
         }
