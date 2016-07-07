@@ -82,16 +82,6 @@ static int checkargs(struct command *commands, int argc, char **argv)
 
 }
 
-static int parseadd(int argc, char **argv)
-{
-
-    config_init();
-    command_add(argv[0], argv[1], getenv("USER"));
-
-    return EXIT_SUCCESS;
-
-}
-
 static char *checkstring(char *arg)
 {
 
@@ -117,6 +107,20 @@ static char *checklist(char *arg)
     util_strip(arg);
 
     return arg;
+
+}
+
+static int parseadd(int argc, char **argv)
+{
+
+    char *name = checkstring(argv[0]);
+    char *hostname = checkstring(argv[1]);
+    char *username = getenv("USER");
+
+    config_init();
+    command_add(name, hostname, username);
+
+    return EXIT_SUCCESS;
 
 }
 
