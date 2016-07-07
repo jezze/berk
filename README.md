@@ -69,7 +69,7 @@ space, on each remote. This way you can tell berk to only execute commands on
 remotes with a certain label. On our remote we can add two labels called "beer"
 and "donut" using:
 
-    $ berk config myhost label "donut beer"
+    $ berk config myhost label "beer donut"
 
 Using berk list with a label we can now filter out only the machines that match
 the label we are interested in like "donut":
