@@ -1,7 +1,9 @@
 # ABOUT
 
 This program called berk is a simple but versatile job dispatcher. It can,
-given a set of hosts, execute commands on each host and log the output.
+given a set of remote machines, execute commands on each machine and log the
+output.
+
 It was written to be a replacement for Jenkins and similar bloated software
 and uses a syntax and design similar to git.
 
