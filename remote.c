@@ -290,7 +290,7 @@ int remote_openlog(struct remote *remote)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
+    if (config_getlogpath(path, BUFSIZ, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -310,30 +310,6 @@ int remote_log(struct remote *remote, char *buffer, unsigned int size)
 {
 
     return write(remote->logfd, buffer, size);
-
-}
-
-int remote_printlog(struct remote *remote)
-{
-
-    char path[BUFSIZ];
-    char buffer[BUFSIZ];
-    unsigned int count;
-
-    if (config_getlogpath(path, BUFSIZ, remote->name, remote->pid))
-        return -1;
-
-    remote->logfd = open(path, O_RDONLY, 0644);
-
-    if (remote->logfd < 0)
-        return -1;
-
-    while ((count = read(remote->logfd, buffer, BUFSIZ)))
-        write(1, buffer, count);
-
-    close(remote->logfd);
-
-    return 0;
 
 }
 

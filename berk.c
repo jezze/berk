@@ -415,21 +415,32 @@ static int parselist(int argc, char **argv)
 static int parselog(int argc, char **argv)
 {
 
-    char *name = checkprint(argv[0]);
-    char *pid = checkdigit(argv[1]);
-    struct remote remote;
+    char *pid = checkdigit(argv[0]);
+    char path[BUFSIZ];
+    char buffer[BUFSIZ];
+    unsigned int count;
+    int fd;
+    int p;
 
     config_init();
 
-    if (remote_load(&remote, name))
-        return errorload(name);
+    p = strtoul(pid, NULL, 10);
 
-    remote.pid = strtoul(pid, NULL, 10);
-
-    if (!remote.pid)
+    if (!p)
         return errorparse(pid);
 
-    remote_printlog(&remote);
+    if (config_getlogpath(path, BUFSIZ, p))
+        return error(ERROR_NORMAL, "Could not get path.");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return error(ERROR_NORMAL, "Could not open '%s'.", path);
+
+    while ((count = read(fd, buffer, BUFSIZ)))
+        write(STDOUT_FILENO, buffer, count);
+
+    close(fd);
 
     return EXIT_SUCCESS;
 
@@ -574,7 +585,7 @@ int main(int argc, char **argv)
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, " [<label>]"},
-        {"log", parselog, 2, " <name> <pid>"},
+        {"log", parselog, 1, " <pid>"},
         {"remove", parseremove, 1, " <namelist>"},
         {"send", parsesend, 2, " <namelist> <file>"},
         {"shell", parseshell, 1, " <name>"},
