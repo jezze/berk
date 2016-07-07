@@ -288,6 +288,37 @@ int remote_config(struct remote *remote, char *key, char *value)
 
 }
 
+int remote_loghead(int gid)
+{
+
+    char path[BUFSIZ];
+    char buffer[BUFSIZ];
+    unsigned int count;
+    int fd;
+
+    count = snprintf(buffer, BUFSIZ, "%d\n", gid);
+
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+        return -1;
+
+    fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    write(fd, buffer, count);
+    close(fd);
+
+    return 0;
+
+}
+
 int remote_openlog(struct remote *remote)
 {
 

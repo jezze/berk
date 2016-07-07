@@ -327,6 +327,8 @@ static int parseexec(int argc, char **argv)
     if (event_end(total, complete, success))
         return error(ERROR_NORMAL, "Could not run event.");
 
+    remote_loghead(gid);
+
     return EXIT_SUCCESS;
 
 }
@@ -529,28 +531,21 @@ static int parselog(int argc, char **argv)
     else
     {
 
-        DIR *dir;
-        struct dirent *entry;
+        FILE *file;
+        char buffer[BUFSIZ];
 
-        if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+        if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
             return error(ERROR_NORMAL, "Could not get path.");
 
-        dir = opendir(path);
+        file = fopen(path, "r");
 
-        if (dir == NULL)
+        if (file == NULL)
             return error(ERROR_NORMAL, "Could not open '%s'.", path);
 
-        while ((entry = readdir(dir)) != NULL)
-        {
+        while (fgets(buffer, BUFSIZ, file) != NULL)
+            printf("%s", buffer);
 
-            if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
-                continue;
-
-            printf("%s\n", entry->d_name);
-
-        }
-
-        closedir(dir);
+        fclose(file);
 
     }
 
