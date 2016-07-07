@@ -54,11 +54,11 @@ static int checkargs(struct command *commands, int argc, char **argv)
     if (!argc)
     {
 
-        fprintf(stdout, "Usage: %s <command> [<args>]\n\n", CONFIG_PROGNAME);
-        fprintf(stdout, "List of commands:\n");
+        printf("Usage: %s <command> [<args>]\n\n", CONFIG_PROGNAME);
+        printf("List of commands:\n");
 
         for (i = 0; commands[i].name; i++)
-            fprintf(stdout, "    %s%s\n", commands[i].name, commands[i].description);
+            printf("    %s%s\n", commands[i].name, commands[i].description);
 
         return EXIT_SUCCESS;
 
@@ -73,7 +73,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
         if ((argc - 1) < commands[i].argc)
         {
 
-            fprintf(stdout, "Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].description);
+            printf("Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].description);
 
             return EXIT_SUCCESS;
 
@@ -149,7 +149,7 @@ static int parseadd(int argc, char **argv)
     if (remote_save(&remote))
         return errorsave(name);
 
-    fprintf(stdout, "Remote '%s' added.\n", name);
+    printf("Remote '%s' added.\n", name);
 
     return EXIT_SUCCESS;
 
@@ -340,7 +340,7 @@ static int parseinit(int argc, char **argv)
 
     }
 
-    fprintf(stdout, "Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
+    printf("Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
     return EXIT_SUCCESS;
 
@@ -380,7 +380,7 @@ static int parselist(int argc, char **argv)
         if (!label)
         {
 
-            fprintf(stdout, "%s\n", remote.name);
+            printf("%s\n", remote.name);
 
             continue;
 
@@ -397,7 +397,7 @@ static int parselist(int argc, char **argv)
             if (!strcmp(remote.label, label))
             {
 
-                fprintf(stdout, "%s\n", remote.name);
+                printf("%s\n", remote.name);
 
                 break;
 
@@ -458,7 +458,7 @@ static int parseremove(int argc, char **argv)
         if (remote_erase(&remote))
             return error(ERROR_NORMAL, "Could not remove remote '%s'.", remote.name);
 
-        fprintf(stdout, "Remote '%s' removed.\n", remote.name);
+        printf("Remote '%s' removed.\n", remote.name);
 
     }
 
@@ -531,20 +531,20 @@ static int parseshow(int argc, char **argv)
             if (!value)
                 return error(ERROR_NORMAL, "Could not find key '%s'.", key);
 
-            fprintf(stdout, "%s\n", value);
+            printf("%s\n", value);
 
         }
 
         else
         {
 
-            fprintf(stdout, "name=%s\n", remote.name);
-            fprintf(stdout, "hostname=%s\n", remote.hostname);
-            fprintf(stdout, "port=%s\n", remote.port ? remote.port : "");
-            fprintf(stdout, "username=%s\n", remote.username ? remote.username : "");
-            fprintf(stdout, "privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
-            fprintf(stdout, "publickey=%s\n", remote.publickey ? remote.publickey : "");
-            fprintf(stdout, "label=%s\n", remote.label ? remote.label : "");
+            printf("name=%s\n", remote.name);
+            printf("hostname=%s\n", remote.hostname);
+            printf("port=%s\n", remote.port ? remote.port : "");
+            printf("username=%s\n", remote.username ? remote.username : "");
+            printf("privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
+            printf("publickey=%s\n", remote.publickey ? remote.publickey : "");
+            printf("label=%s\n", remote.label ? remote.label : "");
 
         }
 
@@ -557,7 +557,7 @@ static int parseshow(int argc, char **argv)
 static int parseversion(int argc, char **argv)
 {
 
-    fprintf(stdout, "%s version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
+    printf("%s version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
 
     return EXIT_SUCCESS;
 
