@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "ini.h"
@@ -214,19 +215,31 @@ int remote_erase(struct remote *remote)
 int remote_init(struct remote *remote, char *name, char *hostname, char *username)
 {
 
-    char privatekey[BUFSIZ];
-    char publickey[BUFSIZ];
+    struct passwd passwd, *current;
+    char buffer[BUFSIZ];
 
     memset(remote, 0, sizeof (struct remote));
-    snprintf(privatekey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa");
-    snprintf(publickey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa.pub");
 
     remote->name = name;
     remote->hostname = hostname;
     remote->port = "22";
     remote->username = username;
-    remote->privatekey = privatekey;
-    remote->publickey = publickey;
+
+    if (!getpwnam_r(username, &passwd, buffer, BUFSIZ, &current))
+    {
+
+        char privatekey[BUFSIZ];
+        char publickey[BUFSIZ];
+
+        snprintf(privatekey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
+
+        remote->privatekey = privatekey;
+
+        snprintf(publickey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
+
+        remote->publickey = publickey;
+
+    }
 
     return 0;
 
