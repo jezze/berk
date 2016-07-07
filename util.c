@@ -1,7 +1,25 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
+#include "config.h"
 #include "util.h"
+
+int util_error(char *format, ...)
+{
+
+    va_list args;
+
+    va_start(args, format);
+    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+
+    return EXIT_FAILURE;
+
+}
 
 int util_checkalnum(char *str)
 {

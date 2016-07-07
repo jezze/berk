@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <libssh2.h>
 #include <netdb.h>
-#include "error.h"
+#include "util.h"
 #include "remote.h"
 #include "ssh.h"
 
@@ -23,29 +23,29 @@ int ssh_connect(struct remote *remote)
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(remote->hostname, remote->port, &hints, &servinfo) != 0)
-        return error("Could not get address info.");
+        return util_error("Could not get address info.");
 
     remote->sock = socket(servinfo->ai_family, servinfo->ai_socktype, 0);
 
     if (remote->sock < 0)
-        return error("Could not create socket.");
+        return util_error("Could not create socket.");
 
     if (connect(remote->sock, servinfo->ai_addr, servinfo->ai_addrlen) < 0)
-        return error("Could not connect to socket.");
+        return util_error("Could not connect to socket.");
 
     if (libssh2_init(0) < 0)
-        return error("Could not initialize SSH2.");
+        return util_error("Could not initialize SSH2.");
 
     remote->session = libssh2_session_init();
 
     if (remote->session == NULL)
-        return error("Could not initialize SSH2 session.");
+        return util_error("Could not initialize SSH2 session.");
 
     if (libssh2_session_handshake(remote->session, remote->sock) < 0)
-        return error("Could not handshake SSH2 session.");
+        return util_error("Could not handshake SSH2 session.");
 
     if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
-        return error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
+        return util_error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
 
     return 0;
 
@@ -76,10 +76,10 @@ int ssh_exec(struct remote *remote, char *command)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return error("Could not open SSH2 channel.");
+        return util_error("Could not open SSH2 channel.");
 
     if (libssh2_channel_exec(remote->channel, command) < 0)
-        return error("Could not execute command over SSH2 channel.");
+        return util_error("Could not execute command over SSH2 channel.");
 
     libssh2_channel_set_blocking(remote->channel, 0);
 
@@ -133,13 +133,13 @@ int ssh_shell(struct remote *remote)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return error("Could not open SSH2 channel.");
+        return util_error("Could not open SSH2 channel.");
 
     if (libssh2_channel_request_pty(remote->channel, "vt102") < 0)
-        return error("Could not start pty over SSH2 channel.");
+        return util_error("Could not start pty over SSH2 channel.");
 
     if (libssh2_channel_shell(remote->channel) < 0)
-        return error("Could not start shell over SSH2 channel.");
+        return util_error("Could not start shell over SSH2 channel.");
 
     libssh2_channel_set_blocking(remote->channel, 0);
     cfmakeraw(&new);

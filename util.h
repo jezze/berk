@@ -1,3 +1,4 @@
+int util_error(char *format, ...);
 int util_checkalnum(char *str);
 int util_checkalpha(char *str);
 int util_checkdigit(char *str);
