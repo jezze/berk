@@ -17,12 +17,13 @@ struct remote
 
 };
 
-void *remote_getvalue(struct remote *remote, char *key);
+int remote_gettype(char *key);
+void *remote_getvalue(struct remote *remote, int type);
+void *remote_setvalue(struct remote *remote, int type, char *value);
 int remote_load(struct remote *remote, char *name);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
 int remote_init(struct remote *remote, char *name, char *hostname, char *username);
-int remote_config(struct remote *remote, char *key, char *value);
 int remote_loghead(int gid);
 int remote_openlog(struct remote *remote);
 void remote_closelog(struct remote *remote);

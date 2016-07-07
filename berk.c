@@ -187,7 +187,7 @@ static int parseconfig(int argc, char **argv)
         if (value)
         {
 
-            if (remote_config(&remote, key, value))
+            if (remote_setvalue(&remote, remote_gettype(key), value) == NULL)
                 return util_error("Could not run configure remote '%s'.", remote.name);
 
             if (remote_save(&remote))
@@ -201,7 +201,7 @@ static int parseconfig(int argc, char **argv)
             if (key)
             {
 
-                char *value = remote_getvalue(&remote, key);
+                char *value = remote_getvalue(&remote, remote_gettype(key));
 
                 if (!value)
                     return util_error("Could not find key '%s'.", key);

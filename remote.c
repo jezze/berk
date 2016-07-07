@@ -24,7 +24,7 @@ enum
 
 };
 
-static int remote_gettype(char *key)
+int remote_gettype(char *key)
 {
 
     static struct keynum
@@ -57,10 +57,10 @@ static int remote_gettype(char *key)
 
 }
 
-void *remote_getvalue(struct remote *remote, char *key)
+void *remote_getvalue(struct remote *remote, int key)
 {
 
-    switch (remote_gettype(key))
+    switch (key)
     {
 
     case REMOTE_NAME:
@@ -87,6 +87,39 @@ void *remote_getvalue(struct remote *remote, char *key)
 
 }
 
+void *remote_setvalue(struct remote *remote, int key, char *value)
+{
+
+    switch (key)
+    {
+
+    case REMOTE_NAME:
+        return remote->name = strdup(value);
+
+    case REMOTE_HOSTNAME:
+        return remote->hostname = strdup(value);
+
+    case REMOTE_PORT:
+        return remote->port = strdup(value);
+
+    case REMOTE_USERNAME:
+        return remote->username = strdup(value);
+
+    case REMOTE_PRIVATEKEY:
+        return remote->privatekey = strdup(value);
+
+    case REMOTE_PUBLICKEY:
+        return remote->publickey = strdup(value);
+
+    case REMOTE_LABEL:
+        return remote->label = strdup(value);
+
+    }
+
+    return NULL;
+
+}
+
 static int loadcallback(void *user, char *section, char *key, char *value)
 {
 
@@ -95,45 +128,7 @@ static int loadcallback(void *user, char *section, char *key, char *value)
     if (strcmp(section, "remote"))
         return 0;
 
-    switch (remote_gettype(key))
-    {
-
-    case REMOTE_NAME:
-        remote->name = strdup(value);
-
-        break;
-
-    case REMOTE_HOSTNAME:
-        remote->hostname = strdup(value);
-
-        break;
-
-    case REMOTE_PORT:
-        remote->port = strdup(value);
-
-        break;
-
-    case REMOTE_USERNAME:
-        remote->username = strdup(value);
-
-        break;
-
-    case REMOTE_PRIVATEKEY:
-        remote->privatekey = strdup(value);
-
-        break;
-
-    case REMOTE_PUBLICKEY:
-        remote->publickey = strdup(value);
-
-        break;
-
-    case REMOTE_LABEL:
-        remote->label = strdup(value);
-
-        break;
-
-    }
+    remote_setvalue(remote, remote_gettype(key), value);
 
     return 0;
 
@@ -220,10 +215,10 @@ int remote_init(struct remote *remote, char *name, char *hostname, char *usernam
     char buffer[BUFSIZ];
 
     memset(remote, 0, sizeof (struct remote));
-    loadcallback(remote, "remote", "name", name);
-    loadcallback(remote, "remote", "hostname", hostname);
-    loadcallback(remote, "remote", "port", "22");
-    loadcallback(remote, "remote", "username", username);
+    remote_setvalue(remote, REMOTE_NAME, name);
+    remote_setvalue(remote, REMOTE_HOSTNAME, hostname);
+    remote_setvalue(remote, REMOTE_PORT, "22");
+    remote_setvalue(remote, REMOTE_USERNAME, username);
 
     if (!getpwnam_r(username, &passwd, buffer, BUFSIZ, &current))
     {
@@ -232,56 +227,9 @@ int remote_init(struct remote *remote, char *name, char *hostname, char *usernam
         char publickey[BUFSIZ];
 
         snprintf(privatekey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-        loadcallback(remote, "remote", "privatekey", privatekey);
+        remote_setvalue(remote, REMOTE_PRIVATEKEY, privatekey);
         snprintf(publickey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-        loadcallback(remote, "remote", "publickey", publickey);
-
-    }
-
-    return 0;
-
-}
-
-int remote_config(struct remote *remote, char *key, char *value)
-{
-
-    switch (remote_gettype(key))
-    {
-
-    case REMOTE_NAME:
-        remote->name = value;
-
-        break;
-
-    case REMOTE_HOSTNAME:
-        remote->hostname = value;
-
-        break;
-
-    case REMOTE_PORT:
-        remote->port = value;
-
-        break;
-
-    case REMOTE_USERNAME:
-        remote->username = value;
-
-        break;
-
-    case REMOTE_PRIVATEKEY:
-        remote->privatekey = value;
-
-        break;
-
-    case REMOTE_PUBLICKEY:
-        remote->publickey = value;
-
-        break;
-
-    case REMOTE_LABEL:
-        remote->label = value;
-
-        break;
+        remote_setvalue(remote, REMOTE_PUBLICKEY, publickey);
 
     }
 
