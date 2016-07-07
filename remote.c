@@ -245,7 +245,7 @@ int remote_loghead(int gid, int total, int complete, int success)
     unsigned int count;
     int fd;
 
-    count = snprintf(buffer, BUFSIZ, "id=%d datetime=0000-00-00T00:00:00 total=%d complete=%d success=%d\n", gid, total, complete, success);
+    count = snprintf(buffer, BUFSIZ, "%d 0000-00-00T00:00:00 %d %d %d\n", gid, total, complete, success);
 
     if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
         return -1;
