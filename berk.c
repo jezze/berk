@@ -166,7 +166,7 @@ static int parseexec(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
-    char *command = checkstring(argv[1]);
+    char *command = argv[1];
     unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
