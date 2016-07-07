@@ -8,5 +8,6 @@
 void config_init();
 int config_getpath(char *path, unsigned int length, char *name);
 int config_getremotepath(char *path, unsigned int length, char *filename);
-int config_getlogpath(char *path, unsigned int length, unsigned int num);
+int config_getlogpathbypid(char *path, unsigned int length, int pid);
+int config_getlogpathbyname(char *path, unsigned int length, char *filename);
 int config_gethookpath(char *path, unsigned int length, char *filename);

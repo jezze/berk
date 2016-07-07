@@ -420,16 +420,10 @@ static int parselog(int argc, char **argv)
     char buffer[BUFSIZ];
     unsigned int count;
     int fd;
-    int p;
 
     config_init();
 
-    p = strtoul(pid, NULL, 10);
-
-    if (!p)
-        return errorparse(pid);
-
-    if (config_getlogpath(path, BUFSIZ, p))
+    if (config_getlogpathbyname(path, BUFSIZ, pid))
         return error(ERROR_NORMAL, "Could not get path.");
 
     fd = open(path, O_RDONLY, 0644);

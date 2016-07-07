@@ -290,7 +290,7 @@ int remote_openlog(struct remote *remote)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getlogpath(path, BUFSIZ, remote->pid))
+    if (config_getlogpathbypid(path, BUFSIZ, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

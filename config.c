@@ -53,10 +53,17 @@ int config_getremotepath(char *path, unsigned int length, char *filename)
 
 }
 
-int config_getlogpath(char *path, unsigned int length, unsigned int num)
+int config_getlogpathbypid(char *path, unsigned int length, int pid)
 {
 
-    return snprintf(path, length, "%s/%s/%d", root, CONFIG_LOGS, num) < 0;
+    return snprintf(path, length, "%s/%s/%d", root, CONFIG_LOGS, pid) < 0;
+
+}
+
+int config_getlogpathbyname(char *path, unsigned int length, char *filename)
+{
+
+    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, filename) < 0;
 
 }
 
