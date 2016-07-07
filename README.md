@@ -57,9 +57,9 @@ using berk add.
 
 The output you see on screen is a set of events. You can hook into these
 events in the same way as git in order to let berk perform specific tasks like
-sending notifications. Check .berk/hooks/.
+sending notifications. Check the samples in .berk/hooks/.
 
-Take noticed of the pid values for each start event. You can use this pid to
+Take notice of the pid values for each start event. You can use this pid to
 look at the output of the command you just executed on that remote.
 
     $ berk log <pid>
