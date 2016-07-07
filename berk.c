@@ -28,27 +28,21 @@ struct command
 static int errorload(char *name)
 {
 
-    error(ERROR_NORMAL, "Could not load remote '%s'.", name);
-
-    return EXIT_FAILURE;
+    return error(ERROR_NORMAL, "Could not load remote '%s'.", name);
 
 }
 
 static int errorsave(char *name)
 {
 
-    error(ERROR_NORMAL, "Could not save remote '%s'.", name);
-
-    return EXIT_FAILURE;
+    return error(ERROR_NORMAL, "Could not save remote '%s'.", name);
 
 }
 
 static int errorvalue(char *value)
 {
 
-    error(ERROR_NORMAL, "Could not parse value '%s'.", value);
-
-    return EXIT_FAILURE;
+    return error(ERROR_NORMAL, "Could not parse value '%s'.", value);
 
 }
 
@@ -89,9 +83,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
 
     }
 
-    error(ERROR_NORMAL, "Invalid argument '%s'.", argv[0]);
-
-    return EXIT_FAILURE;
+    return error(ERROR_NORMAL, "Invalid argument '%s'.", argv[0]);
 
 }
 
@@ -152,7 +144,7 @@ static int parseadd(int argc, char **argv)
     config_init();
 
     if (remote_init(&remote, name, hostname, username))
-        error(ERROR_PANIC, "Could not init remote '%s'.", name);
+        return error(ERROR_NORMAL, "Could not init remote '%s'.", name);
 
     if (remote_save(&remote))
         return errorsave(name);
@@ -187,7 +179,7 @@ static int parseconfig(int argc, char **argv)
             return errorload(name);
 
         if (remote_config(&remote, key, value))
-            error(ERROR_PANIC, "Could not run configure '%s'.", remote.name);
+            return error(ERROR_NORMAL, "Could not run configure remote '%s'.", remote.name);
 
         if (remote_save(&remote))
             return errorsave(name);
@@ -225,7 +217,7 @@ static int parseexec(int argc, char **argv)
     names = util_split(name);
 
     if (event_begin())
-        error(ERROR_PANIC, "Could not run event.");
+        return error(ERROR_NORMAL, "Could not run event.");
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
@@ -249,18 +241,18 @@ static int parseexec(int argc, char **argv)
             remote_log_open(&remote);
 
             if (event_start(&remote))
-                error(ERROR_PANIC, "Could not run event.");
+                return error(ERROR_NORMAL, "Could not run event.");
 
             if (con_ssh_connect(&remote) < 0)
-                error(ERROR_PANIC, "Could not connect to remote '%s'.", remote.name);
+                return error(ERROR_NORMAL, "Could not connect to remote '%s'.", remote.name);
 
             rc = con_ssh_exec(&remote, command);
 
             if (con_ssh_disconnect(&remote) < 0)
-                error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote.name);
+                return error(ERROR_NORMAL, "Could not disconnect from remote '%s'.", remote.name);
 
             if (event_stop(&remote, rc))
-                error(ERROR_PANIC, "Could not run event.");
+                return error(ERROR_NORMAL, "Could not run event.");
 
             remote_log_close(&remote);
 
@@ -288,7 +280,7 @@ static int parseexec(int argc, char **argv)
     }
 
     if (event_end(total, complete, success))
-        error(ERROR_PANIC, "Could not run event.");
+        return error(ERROR_NORMAL, "Could not run event.");
 
     return EXIT_SUCCESS;
 
@@ -302,35 +294,35 @@ static int parseinit(int argc, char **argv)
     int fd;
 
     if (mkdir(CONFIG_ROOT, 0775) < 0)
-        error(ERROR_PANIC, "Already initialized.");
+        return error(ERROR_NORMAL, "Already initialized.");
 
     config_init();
 
     if (config_getpath(path, BUFSIZ, "config"))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     file = fopen(path, "w");
 
     if (file == NULL)
-        error(ERROR_PANIC, "Could not create config file.");
+        return error(ERROR_NORMAL, "Could not create config file.");
 
     ini_writesection(file, "core");
     ini_writestring(file, "version", CONFIG_VERSION);
     fclose(file);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     if (mkdir(path, 0775) < 0)
-        error(ERROR_PANIC, "Could not create directory '%s'.", CONFIG_HOOKS);
+        return error(ERROR_NORMAL, "Could not create directory '%s'.", CONFIG_HOOKS);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/begin.sample"))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
     if (fd < 0)
-        error(ERROR_PANIC, "Could not create config file.");
+        return error(ERROR_NORMAL, "Could not create config file.");
 
     file = fdopen(fd, "w");
     fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "begin");
@@ -338,12 +330,12 @@ static int parseinit(int argc, char **argv)
     close(fd);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/end.sample"))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
     if (fd < 0)
-        error(ERROR_PANIC, "Could not create config file.");
+        return error(ERROR_NORMAL, "Could not create config file.");
 
     file = fdopen(fd, "w");
     fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "end");
@@ -351,12 +343,12 @@ static int parseinit(int argc, char **argv)
     close(fd);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/start.sample"))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
     if (fd < 0)
-        error(ERROR_PANIC, "Could not create config file.");
+        return error(ERROR_NORMAL, "Could not create config file.");
 
     file = fdopen(fd, "w");
     fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "start");
@@ -364,12 +356,12 @@ static int parseinit(int argc, char **argv)
     close(fd);
 
     if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/stop.sample"))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
     if (fd < 0)
-        error(ERROR_PANIC, "Could not create config file.");
+        return error(ERROR_NORMAL, "Could not create config file.");
 
     file = fdopen(fd, "w");
     fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "stop");
@@ -392,12 +384,12 @@ static int parselist(int argc, char **argv)
     config_init();
 
     if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
-        error(ERROR_PANIC, "Could not get path.");
+        return error(ERROR_NORMAL, "Could not get path.");
 
     dir = opendir(path);
 
     if (dir == NULL)
-        error(ERROR_PANIC, "Could not open '%s'.", path);
+        return error(ERROR_NORMAL, "Could not open '%s'.", path);
 
     while ((entry = readdir(dir)) != NULL)
     {
@@ -491,7 +483,7 @@ static int parseremove(int argc, char **argv)
             return errorload(name);
 
         if (remote_erase(&remote))
-            error(ERROR_PANIC, "Could not remove '%s'.", remote.name);
+            return error(ERROR_NORMAL, "Could not remove remote '%s'.", remote.name);
 
         fprintf(stdout, "Remote '%s' removed.\n", remote.name);
 
@@ -523,14 +515,14 @@ static int parseshell(int argc, char **argv)
         return errorload(name);
 
     if (con_ssh_connect(&remote) < 0)
-        error(ERROR_PANIC, "Could not connect to remote '%s'.", remote.name);
+        return error(ERROR_NORMAL, "Could not connect to remote '%s'.", remote.name);
 
     con_setraw();
     con_ssh_shell(&remote);
     con_unsetraw();
 
     if (con_ssh_disconnect(&remote) < 0)
-        error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote.name);
+        return error(ERROR_NORMAL, "Could not disconnect from remote '%s'.", remote.name);
 
     return EXIT_SUCCESS;
 
@@ -564,7 +556,7 @@ static int parseshow(int argc, char **argv)
             char *value = remote_getvalue(&remote, key);
 
             if (!value)
-                error(ERROR_PANIC, "Could not find key '%s'.", key);
+                return error(ERROR_NORMAL, "Could not find key '%s'.", key);
 
             fprintf(stdout, "%s\n", value);
 
@@ -592,7 +584,7 @@ static int parseshow(int argc, char **argv)
 static int parseversion(int argc, char **argv)
 {
 
-    fprintf(stdout, "%s: version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
+    fprintf(stdout, "%s version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
 
     return EXIT_SUCCESS;
 
