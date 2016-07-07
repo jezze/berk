@@ -5,6 +5,74 @@
 #include "error.h"
 #include "util.h"
 
+int util_checkalnum(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isalnum(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
+int util_checkalpha(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isalpha(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
+int util_checkdigit(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isalpha(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
+int util_checkspace(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isspace(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
 void util_trim(char *str)
 {
 

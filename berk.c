@@ -82,19 +82,25 @@ static int checkargs(struct command *commands, int argc, char **argv)
 
 }
 
-static char *checkstring(char *arg)
+static char *checkalnum(char *arg)
 {
 
     util_trim(arg);
+
+    if (util_checkalnum(arg))
+        errorvalue(arg);
 
     return arg;
 
 }
 
-static char *checkint(char *arg)
+static char *checkdigit(char *arg)
 {
 
     util_trim(arg);
+
+    if (util_checkdigit(arg))
+        errorvalue(arg);
 
     return arg;
 
@@ -113,8 +119,8 @@ static char *checklist(char *arg)
 static int parseadd(int argc, char **argv)
 {
 
-    char *name = checkstring(argv[0]);
-    char *hostname = checkstring(argv[1]);
+    char *name = checkalnum(argv[0]);
+    char *hostname = checkalnum(argv[1]);
     char *username = getenv("USER");
 
     config_init();
@@ -128,8 +134,8 @@ static int parseconfig(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
-    char *key = checkstring(argv[1]);
-    char *value = checkstring(argv[2]);
+    char *key = checkalnum(argv[1]);
+    char *value = checkalnum(argv[2]);
     struct remote remote;
     unsigned int names;
     unsigned int i;
@@ -140,6 +146,9 @@ static int parseconfig(int argc, char **argv)
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
+
+        if (util_checkalnum(name))
+            return errorvalue(name);
 
         if (remote_load(&remote, name))
             return errorremote(name);
@@ -183,6 +192,9 @@ static int parseexec(int argc, char **argv)
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
+
+        if (util_checkalnum(name))
+            return errorvalue(name);
 
         pid_t pid = fork();
 
@@ -236,7 +248,7 @@ static int parseinit(int argc, char **argv)
 static int parselist(int argc, char **argv)
 {
 
-    char *label = (argc > 0) ? checkstring(argv[0]) : NULL;
+    char *label = (argc > 0) ? checkalnum(argv[0]) : NULL;
 
     config_init();
     command_list(label);
@@ -248,8 +260,8 @@ static int parselist(int argc, char **argv)
 static int parselog(int argc, char **argv)
 {
 
-    char *name = checkstring(argv[0]);
-    char *pid = checkint(argv[1]);
+    char *name = checkalnum(argv[0]);
+    char *pid = checkdigit(argv[1]);
     struct remote remote;
     unsigned int value;
 
@@ -284,6 +296,9 @@ static int parseremove(int argc, char **argv)
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
+        if (util_checkalnum(name))
+            return errorvalue(name);
+
         if (remote_load(&remote, name))
             return errorremote(name);
 
@@ -308,7 +323,7 @@ static int parsesend(int argc, char **argv)
 static int parseshell(int argc, char **argv)
 {
 
-    char *name = checkstring(argv[0]);
+    char *name = checkalnum(argv[0]);
     struct remote remote;
 
     config_init();
@@ -326,7 +341,7 @@ static int parseshow(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
-    char *key = (argc > 1) ? checkstring(argv[1]) : NULL;
+    char *key = (argc > 1) ? checkalnum(argv[1]) : NULL;
     struct remote remote;
     unsigned int names;
     unsigned int i;
@@ -337,6 +352,9 @@ static int parseshow(int argc, char **argv)
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
+
+        if (util_checkalnum(name))
+            return errorvalue(name);
 
         if (remote_load(&remote, name))
             return errorremote(name);
