@@ -540,7 +540,7 @@ static int parselog(int argc, char **argv)
         file = fopen(path, "r");
 
         if (file == NULL)
-            return error(ERROR_NORMAL, "Could not open '%s'.", path);
+            return EXIT_SUCCESS;
 
         while (fgets(buffer, BUFSIZ, file) != NULL)
             printf("%s", buffer);
