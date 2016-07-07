@@ -219,11 +219,10 @@ int remote_init(struct remote *remote, char *name, char *hostname, char *usernam
     char buffer[BUFSIZ];
 
     memset(remote, 0, sizeof (struct remote));
-
-    remote->name = name;
-    remote->hostname = hostname;
-    remote->port = "22";
-    remote->username = username;
+    loadcallback(remote, "remote", "name", name);
+    loadcallback(remote, "remote", "hostname", hostname);
+    loadcallback(remote, "remote", "port", "22");
+    loadcallback(remote, "remote", "username", username);
 
     if (!getpwnam_r(username, &passwd, buffer, BUFSIZ, &current))
     {
@@ -232,12 +231,9 @@ int remote_init(struct remote *remote, char *name, char *hostname, char *usernam
         char publickey[BUFSIZ];
 
         snprintf(privatekey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-
-        remote->privatekey = privatekey;
-
+        loadcallback(remote, "remote", "privatekey", privatekey);
         snprintf(publickey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-
-        remote->publickey = publickey;
+        loadcallback(remote, "remote", "publickey", publickey);
 
     }
 
