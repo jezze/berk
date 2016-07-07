@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "error.h"
@@ -185,26 +184,6 @@ void command_list(char *label)
         }
 
     }
-
-}
-
-void command_shell(struct remote *remote)
-{
-
-    struct termios old;
-    struct termios new;
-
-    if (con_ssh_connect(remote) < 0)
-        error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
-
-    tcgetattr(0, &old);
-    cfmakeraw(&new);
-    tcsetattr(0, TCSANOW, &new);
-    con_ssh_shell(remote);
-    tcsetattr(0, TCSANOW, &old);
-
-    if (con_ssh_disconnect(remote) < 0)
-        error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
 
 }
 

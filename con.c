@@ -2,10 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <termios.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include "remote.h"
+
+static struct termios old;
+static struct termios new;
 
 int con_connect(struct remote *remote)
 {
@@ -36,6 +40,22 @@ int con_disconnect(struct remote *remote)
 {
 
     return close(remote->sock);
+
+}
+
+void con_setraw()
+{
+
+    tcgetattr(0, &old);
+    cfmakeraw(&new);
+    tcsetattr(0, TCSANOW, &new);
+
+}
+
+void con_unsetraw()
+{
+
+    tcsetattr(0, TCSANOW, &old);
 
 }
 

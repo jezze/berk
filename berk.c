@@ -10,6 +10,8 @@
 #include "remote.h"
 #include "event.h"
 #include "command.h"
+#include "con.h"
+#include "con_ssh.h"
 
 struct command
 {
@@ -352,7 +354,15 @@ static int parseshell(int argc, char **argv)
     if (remote_load(&remote, name))
         return errorremote(name);
 
-    command_shell(&remote);
+    if (con_ssh_connect(&remote) < 0)
+        error(ERROR_PANIC, "Could not connect to remote '%s'.", remote.name);
+
+    con_setraw();
+    con_ssh_shell(&remote);
+    con_unsetraw();
+
+    if (con_ssh_disconnect(&remote) < 0)
+        error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote.name);
 
     return EXIT_SUCCESS;
 
