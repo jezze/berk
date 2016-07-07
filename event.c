@@ -3,7 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "config.h"
-#include "error.h"
 #include "remote.h"
 
 static int runhook(char *name)

@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "config.h"
-#include "error.h"
 #include "util.h"
 
 int util_checkalnum(char *str)
