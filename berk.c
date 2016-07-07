@@ -152,7 +152,7 @@ static int parseadd(int argc, char **argv)
     config_init();
 
     if (remote_init(&remote, name, hostname, username))
-        error(ERROR_PANIC, "Could not init remote '%s'.", remote.name);
+        error(ERROR_PANIC, "Could not init remote '%s'.", name);
 
     if (remote_save(&remote))
         return errorsave(name);
