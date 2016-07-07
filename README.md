@@ -67,7 +67,7 @@ look at the output of the command you just executed on that remote.
 To do more advanced setups you can, using berk config, set labels seperated by
 space, on each remote. This way you can tell berk to only execute commands on
 remotes with a certain label. On our remote we can add two labels called "beer"
-and "remote" using:
+and "donut" using:
 
     $ berk config myhost label "donut beer"
 
