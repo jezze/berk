@@ -326,7 +326,7 @@ static int parseexec(int argc, char **argv)
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
 
-    remote_loghead(gid);
+    remote_loghead(gid, total, complete, success);
 
     return EXIT_SUCCESS;
 
