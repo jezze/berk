@@ -218,7 +218,9 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, name))
                 return errorremote(name);
 
-            return command_exec(&remote, getpid(), command);
+            remote.pid = getpid();
+
+            return command_exec(&remote, command);
 
         }
 
@@ -275,19 +277,18 @@ static int parselog(int argc, char **argv)
     char *name = checkprint(argv[0]);
     char *pid = checkdigit(argv[1]);
     struct remote remote;
-    unsigned int value;
 
     config_init();
 
     if (remote_load(&remote, name))
         return errorremote(name);
 
-    value = strtoul(pid, NULL, 10);
+    remote.pid = strtoul(pid, NULL, 10);
 
-    if (!value)
+    if (!remote.pid)
         return errorvalue(pid);
 
-    command_log(&remote, value);
+    remote_log_print(&remote);
 
     return EXIT_SUCCESS;
 

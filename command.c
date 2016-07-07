@@ -89,12 +89,10 @@ void command_config(struct remote *remote, char *key, char *value)
 
 }
 
-int command_exec(struct remote *remote, unsigned int pid, char *command)
+int command_exec(struct remote *remote, char *command)
 {
 
     int status;
-
-    remote->pid = pid;
 
     remote_log_open(remote);
 
@@ -260,15 +258,6 @@ void command_list(char *label)
         }
 
     }
-
-}
-
-void command_log(struct remote *remote, int pid)
-{
-
-    remote->pid = pid;
-
-    remote_log_print(remote);
 
 }
 
