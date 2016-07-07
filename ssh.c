@@ -39,10 +39,10 @@ int ssh_connect(struct remote *remote)
     remote->session = libssh2_session_init();
 
     if (remote->session == NULL)
-        return util_error("Could not initialize SSH2 session.");
+        return util_error("Could not initialize session.");
 
     if (libssh2_session_handshake(remote->session, remote->sock) < 0)
-        return util_error("Could not handshake SSH2 session.");
+        return util_error("Could not handshake session.");
 
     if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
         return util_error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
@@ -76,10 +76,10 @@ int ssh_exec(struct remote *remote, char *command)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return util_error("Could not open SSH2 channel.");
+        return util_error("Could not open channel.");
 
     if (libssh2_channel_exec(remote->channel, command) < 0)
-        return util_error("Could not execute command over SSH2 channel.");
+        return util_error("Could not execute command over channel.");
 
     libssh2_channel_set_blocking(remote->channel, 0);
 
@@ -133,13 +133,13 @@ int ssh_shell(struct remote *remote)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return util_error("Could not open SSH2 channel.");
+        return util_error("Could not open channel.");
 
     if (libssh2_channel_request_pty(remote->channel, "vt102") < 0)
-        return util_error("Could not start pty over SSH2 channel.");
+        return util_error("Could not start pty over channel.");
 
     if (libssh2_channel_shell(remote->channel) < 0)
-        return util_error("Could not start shell over SSH2 channel.");
+        return util_error("Could not start shell over channel.");
 
     libssh2_channel_set_blocking(remote->channel, 0);
     cfmakeraw(&new);
