@@ -159,8 +159,8 @@ static int parseconfig(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
-    char *key = checkalpha(argv[1]);
-    char *value = checkprint(argv[2]);
+    char *key = (argc > 1) ? checkalpha(argv[1]) : NULL;
+    char *value = (argc > 2) ? checkprint(argv[2]) : NULL;
     struct remote remote;
     unsigned int names;
     unsigned int i;
@@ -178,11 +178,46 @@ static int parseconfig(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorload(name);
 
-        if (remote_config(&remote, key, value))
-            return error(ERROR_NORMAL, "Could not run configure remote '%s'.", remote.name);
+        if (value)
+        {
 
-        if (remote_save(&remote))
-            return errorsave(name);
+            if (remote_config(&remote, key, value))
+                return error(ERROR_NORMAL, "Could not run configure remote '%s'.", remote.name);
+
+            if (remote_save(&remote))
+                return errorsave(name);
+
+        }
+
+        else
+        {
+
+            if (key)
+            {
+
+                char *value = remote_getvalue(&remote, key);
+
+                if (!value)
+                    return error(ERROR_NORMAL, "Could not find key '%s'.", key);
+
+                printf("%s\n", value);
+
+            }
+
+            else
+            {
+
+                printf("name=%s\n", remote.name);
+                printf("hostname=%s\n", remote.hostname);
+                printf("port=%s\n", remote.port ? remote.port : "");
+                printf("username=%s\n", remote.username ? remote.username : "");
+                printf("privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
+                printf("publickey=%s\n", remote.publickey ? remote.publickey : "");
+                printf("label=%s\n", remote.label ? remote.label : "");
+
+            }
+
+        }
 
     }
 
@@ -507,59 +542,6 @@ static int parseshell(int argc, char **argv)
 
 }
 
-static int parseshow(int argc, char **argv)
-{
-
-    char *name = checklist(argv[0]);
-    char *key = (argc > 1) ? checkalpha(argv[1]) : NULL;
-    struct remote remote;
-    unsigned int names;
-    unsigned int i;
-
-    config_init();
-
-    names = util_split(name);
-
-    for (i = 0; (name = util_nextword(name, i, names)); i++)
-    {
-
-        if (util_checkprint(name))
-            return errorparse(name);
-
-        if (remote_load(&remote, name))
-            return errorload(name);
-
-        if (key)
-        {
-
-            char *value = remote_getvalue(&remote, key);
-
-            if (!value)
-                return error(ERROR_NORMAL, "Could not find key '%s'.", key);
-
-            printf("%s\n", value);
-
-        }
-
-        else
-        {
-
-            printf("name=%s\n", remote.name);
-            printf("hostname=%s\n", remote.hostname);
-            printf("port=%s\n", remote.port ? remote.port : "");
-            printf("username=%s\n", remote.username ? remote.username : "");
-            printf("privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
-            printf("publickey=%s\n", remote.publickey ? remote.publickey : "");
-            printf("label=%s\n", remote.label ? remote.label : "");
-
-        }
-
-    }
-
-    return EXIT_SUCCESS;
-
-}
-
 static int parseversion(int argc, char **argv)
 {
 
@@ -574,7 +556,7 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
-        {"config", parseconfig, 3, " <namelist> <key> <value>"},
+        {"config", parseconfig, 1, " <namelist> [<key>] [<value>]"},
         {"copy", parsecopy, 2, " <name:file> <name:file>"},
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
@@ -583,7 +565,6 @@ int main(int argc, char **argv)
         {"remove", parseremove, 1, " <namelist>"},
         {"send", parsesend, 2, " <namelist> <file>"},
         {"shell", parseshell, 1, " <name>"},
-        {"show", parseshow, 1, " <namelist> [<key>]"},
         {"version", parseversion, 0, ""},
         {0}
     };
