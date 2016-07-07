@@ -39,7 +39,7 @@ static int errorsave(char *name)
 
 }
 
-static int errorvalue(char *value)
+static int errorparse(char *value)
 {
 
     return error(ERROR_NORMAL, "Could not parse value '%s'.", value);
@@ -93,7 +93,7 @@ static char *checkalpha(char *arg)
     util_trim(arg);
 
     if (util_checkalpha(arg))
-        errorvalue(arg);
+        errorparse(arg);
 
     return arg;
 
@@ -105,7 +105,7 @@ static char *checkdigit(char *arg)
     util_trim(arg);
 
     if (util_checkdigit(arg))
-        errorvalue(arg);
+        errorparse(arg);
 
     return arg;
 
@@ -117,7 +117,7 @@ static char *checkprint(char *arg)
     util_trim(arg);
 
     if (util_checkprint(arg))
-        errorvalue(arg);
+        errorparse(arg);
 
     return arg;
 
@@ -173,7 +173,7 @@ static int parseconfig(int argc, char **argv)
     {
 
         if (util_checkprint(name))
-            return errorvalue(name);
+            return errorparse(name);
 
         if (remote_load(&remote, name))
             return errorload(name);
@@ -223,7 +223,7 @@ static int parseexec(int argc, char **argv)
     {
 
         if (util_checkprint(name))
-            return errorvalue(name);
+            return errorparse(name);
 
         pid_t pid = fork();
 
@@ -426,7 +426,7 @@ static int parselog(int argc, char **argv)
     remote.pid = strtoul(pid, NULL, 10);
 
     if (!remote.pid)
-        return errorvalue(pid);
+        return errorparse(pid);
 
     remote_printlog(&remote);
 
@@ -450,7 +450,7 @@ static int parseremove(int argc, char **argv)
     {
 
         if (util_checkprint(name))
-            return errorvalue(name);
+            return errorparse(name);
 
         if (remote_load(&remote, name))
             return errorload(name);
@@ -518,7 +518,7 @@ static int parseshow(int argc, char **argv)
     {
 
         if (util_checkprint(name))
-            return errorvalue(name);
+            return errorparse(name);
 
         if (remote_load(&remote, name))
             return errorload(name);
