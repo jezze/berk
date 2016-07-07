@@ -5,7 +5,7 @@
 #include "config.h"
 #include "error.h"
 
-int error(int level, char *format, ...)
+int error(char *format, ...)
 {
 
     va_list args;
@@ -15,9 +15,6 @@ int error(int level, char *format, ...)
     vfprintf(stderr, format, args);
     fprintf(stderr, "\n");
     va_end(args);
-
-    if (level == ERROR_PANIC)
-        exit(EXIT_FAILURE);
 
     return EXIT_FAILURE;
 

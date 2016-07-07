@@ -12,11 +12,7 @@
 #include "remote.h"
 #include "ssh.h"
 
-static LIBSSH2_SESSION *session;
-static struct termios old;
-static struct termios new;
-
-static int opensocket(struct remote *remote)
+int ssh_connect(struct remote *remote)
 {
 
     struct addrinfo hints, *servinfo;
@@ -27,46 +23,29 @@ static int opensocket(struct remote *remote)
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(remote->hostname, remote->port, &hints, &servinfo) != 0)
-        return -1;
+        return error("Could not get address info.");
 
     remote->sock = socket(servinfo->ai_family, servinfo->ai_socktype, 0);
 
     if (remote->sock < 0)
-        return -1;
+        return error("Could not create socket.");
 
     if (connect(remote->sock, servinfo->ai_addr, servinfo->ai_addrlen) < 0)
-        return -1;
-
-    return remote->sock;
-
-}
-
-static int closesocket(struct remote *remote)
-{
-
-    return close(remote->sock);
-
-}
-
-int ssh_connect(struct remote *remote)
-{
-
-    if (opensocket(remote) < 0)
-        error(ERROR_PANIC, "Could not connect to '%s'.", remote->name);
+        return error("Could not connect to socket.");
 
     if (libssh2_init(0) < 0)
-        error(ERROR_PANIC, "Could not initialize SSH2.");
+        return error("Could not initialize SSH2.");
 
-    session = libssh2_session_init();
+    remote->session = libssh2_session_init();
 
-    if (session == NULL)
-        error(ERROR_PANIC, "Could not initialize SSH2 session.");
+    if (remote->session == NULL)
+        return error("Could not initialize SSH2 session.");
 
-    if (libssh2_session_handshake(session, remote->sock) < 0)
-        error(ERROR_PANIC, "Could not handshake SSH2 session.");
+    if (libssh2_session_handshake(remote->session, remote->sock) < 0)
+        return error("Could not handshake SSH2 session.");
 
-    if (libssh2_userauth_publickey_fromfile(session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
-        error(ERROR_PANIC, "Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
+    if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
+        return error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
 
     return 0;
 
@@ -75,12 +54,10 @@ int ssh_connect(struct remote *remote)
 int ssh_disconnect(struct remote *remote)
 {
 
-    libssh2_session_disconnect(session, "Normal Shutdown, Thank you for playing");
-    libssh2_session_free(session);
+    libssh2_session_disconnect(remote->session, "Normal Shutdown, Thank you for playing");
+    libssh2_session_free(remote->session);
     libssh2_exit();
-
-    if (closesocket(remote) < 0)
-        error(ERROR_PANIC, "Could not disconnect from '%s'.", remote->name);
+    close(remote->sock);
 
     return 0;
 
@@ -89,7 +66,6 @@ int ssh_disconnect(struct remote *remote)
 int ssh_exec(struct remote *remote, char *command)
 {
 
-    LIBSSH2_CHANNEL *channel;
     struct pollfd pfds[1];
     int exitcode;
 
@@ -97,15 +73,15 @@ int ssh_exec(struct remote *remote, char *command)
     pfds[0].events = POLLIN;
     pfds[0].revents = 0;
 
-    channel = libssh2_channel_open_session(session);
+    remote->channel = libssh2_channel_open_session(remote->session);
 
-    if (channel == NULL)
-        error(ERROR_PANIC, "Could not open SSH2 channel.");
+    if (remote->channel == NULL)
+        return error("Could not open SSH2 channel.");
 
-    if (libssh2_channel_exec(channel, command) < 0)
-        error(ERROR_PANIC, "Could not execute command over SSH2 channel.");
+    if (libssh2_channel_exec(remote->channel, command) < 0)
+        return error("Could not execute command over SSH2 channel.");
 
-    libssh2_channel_set_blocking(channel, 0);
+    libssh2_channel_set_blocking(remote->channel, 0);
 
     do
     {
@@ -121,19 +97,19 @@ int ssh_exec(struct remote *remote, char *command)
             char buffer[BUFSIZ];
             int count;
 
-            count = libssh2_channel_read(channel, buffer, BUFSIZ);
+            count = libssh2_channel_read(remote->channel, buffer, BUFSIZ);
             count = remote_log(remote, buffer, count);
 
         }
 
-    } while (!libssh2_channel_eof(channel));
+    } while (!libssh2_channel_eof(remote->channel));
 
-    libssh2_channel_close(channel);
-    libssh2_channel_wait_closed(channel);
+    libssh2_channel_close(remote->channel);
+    libssh2_channel_wait_closed(remote->channel);
 
-    exitcode = libssh2_channel_get_exit_status(channel);
+    exitcode = libssh2_channel_get_exit_status(remote->channel);
 
-    libssh2_channel_free(channel);
+    libssh2_channel_free(remote->channel);
 
     return exitcode;
 
@@ -142,8 +118,9 @@ int ssh_exec(struct remote *remote, char *command)
 int ssh_shell(struct remote *remote)
 {
 
-    LIBSSH2_CHANNEL *channel;
     struct pollfd pfds[2];
+    struct termios old;
+    struct termios new;
     int exitcode;
 
     pfds[0].fd = remote->sock;
@@ -153,18 +130,18 @@ int ssh_shell(struct remote *remote)
     pfds[1].events = POLLIN;
     pfds[1].revents = 0;
 
-    channel = libssh2_channel_open_session(session);
+    remote->channel = libssh2_channel_open_session(remote->session);
 
-    if (channel == NULL)
-        error(ERROR_PANIC, "Could not open SSH2 channel.");
+    if (remote->channel == NULL)
+        return error("Could not open SSH2 channel.");
 
-    if (libssh2_channel_request_pty(channel, "vt102") < 0)
-        error(ERROR_PANIC, "Could not start pty over SSH2 channel.");
+    if (libssh2_channel_request_pty(remote->channel, "vt102") < 0)
+        return error("Could not start pty over SSH2 channel.");
 
-    if (libssh2_channel_shell(channel) < 0)
-        error(ERROR_PANIC, "Could not start shell over SSH2 channel.");
+    if (libssh2_channel_shell(remote->channel) < 0)
+        return error("Could not start shell over SSH2 channel.");
 
-    libssh2_channel_set_blocking(channel, 0);
+    libssh2_channel_set_blocking(remote->channel, 0);
     cfmakeraw(&new);
     tcgetattr(0, &old);
     tcsetattr(0, TCSANOW, &new);
@@ -183,7 +160,7 @@ int ssh_shell(struct remote *remote)
             char buffer[BUFSIZ];
             int count;
 
-            count = libssh2_channel_read(channel, buffer, BUFSIZ);
+            count = libssh2_channel_read(remote->channel, buffer, BUFSIZ);
             count = write(STDOUT_FILENO, buffer, count);
 
         }
@@ -195,19 +172,19 @@ int ssh_shell(struct remote *remote)
             int count;
 
             count = read(STDIN_FILENO, buffer, BUFSIZ);
-            count = libssh2_channel_write(channel, buffer, count);
+            count = libssh2_channel_write(remote->channel, buffer, count);
 
         }
 
-    } while (!libssh2_channel_eof(channel));
+    } while (!libssh2_channel_eof(remote->channel));
 
     tcsetattr(0, TCSANOW, &old);
-    libssh2_channel_close(channel);
-    libssh2_channel_wait_closed(channel);
+    libssh2_channel_close(remote->channel);
+    libssh2_channel_wait_closed(remote->channel);
 
-    exitcode = libssh2_channel_get_exit_status(channel);
+    exitcode = libssh2_channel_get_exit_status(remote->channel);
 
-    libssh2_channel_free(channel);
+    libssh2_channel_free(remote->channel);
 
     return exitcode;
 

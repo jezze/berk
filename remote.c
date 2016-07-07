@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <pwd.h>
+#include <libssh2.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "ini.h"

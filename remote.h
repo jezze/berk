@@ -12,6 +12,8 @@ struct remote
     int logfd;
     int gid;
     int pid;
+    LIBSSH2_SESSION *session;
+    LIBSSH2_CHANNEL *channel;
 
 };
 

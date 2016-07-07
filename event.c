@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <libssh2.h>
 #include "config.h"
 #include "remote.h"
 
