@@ -25,10 +25,19 @@ struct command
 
 };
 
-static int errorremote(char *name)
+static int errorload(char *name)
 {
 
-    error(ERROR_NORMAL, "Could not find remote '%s'.", name);
+    error(ERROR_NORMAL, "Could not load remote '%s'.", name);
+
+    return EXIT_FAILURE;
+
+}
+
+static int errorsave(char *name)
+{
+
+    error(ERROR_NORMAL, "Could not save remote '%s'.", name);
 
     return EXIT_FAILURE;
 
@@ -138,11 +147,15 @@ static int parseadd(int argc, char **argv)
     char *name = checkprint(argv[0]);
     char *hostname = checkprint(argv[1]);
     char *username = getenv("USER");
+    struct remote remote;
 
     config_init();
 
-    if (remote_add(name, hostname, username))
-        error(ERROR_PANIC, "Could not add remote '%s'.", name);
+    if (remote_init(&remote, name, hostname, username))
+        error(ERROR_PANIC, "Could not init remote '%s'.", remote.name);
+
+    if (remote_save(&remote))
+        return errorsave(remote.name);
 
     fprintf(stdout, "Remote '%s' added.\n", name);
 
@@ -171,10 +184,13 @@ static int parseconfig(int argc, char **argv)
             return errorvalue(name);
 
         if (remote_load(&remote, name))
-            return errorremote(name);
+            return errorload(name);
 
         if (remote_config(&remote, key, value))
             error(ERROR_PANIC, "Could not run configure '%s'.", remote.name);
+
+        if (remote_save(&remote))
+            return errorsave(remote.name);
 
     }
 
@@ -226,7 +242,7 @@ static int parseexec(int argc, char **argv)
             int rc;
 
             if (remote_load(&remote, name))
-                return errorremote(name);
+                return errorload(name);
 
             remote.pid = getpid();
 
@@ -440,7 +456,7 @@ static int parselog(int argc, char **argv)
     config_init();
 
     if (remote_load(&remote, name))
-        return errorremote(name);
+        return errorload(name);
 
     remote.pid = strtoul(pid, NULL, 10);
 
@@ -472,7 +488,7 @@ static int parseremove(int argc, char **argv)
             return errorvalue(name);
 
         if (remote_load(&remote, name))
-            return errorremote(name);
+            return errorload(name);
 
         if (remote_erase(&remote))
             error(ERROR_PANIC, "Could not remove '%s'.", remote.name);
@@ -504,7 +520,7 @@ static int parseshell(int argc, char **argv)
     config_init();
 
     if (remote_load(&remote, name))
-        return errorremote(name);
+        return errorload(name);
 
     if (con_ssh_connect(&remote) < 0)
         error(ERROR_PANIC, "Could not connect to remote '%s'.", remote.name);
@@ -540,7 +556,7 @@ static int parseshow(int argc, char **argv)
             return errorvalue(name);
 
         if (remote_load(&remote, name))
-            return errorremote(name);
+            return errorload(name);
 
         if (key)
         {

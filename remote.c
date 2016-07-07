@@ -9,7 +9,20 @@
 #include "ini.h"
 #include "remote.h"
 
-int remote_gettype(char *key)
+enum
+{
+
+    REMOTE_NAME,
+    REMOTE_HOSTNAME,
+    REMOTE_PORT,
+    REMOTE_USERNAME,
+    REMOTE_PRIVATEKEY,
+    REMOTE_PUBLICKEY,
+    REMOTE_LABEL
+
+};
+
+static int remote_gettype(char *key)
 {
 
     static struct keynum
@@ -198,25 +211,24 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_add(char *name, char *hostname, char *username)
+int remote_init(struct remote *remote, char *name, char *hostname, char *username)
 {
 
-    struct remote remote;
     char privatekey[BUFSIZ];
     char publickey[BUFSIZ];
 
-    memset(&remote, 0, sizeof (struct remote));
+    memset(remote, 0, sizeof (struct remote));
     snprintf(privatekey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa");
     snprintf(publickey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa.pub");
 
-    remote.name = name;
-    remote.hostname = hostname;
-    remote.port = "22";
-    remote.username = username;
-    remote.privatekey = privatekey;
-    remote.publickey = publickey;
+    remote->name = name;
+    remote->hostname = hostname;
+    remote->port = "22";
+    remote->username = username;
+    remote->privatekey = privatekey;
+    remote->publickey = publickey;
 
-    return remote_save(&remote);
+    return 0;
 
 }
 
@@ -263,7 +275,7 @@ int remote_config(struct remote *remote, char *key, char *value)
 
     }
 
-    return remote_save(remote);
+    return 0;
 
 }
 
