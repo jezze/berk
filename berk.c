@@ -25,6 +25,13 @@ struct command
 
 };
 
+static int errorinit()
+{
+
+    return error(ERROR_NORMAL, "Could not find '%s' directory.", CONFIG_ROOT);
+
+}
+
 static int errorload(char *name)
 {
 
@@ -141,7 +148,8 @@ static int parseadd(int argc, char **argv)
     char *username = getenv("USER");
     struct remote remote;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (remote_init(&remote, name, hostname, username))
         return error(ERROR_NORMAL, "Could not init remote '%s'.", name);
@@ -165,7 +173,8 @@ static int parseconfig(int argc, char **argv)
     struct remote remote;
     unsigned int i;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
@@ -226,7 +235,9 @@ static int parseconfig(int argc, char **argv)
 static int parsecopy(int argc, char **argv)
 {
 
-    config_init();
+    if (config_init())
+        return errorinit();
+
     error(ERROR_NORMAL, "Copy not implemented.");
 
     return EXIT_SUCCESS;
@@ -245,7 +256,8 @@ static int parseexec(int argc, char **argv)
     unsigned int i;
     int status;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (event_begin())
         return error(ERROR_NORMAL, "Could not run event.");
@@ -329,7 +341,8 @@ static int parseinit(int argc, char **argv)
     if (mkdir(CONFIG_ROOT, 0775) < 0)
         return error(ERROR_NORMAL, "Already initialized.");
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (config_getpath(path, BUFSIZ, "config"))
         return error(ERROR_NORMAL, "Could not get path.");
@@ -386,7 +399,8 @@ static int parselist(int argc, char **argv)
     struct dirent *entry;
     char path[BUFSIZ];
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
         return error(ERROR_NORMAL, "Could not get path.");
@@ -452,7 +466,8 @@ static int parselog(int argc, char **argv)
     unsigned int count;
     int fd;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (config_getlogpathbyname(path, BUFSIZ, pid))
         return error(ERROR_NORMAL, "Could not get path.");
@@ -479,7 +494,8 @@ static int parseremove(int argc, char **argv)
     struct remote remote;
     unsigned int i;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
@@ -504,7 +520,9 @@ static int parseremove(int argc, char **argv)
 static int parsesend(int argc, char **argv)
 {
 
-    config_init();
+    if (config_init())
+        return errorinit();
+
     error(ERROR_NORMAL, "Send not implemented.");
 
     return EXIT_SUCCESS;
@@ -517,7 +535,8 @@ static int parseshell(int argc, char **argv)
     char *name = checkprint(argv[0]);
     struct remote remote;
 
-    config_init();
+    if (config_init())
+        return errorinit();
 
     if (remote_load(&remote, name))
         return errorload(name);

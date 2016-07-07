@@ -10,7 +10,7 @@
 
 static char root[BUFSIZ];
 
-void config_init()
+int config_init()
 {
 
     char path[BUFSIZ];
@@ -26,7 +26,7 @@ void config_init()
             snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
 
         if (access(root, F_OK) == 0)
-            return;
+            return 0;
 
         if (strlen(path) == 1)
             break;
@@ -35,7 +35,7 @@ void config_init()
 
     }
 
-    error(ERROR_PANIC, "Could not find '%s' directory.", CONFIG_ROOT);
+    return -1;
 
 }
 

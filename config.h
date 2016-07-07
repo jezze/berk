@@ -5,7 +5,7 @@
 #define CONFIG_REMOTES                  "remotes"
 #define CONFIG_HOOKS                    "hooks"
 
-void config_init();
+int config_init();
 int config_getpath(char *path, unsigned int length, char *name);
 int config_getremotepath(char *path, unsigned int length, char *filename);
 int config_getlogpathbypid(char *path, unsigned int length, int pid);
