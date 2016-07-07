@@ -16,54 +16,6 @@
 #include "con.h"
 #include "con_ssh.h"
 
-void command_config(struct remote *remote, char *key, char *value)
-{
-
-    switch (remote_gettype(key))
-    {
-
-    case REMOTE_NAME:
-        remote->name = value;
-
-        break;
-
-    case REMOTE_HOSTNAME:
-        remote->hostname = value;
-
-        break;
-
-    case REMOTE_PORT:
-        remote->port = value;
-
-        break;
-
-    case REMOTE_USERNAME:
-        remote->username = value;
-
-        break;
-
-    case REMOTE_PRIVATEKEY:
-        remote->privatekey = value;
-
-        break;
-
-    case REMOTE_PUBLICKEY:
-        remote->publickey = value;
-
-        break;
-
-    case REMOTE_LABEL:
-        remote->label = value;
-
-        break;
-
-    }
-
-    if (remote_save(remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote->name);
-
-}
-
 int command_exec(struct remote *remote, char *command)
 {
 

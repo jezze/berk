@@ -190,6 +190,53 @@ int remote_add(char *name, char *hostname, char *username)
 
 }
 
+int remote_config(struct remote *remote, char *key, char *value)
+{
+
+    switch (remote_gettype(key))
+    {
+
+    case REMOTE_NAME:
+        remote->name = value;
+
+        break;
+
+    case REMOTE_HOSTNAME:
+        remote->hostname = value;
+
+        break;
+
+    case REMOTE_PORT:
+        remote->port = value;
+
+        break;
+
+    case REMOTE_USERNAME:
+        remote->username = value;
+
+        break;
+
+    case REMOTE_PRIVATEKEY:
+        remote->privatekey = value;
+
+        break;
+
+    case REMOTE_PUBLICKEY:
+        remote->publickey = value;
+
+        break;
+
+    case REMOTE_LABEL:
+        remote->label = value;
+
+        break;
+
+    }
+
+    return remote_save(remote);
+
+}
+
 int remote_log_open(struct remote *remote)
 {
 

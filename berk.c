@@ -169,7 +169,8 @@ static int parseconfig(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorremote(name);
 
-        command_config(&remote, key, value);
+        if (remote_config(&remote, key, value))
+            error(ERROR_PANIC, "Could not run configure '%s'.", remote.name);
 
     }
 
