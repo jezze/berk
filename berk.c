@@ -291,6 +291,8 @@ static int parseinit(int argc, char **argv)
 
     FILE *file;
     char path[BUFSIZ];
+    char *hooks[] = {"begin", "end", "start", "stop", 0};
+    unsigned int i;
     int fd;
 
     if (mkdir(CONFIG_ROOT, 0775) < 0)
@@ -316,57 +318,28 @@ static int parseinit(int argc, char **argv)
     if (mkdir(path, 0775) < 0)
         return error(ERROR_NORMAL, "Could not create directory '%s'.", CONFIG_HOOKS);
 
-    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/begin.sample"))
-        return error(ERROR_NORMAL, "Could not get path.");
+    for (i = 0; hooks[i]; i++)
+    {
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+        char filename[BUFSIZ];
 
-    if (fd < 0)
-        return error(ERROR_NORMAL, "Could not create config file.");
+        snprintf(filename, BUFSIZ, "%s/%s.sample", CONFIG_HOOKS, hooks[i]);
 
-    file = fdopen(fd, "w");
-    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "begin");
-    fclose(file);
-    close(fd);
+        if (config_getpath(path, BUFSIZ, filename))
+            return error(ERROR_NORMAL, "Could not get path.");
 
-    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/end.sample"))
-        return error(ERROR_NORMAL, "Could not get path.");
+        fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+        if (fd < 0)
+            return error(ERROR_NORMAL, "Could not create hook file '%s'.", hooks[i]);
 
-    if (fd < 0)
-        return error(ERROR_NORMAL, "Could not create config file.");
+        file = fdopen(fd, "w");
+        fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
+        fclose(file);
+        close(fd);
 
-    file = fdopen(fd, "w");
-    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "end");
-    fclose(file);
-    close(fd);
+    }
 
-    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/start.sample"))
-        return error(ERROR_NORMAL, "Could not get path.");
-
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
-
-    if (fd < 0)
-        return error(ERROR_NORMAL, "Could not create config file.");
-
-    file = fdopen(fd, "w");
-    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "start");
-    fclose(file);
-    close(fd);
-
-    if (config_getpath(path, BUFSIZ, CONFIG_HOOKS "/stop.sample"))
-        return error(ERROR_NORMAL, "Could not get path.");
-
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
-
-    if (fd < 0)
-        return error(ERROR_NORMAL, "Could not create config file.");
-
-    file = fdopen(fd, "w");
-    fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", "stop");
-    fclose(file);
-    close(fd);
     fprintf(stdout, "Initialized %s in '%s'.\n", CONFIG_PROGNAME, CONFIG_ROOT);
 
     return EXIT_SUCCESS;
