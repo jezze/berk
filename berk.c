@@ -136,7 +136,11 @@ static int parseadd(int argc, char **argv)
     char *username = getenv("USER");
 
     config_init();
-    command_add(name, hostname, username);
+
+    if (remote_add(name, hostname, username))
+        error(ERROR_PANIC, "Could not add remote '%s'.", name);
+
+    fprintf(stdout, "Remote '%s' added.\n", name);
 
     return EXIT_SUCCESS;
 
@@ -315,7 +319,10 @@ static int parseremove(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorremote(name);
 
-        command_remove(&remote);
+        if (remote_erase(&remote))
+            error(ERROR_PANIC, "Could not remove '%s'.", remote.name);
+
+        fprintf(stdout, "Remote '%s' removed.\n", remote.name);
 
     }
 

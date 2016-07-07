@@ -168,6 +168,28 @@ int remote_erase(struct remote *remote)
 
 }
 
+int remote_add(char *name, char *hostname, char *username)
+{
+
+    struct remote remote;
+    char privatekey[BUFSIZ];
+    char publickey[BUFSIZ];
+
+    memset(&remote, 0, sizeof (struct remote));
+    snprintf(privatekey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa");
+    snprintf(publickey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa.pub");
+
+    remote.name = name;
+    remote.hostname = hostname;
+    remote.port = "22";
+    remote.username = username;
+    remote.privatekey = privatekey;
+    remote.publickey = publickey;
+
+    return remote_save(&remote);
+
+}
+
 int remote_log_open(struct remote *remote)
 {
 

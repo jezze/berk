@@ -16,31 +16,6 @@
 #include "con.h"
 #include "con_ssh.h"
 
-void command_add(char *name, char *hostname, char *username)
-{
-
-    struct remote remote;
-    char privatekey[BUFSIZ];
-    char publickey[BUFSIZ];
-
-    memset(&remote, 0, sizeof (struct remote));
-    snprintf(privatekey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa");
-    snprintf(publickey, BUFSIZ, "/home/%s/.ssh/%s", username, "id_rsa.pub");
-
-    remote.name = name;
-    remote.hostname = hostname;
-    remote.port = "22";
-    remote.username = username;
-    remote.privatekey = privatekey;
-    remote.publickey = publickey;
-
-    if (remote_save(&remote))
-        error(ERROR_PANIC, "Could not save '%s'.", remote.name);
-
-    fprintf(stdout, "Remote '%s' added.\n", remote.name);
-
-}
-
 void command_config(struct remote *remote, char *key, char *value)
 {
 
@@ -258,16 +233,6 @@ void command_list(char *label)
         }
 
     }
-
-}
-
-void command_remove(struct remote *remote)
-{
-
-    if (remote_erase(remote))
-        error(ERROR_PANIC, "Could not remove '%s'.", remote->name);
-
-    fprintf(stdout, "Remote '%s' removed.\n", remote->name);
 
 }
 
