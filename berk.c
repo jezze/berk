@@ -12,7 +12,7 @@
 #include "ini.h"
 #include "remote.h"
 #include "event.h"
-#include "con.h"
+#include "ssh.h"
 
 struct command
 {
@@ -287,12 +287,12 @@ static int parseexec(int argc, char **argv)
             if (event_start(&remote))
                 return error(ERROR_NORMAL, "Could not run event.");
 
-            if (con_connect(&remote) < 0)
+            if (ssh_connect(&remote) < 0)
                 return error(ERROR_NORMAL, "Could not connect to remote '%s'.", remote.name);
 
-            rc = con_exec(&remote, command);
+            rc = ssh_exec(&remote, command);
 
-            if (con_disconnect(&remote) < 0)
+            if (ssh_disconnect(&remote) < 0)
                 return error(ERROR_NORMAL, "Could not disconnect from remote '%s'.", remote.name);
 
             if (event_stop(&remote, rc))
@@ -607,14 +607,12 @@ static int parseshell(int argc, char **argv)
     if (remote_load(&remote, name))
         return errorload(name);
 
-    if (con_connect(&remote) < 0)
+    if (ssh_connect(&remote) < 0)
         return error(ERROR_NORMAL, "Could not connect to remote '%s'.", remote.name);
 
-    con_setraw();
-    con_shell(&remote);
-    con_unsetraw();
+    ssh_shell(&remote);
 
-    if (con_disconnect(&remote) < 0)
+    if (ssh_disconnect(&remote) < 0)
         return error(ERROR_NORMAL, "Could not disconnect from remote '%s'.", remote.name);
 
     return EXIT_SUCCESS;

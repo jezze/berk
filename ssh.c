@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include "error.h"
 #include "remote.h"
-#include "con.h"
+#include "ssh.h"
 
 static LIBSSH2_SESSION *session;
 static struct termios old;
@@ -48,23 +48,7 @@ static int closesocket(struct remote *remote)
 
 }
 
-void con_setraw()
-{
-
-    tcgetattr(0, &old);
-    cfmakeraw(&new);
-    tcsetattr(0, TCSANOW, &new);
-
-}
-
-void con_unsetraw()
-{
-
-    tcsetattr(0, TCSANOW, &old);
-
-}
-
-int con_connect(struct remote *remote)
+int ssh_connect(struct remote *remote)
 {
 
     if (opensocket(remote) < 0)
@@ -88,7 +72,7 @@ int con_connect(struct remote *remote)
 
 }
 
-int con_disconnect(struct remote *remote)
+int ssh_disconnect(struct remote *remote)
 {
 
     libssh2_session_disconnect(session, "Normal Shutdown, Thank you for playing");
@@ -102,7 +86,7 @@ int con_disconnect(struct remote *remote)
 
 }
 
-int con_exec(struct remote *remote, char *command)
+int ssh_exec(struct remote *remote, char *command)
 {
 
     LIBSSH2_CHANNEL *channel;
@@ -155,7 +139,7 @@ int con_exec(struct remote *remote, char *command)
 
 }
 
-int con_shell(struct remote *remote)
+int ssh_shell(struct remote *remote)
 {
 
     LIBSSH2_CHANNEL *channel;
@@ -181,6 +165,9 @@ int con_shell(struct remote *remote)
         error(ERROR_PANIC, "Could not start shell over SSH2 channel.");
 
     libssh2_channel_set_blocking(channel, 0);
+    cfmakeraw(&new);
+    tcgetattr(0, &old);
+    tcsetattr(0, TCSANOW, &new);
 
     do
     {
@@ -214,6 +201,7 @@ int con_shell(struct remote *remote)
 
     } while (!libssh2_channel_eof(channel));
 
+    tcsetattr(0, TCSANOW, &old);
     libssh2_channel_close(channel);
     libssh2_channel_wait_closed(channel);
 
