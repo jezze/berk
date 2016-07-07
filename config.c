@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <libgen.h>
 #include "config.h"
-#include "error.h"
 
 static char root[BUFSIZ];
 
