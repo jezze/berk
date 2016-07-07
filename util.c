@@ -45,7 +45,7 @@ int util_checkdigit(char *str)
     while (*str)
     {
 
-        if (!isalpha(*str))
+        if (!isdigit(*str))
             return -1;
 
         str++;

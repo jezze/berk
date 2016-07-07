@@ -15,33 +15,6 @@
 #include "con.h"
 #include "con_ssh.h"
 
-int command_exec(struct remote *remote, char *command)
-{
-
-    int status;
-
-    remote_log_open(remote);
-
-    if (event_start(remote))
-        error(ERROR_PANIC, "Could not run event.");
-
-    if (con_ssh_connect(remote) < 0)
-        error(ERROR_PANIC, "Could not connect to remote '%s'.", remote->name);
-
-    status = con_ssh_exec(remote, command);
-
-    if (con_ssh_disconnect(remote) < 0)
-        error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote->name);
-
-    if (event_stop(remote, status))
-        error(ERROR_PANIC, "Could not run event.");
-
-    remote_log_close(remote);
-
-    return status;
-
-}
-
 void command_init()
 {
 

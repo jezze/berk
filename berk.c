@@ -221,13 +221,32 @@ static int parseexec(int argc, char **argv)
         {
 
             struct remote remote;
+            int rc;
 
             if (remote_load(&remote, name))
                 return errorremote(name);
 
             remote.pid = getpid();
 
-            return command_exec(&remote, command);
+            remote_log_open(&remote);
+
+            if (event_start(&remote))
+                error(ERROR_PANIC, "Could not run event.");
+
+            if (con_ssh_connect(&remote) < 0)
+                error(ERROR_PANIC, "Could not connect to remote '%s'.", remote.name);
+
+            rc = con_ssh_exec(&remote, command);
+
+            if (con_ssh_disconnect(&remote) < 0)
+                error(ERROR_PANIC, "Could not disconnect from remote '%s'.", remote.name);
+
+            if (event_stop(&remote, rc))
+                error(ERROR_PANIC, "Could not run event.");
+
+            remote_log_close(&remote);
+
+            return rc;
 
         }
 
