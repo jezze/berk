@@ -37,8 +37,8 @@ To check the configuration of "myhost" do:
 
     $ berk config myhost
 
-It is easy to change the configuration for a remote. Say you want the login
-user to be called testuser instead you can write:
+It is easy to change the configuration for a remote. Say you want the user to
+be called testuser instead you can write:
 
     $ berk config myhost username testuser
 
