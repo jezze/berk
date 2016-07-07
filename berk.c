@@ -321,11 +321,12 @@ static int parseinit(int argc, char **argv)
     for (i = 0; hooks[i]; i++)
     {
 
-        char filename[BUFSIZ];
+        char buffer[BUFSIZ];
+        unsigned int count;
 
-        snprintf(filename, BUFSIZ, "%s/%s.sample", CONFIG_HOOKS, hooks[i]);
+        snprintf(buffer, BUFSIZ, "%s/%s.sample", CONFIG_HOOKS, hooks[i]);
 
-        if (config_getpath(path, BUFSIZ, filename))
+        if (config_getpath(path, BUFSIZ, buffer))
             return error(ERROR_NORMAL, "Could not get path.");
 
         fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
@@ -333,9 +334,9 @@ static int parseinit(int argc, char **argv)
         if (fd < 0)
             return error(ERROR_NORMAL, "Could not create hook file '%s'.", hooks[i]);
 
-        file = fdopen(fd, "w");
-        fprintf(file, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
-        fclose(file);
+        count = snprintf(buffer, BUFSIZ, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
+
+        write(fd, buffer, count);
         close(fd);
 
     }
