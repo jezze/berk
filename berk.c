@@ -161,13 +161,11 @@ static int parseconfig(int argc, char **argv)
     char *name = checklist(argv[0]);
     char *key = (argc > 1) ? checkalpha(argv[1]) : NULL;
     char *value = (argc > 2) ? checkprint(argv[2]) : NULL;
+    unsigned int names = util_split(name);
     struct remote remote;
-    unsigned int names;
     unsigned int i;
 
     config_init();
-
-    names = util_split(name);
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
@@ -240,16 +238,14 @@ static int parseexec(int argc, char **argv)
 
     char *name = checklist(argv[0]);
     char *command = checkprint(argv[1]);
+    unsigned int names = util_split(name);
     unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
-    unsigned int names;
     unsigned int i;
     int status;
 
     config_init();
-
-    names = util_split(name);
 
     if (event_begin())
         return error(ERROR_NORMAL, "Could not run event.");
@@ -479,13 +475,11 @@ static int parseremove(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
+    unsigned int names = util_split(name);
     struct remote remote;
-    unsigned int names;
     unsigned int i;
 
     config_init();
-
-    names = util_split(name);
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
