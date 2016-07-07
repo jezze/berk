@@ -96,13 +96,25 @@ static int parseconfig(int argc, char **argv)
 {
 
     struct remote remote;
+    unsigned int names;
+    unsigned int i;
+    char *name = argv[0];
 
     config_init();
+    util_trim(name);
+    util_strip(name);
 
-    if (remote_load(&remote, argv[0]))
-        return errorremote(argv[0]);
+    names = util_split(name);
 
-    command_config(&remote, argv[1], argv[2]);
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    {
+
+        if (remote_load(&remote, name))
+            return errorremote(name);
+
+        command_config(&remote, argv[1], argv[2]);
+
+    }
 
     return EXIT_SUCCESS;
 
@@ -124,21 +136,21 @@ static int parseexec(int argc, char **argv)
     unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
-    unsigned int words;
+    unsigned int names;
     unsigned int i;
-    char *word = argv[0];
+    char *name = argv[0];
     int status;
 
     config_init();
-    util_trim(word);
-    util_strip(word);
+    util_trim(name);
+    util_strip(name);
 
-    words = util_split(word);
+    names = util_split(name);
 
     if (event_begin())
         error(ERROR_PANIC, "Could not run event.");
 
-    for (i = 0; (word = util_nextword(word, i, words)); i++)
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
         pid_t pid = fork();
@@ -148,8 +160,8 @@ static int parseexec(int argc, char **argv)
 
             struct remote remote;
 
-            if (remote_load(&remote, word))
-                return errorremote(word);
+            if (remote_load(&remote, name))
+                return errorremote(name);
 
             return command_exec(&remote, getpid(), argv[1]);
 
@@ -230,13 +242,25 @@ static int parseremove(int argc, char **argv)
 {
 
     struct remote remote;
+    unsigned int names;
+    unsigned int i;
+    char *name = argv[0];
 
     config_init();
+    util_trim(name);
+    util_strip(name);
 
-    if (remote_load(&remote, argv[0]))
-        return errorremote(argv[0]);
+    names = util_split(name);
 
-    command_remove(&remote);
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    {
+
+        if (remote_load(&remote, name))
+            return errorremote(name);
+
+        command_remove(&remote);
+
+    }
 
     return EXIT_SUCCESS;
 
@@ -272,17 +296,29 @@ static int parseshow(int argc, char **argv)
 {
 
     struct remote remote;
+    unsigned int names;
+    unsigned int i;
+    char *name = argv[0];
 
     config_init();
+    util_trim(name);
+    util_strip(name);
 
-    if (remote_load(&remote, argv[0]))
-        return errorremote(argv[0]);
+    names = util_split(name);
 
-    if (argc > 1)
-        command_show(&remote, argv[1]);
-    else
-        command_show(&remote, NULL);
-    
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    {
+
+        if (remote_load(&remote, name))
+            return errorremote(name);
+
+        if (argc > 1)
+            command_show(&remote, argv[1]);
+        else
+            command_show(&remote, NULL);
+ 
+    }
+
     return EXIT_SUCCESS;
 
 }
@@ -301,16 +337,16 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parseadd, 2, " <name> <hostname>"},
-        {"config", parseconfig, 3, " <name> <key> <value>"},
+        {"config", parseconfig, 3, " <namelist> <key> <value>"},
         {"copy", parsecopy, 2, " <name>:<file> <name>:<file>"},
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, " [<label>]"},
         {"log", parselog, 2, " <name> <pid>"},
-        {"remove", parseremove, 1, " <name>"},
+        {"remove", parseremove, 1, " <namelist>"},
         {"send", parsesend, 2, " <namelist> <file>"},
         {"shell", parseshell, 1, " <name>"},
-        {"show", parseshow, 1, " <name> [<key>]"},
+        {"show", parseshow, 1, " <namelist> [<key>]"},
         {"version", parseversion, 0, ""},
         {0}
     };
