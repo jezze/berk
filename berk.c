@@ -380,8 +380,31 @@ static int parseshow(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorremote(name);
 
-        command_show(&remote, key);
- 
+        if (key)
+        {
+
+            char *value = remote_getvalue(&remote, key);
+
+            if (!value)
+                error(ERROR_PANIC, "Could not find key '%s'.", key);
+
+            fprintf(stdout, "%s\n", value);
+
+        }
+
+        else
+        {
+
+            fprintf(stdout, "name=%s\n", remote.name);
+            fprintf(stdout, "hostname=%s\n", remote.hostname);
+            fprintf(stdout, "port=%s\n", remote.port ? remote.port : "");
+            fprintf(stdout, "username=%s\n", remote.username ? remote.username : "");
+            fprintf(stdout, "privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
+            fprintf(stdout, "publickey=%s\n", remote.publickey ? remote.publickey : "");
+            fprintf(stdout, "label=%s\n", remote.label ? remote.label : "");
+
+        }
+
     }
 
     return EXIT_SUCCESS;

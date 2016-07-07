@@ -42,6 +42,36 @@ int remote_gettype(char *key)
 
 }
 
+void *remote_getvalue(struct remote *remote, char *key)
+{
+
+    switch (remote_gettype(key))
+    {
+
+    case REMOTE_NAME:
+        return remote->name;
+
+    case REMOTE_HOSTNAME:
+        return remote->hostname;
+
+    case REMOTE_PORT:
+        return remote->port;
+
+    case REMOTE_USERNAME:
+        return remote->username;
+
+    case REMOTE_PRIVATEKEY:
+        return remote->privatekey;
+
+    case REMOTE_LABEL:
+        return remote->label;
+
+    }
+
+    return NULL;
+
+}
+
 static int loadcallback(void *user, char *section, char *key, char *value)
 {
 

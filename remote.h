@@ -28,6 +28,7 @@ struct remote
 };
 
 int remote_gettype(char *key);
+void *remote_getvalue(struct remote *remote, char *key);
 int remote_load(struct remote *remote, char *name);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
