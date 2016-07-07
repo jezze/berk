@@ -79,7 +79,7 @@ and "donut" using:
 
     $ berk config myhost label "beer donut"
 
-Using berk list with a label we can now filter out only the machines that match
+Using berk list with a label we can now filter out only the remotes that match
 the label we are interested in like "donut":
 
     $ berk list donut
