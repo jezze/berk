@@ -279,7 +279,7 @@ int remote_config(struct remote *remote, char *key, char *value)
 
 }
 
-int remote_log_open(struct remote *remote)
+int remote_openlog(struct remote *remote)
 {
 
     char path[BUFSIZ];
@@ -299,7 +299,7 @@ int remote_log_open(struct remote *remote)
 
 }
 
-void remote_log_close(struct remote *remote)
+void remote_closelog(struct remote *remote)
 {
 
     close(remote->logfd);
@@ -313,7 +313,7 @@ int remote_log(struct remote *remote, char *buffer, unsigned int size)
 
 }
 
-int remote_log_print(struct remote *remote)
+int remote_printlog(struct remote *remote)
 {
 
     char path[BUFSIZ];

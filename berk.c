@@ -238,7 +238,7 @@ static int parseexec(int argc, char **argv)
 
             remote.pid = getpid();
 
-            remote_log_open(&remote);
+            remote_openlog(&remote);
 
             if (event_start(&remote))
                 return error(ERROR_NORMAL, "Could not run event.");
@@ -254,7 +254,7 @@ static int parseexec(int argc, char **argv)
             if (event_stop(&remote, rc))
                 return error(ERROR_NORMAL, "Could not run event.");
 
-            remote_log_close(&remote);
+            remote_closelog(&remote);
 
             return rc;
 
@@ -455,7 +455,7 @@ static int parselog(int argc, char **argv)
     if (!remote.pid)
         return errorvalue(pid);
 
-    remote_log_print(&remote);
+    remote_printlog(&remote);
 
     return EXIT_SUCCESS;
 
