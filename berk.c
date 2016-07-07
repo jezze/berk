@@ -155,7 +155,7 @@ static int parseadd(int argc, char **argv)
         error(ERROR_PANIC, "Could not init remote '%s'.", remote.name);
 
     if (remote_save(&remote))
-        return errorsave(remote.name);
+        return errorsave(name);
 
     fprintf(stdout, "Remote '%s' added.\n", name);
 
@@ -190,7 +190,7 @@ static int parseconfig(int argc, char **argv)
             error(ERROR_PANIC, "Could not run configure '%s'.", remote.name);
 
         if (remote_save(&remote))
-            return errorsave(remote.name);
+            return errorsave(name);
 
     }
 
