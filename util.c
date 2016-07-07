@@ -56,6 +56,23 @@ int util_checkdigit(char *str)
 
 }
 
+int util_checkprint(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isprint(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
 int util_checkspace(char *str)
 {
 
