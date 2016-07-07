@@ -92,17 +92,45 @@ static int parseadd(int argc, char **argv)
 
 }
 
+static char *checkstring(char *arg)
+{
+
+    util_trim(arg);
+
+    return arg;
+
+}
+
+static char *checkint(char *arg)
+{
+
+    util_trim(arg);
+
+    return arg;
+
+}
+
+static char *checklist(char *arg)
+{
+
+    util_trim(arg);
+    util_strip(arg);
+
+    return arg;
+
+}
+
 static int parseconfig(int argc, char **argv)
 {
 
+    char *name = checklist(argv[0]);
+    char *key = checkstring(argv[1]);
+    char *value = checkstring(argv[2]);
     struct remote remote;
     unsigned int names;
     unsigned int i;
-    char *name = argv[0];
 
     config_init();
-    util_trim(name);
-    util_strip(name);
 
     names = util_split(name);
 
@@ -112,7 +140,7 @@ static int parseconfig(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorremote(name);
 
-        command_config(&remote, argv[1], argv[2]);
+        command_config(&remote, key, value);
 
     }
 
@@ -133,17 +161,16 @@ static int parsecopy(int argc, char **argv)
 static int parseexec(int argc, char **argv)
 {
 
+    char *name = checklist(argv[0]);
+    char *command = checkstring(argv[1]);
     unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
     unsigned int names;
     unsigned int i;
-    char *name = argv[0];
     int status;
 
     config_init();
-    util_trim(name);
-    util_strip(name);
 
     names = util_split(name);
 
@@ -163,7 +190,7 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, name))
                 return errorremote(name);
 
-            return command_exec(&remote, getpid(), argv[1]);
+            return command_exec(&remote, getpid(), command);
 
         }
 
@@ -205,12 +232,10 @@ static int parseinit(int argc, char **argv)
 static int parselist(int argc, char **argv)
 {
 
-    config_init();
+    char *label = (argc > 0) ? checkstring(argv[0]) : NULL;
 
-    if (argc > 0)
-        command_list(argv[0]);
-    else
-        command_list(NULL);
+    config_init();
+    command_list(label);
 
     return EXIT_SUCCESS;
 
@@ -219,20 +244,22 @@ static int parselist(int argc, char **argv)
 static int parselog(int argc, char **argv)
 {
 
+    char *name = checkstring(argv[0]);
+    char *pid = checkint(argv[1]);
     struct remote remote;
-    unsigned int pid;
+    unsigned int value;
 
     config_init();
 
-    if (remote_load(&remote, argv[0]))
-        return errorremote(argv[0]);
+    if (remote_load(&remote, name))
+        return errorremote(name);
 
-    pid = strtoul(argv[1], NULL, 10);
+    value = strtoul(pid, NULL, 10);
 
-    if (!pid)
-        return errorvalue(argv[1]);
+    if (!value)
+        return errorvalue(pid);
 
-    command_log(&remote, pid);
+    command_log(&remote, value);
 
     return EXIT_SUCCESS;
 
@@ -241,14 +268,12 @@ static int parselog(int argc, char **argv)
 static int parseremove(int argc, char **argv)
 {
 
+    char *name = checklist(argv[0]);
     struct remote remote;
     unsigned int names;
     unsigned int i;
-    char *name = argv[0];
 
     config_init();
-    util_trim(name);
-    util_strip(name);
 
     names = util_split(name);
 
@@ -279,12 +304,13 @@ static int parsesend(int argc, char **argv)
 static int parseshell(int argc, char **argv)
 {
 
+    char *name = checkstring(argv[0]);
     struct remote remote;
 
     config_init();
 
-    if (remote_load(&remote, argv[0]))
-        return errorremote(argv[0]);
+    if (remote_load(&remote, name))
+        return errorremote(name);
 
     command_shell(&remote);
 
@@ -295,14 +321,13 @@ static int parseshell(int argc, char **argv)
 static int parseshow(int argc, char **argv)
 {
 
+    char *name = checklist(argv[0]);
+    char *key = (argc > 1) ? checkstring(argv[1]) : NULL;
     struct remote remote;
     unsigned int names;
     unsigned int i;
-    char *name = argv[0];
 
     config_init();
-    util_trim(name);
-    util_strip(name);
 
     names = util_split(name);
 
@@ -312,10 +337,7 @@ static int parseshow(int argc, char **argv)
         if (remote_load(&remote, name))
             return errorremote(name);
 
-        if (argc > 1)
-            command_show(&remote, argv[1]);
-        else
-            command_show(&remote, NULL);
+        command_show(&remote, key);
  
     }
 
