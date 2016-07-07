@@ -254,12 +254,13 @@ static int parseexec(int argc, char **argv)
     unsigned int complete = 0;
     unsigned int success = 0;
     unsigned int i;
+    int gid = getpid();
     int status;
 
     if (config_init())
         return errorinit();
 
-    if (event_begin())
+    if (event_begin(gid))
         return error(ERROR_NORMAL, "Could not run event.");
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
@@ -279,7 +280,8 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, name))
                 return errorload(name);
 
-            remote.pid = getpid();
+            remote.gid = gid;
+            remote.pid = i;
 
             remote_openlog(&remote);
 
@@ -453,6 +455,8 @@ static int parselist(int argc, char **argv)
 
     }
 
+    closedir(dir);
+
     return EXIT_SUCCESS;
 
 }
@@ -460,27 +464,95 @@ static int parselist(int argc, char **argv)
 static int parselog(int argc, char **argv)
 {
 
-    char *pid = checkdigit(argv[0]);
+    char *gid = (argc > 0) ? checkdigit(argv[0]) : NULL;
+    char *pid = (argc > 1) ? checkdigit(argv[1]) : NULL;
     char path[BUFSIZ];
-    char buffer[BUFSIZ];
-    unsigned int count;
-    int fd;
 
     if (config_init())
         return errorinit();
 
-    if (config_getlogpathbyname(path, BUFSIZ, pid))
-        return error(ERROR_NORMAL, "Could not get path.");
+    if (gid)
+    {
 
-    fd = open(path, O_RDONLY, 0644);
+        if (pid)
+        {
 
-    if (fd < 0)
-        return error(ERROR_NORMAL, "Could not open '%s'.", path);
+            int fd;
+            char buffer[BUFSIZ];
+            unsigned int count;
 
-    while ((count = read(fd, buffer, BUFSIZ)))
-        write(STDOUT_FILENO, buffer, count);
+            if (config_getprocessbyname(path, BUFSIZ, gid, pid))
+                return error(ERROR_NORMAL, "Could not get path.");
 
-    close(fd);
+            fd = open(path, O_RDONLY, 0644);
+
+            if (fd < 0)
+                return error(ERROR_NORMAL, "Could not open '%s'.", path);
+
+            while ((count = read(fd, buffer, BUFSIZ)))
+                write(STDOUT_FILENO, buffer, count);
+
+            close(fd);
+
+        }
+
+        else
+        {
+
+            DIR *dir;
+            struct dirent *entry;
+
+            if (config_getgroupbyname(path, BUFSIZ, gid))
+                return error(ERROR_NORMAL, "Could not get path.");
+
+            dir = opendir(path);
+
+            if (dir == NULL)
+                return error(ERROR_NORMAL, "Could not open '%s'.", path);
+
+            while ((entry = readdir(dir)) != NULL)
+            {
+
+                if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+                    continue;
+
+                printf("%s\n", entry->d_name);
+
+            }
+
+            closedir(dir);
+
+        }
+
+    }
+
+    else
+    {
+
+        DIR *dir;
+        struct dirent *entry;
+
+        if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+            return error(ERROR_NORMAL, "Could not get path.");
+
+        dir = opendir(path);
+
+        if (dir == NULL)
+            return error(ERROR_NORMAL, "Could not open '%s'.", path);
+
+        while ((entry = readdir(dir)) != NULL)
+        {
+
+            if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+                continue;
+
+            printf("%s\n", entry->d_name);
+
+        }
+
+        closedir(dir);
+
+    }
 
     return EXIT_SUCCESS;
 
@@ -574,7 +646,7 @@ int main(int argc, char **argv)
         {"exec", parseexec, 2, " <namelist> <command>"},
         {"init", parseinit, 0, ""},
         {"list", parselist, 0, " [<label>]"},
-        {"log", parselog, 1, " <pid>"},
+        {"log", parselog, 0, " [<gid>] [<pid>]"},
         {"remove", parseremove, 1, " <namelist>"},
         {"send", parsesend, 2, " <namelist> <file>"},
         {"shell", parseshell, 1, " <name>"},

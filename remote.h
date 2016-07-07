@@ -10,6 +10,7 @@ struct remote
     char *label;
     int sock;
     int logfd;
+    int gid;
     int pid;
 
 };

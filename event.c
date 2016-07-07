@@ -20,10 +20,10 @@ static int runhook(char *name)
 
 }
 
-int event_begin()
+int event_begin(int gid)
 {
 
-    printf("event=begin\n");
+    printf("event=begin gid=%d\n", gid);
 
     return runhook("begin");
 

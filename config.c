@@ -52,17 +52,31 @@ int config_getremotepath(char *path, unsigned int length, char *filename)
 
 }
 
-int config_getlogpathbypid(char *path, unsigned int length, int pid)
+int config_getgroupbygid(char *path, unsigned int length, int gid)
 {
 
-    return snprintf(path, length, "%s/%s/%d", root, CONFIG_LOGS, pid) < 0;
+    return snprintf(path, length, "%s/%s/%d", root, CONFIG_LOGS, gid) < 0;
 
 }
 
-int config_getlogpathbyname(char *path, unsigned int length, char *filename)
+int config_getgroupbyname(char *path, unsigned int length, char *gid)
 {
 
-    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, filename) < 0;
+    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, gid) < 0;
+
+}
+
+int config_getprocessbypid(char *path, unsigned int length, int gid, int pid)
+{
+
+    return snprintf(path, length, "%s/%s/%d/%d", root, CONFIG_LOGS, gid, pid) < 0;
+
+}
+
+int config_getprocessbyname(char *path, unsigned int length, char *gid, char *pid)
+{
+
+    return snprintf(path, length, "%s/%s/%s/%s", root, CONFIG_LOGS, gid, pid) < 0;
 
 }
 
