@@ -1,4 +1,4 @@
-# ABOUT
+# About
 
 This program called berk is a simple but versatile job dispatcher. It can,
 given a set of remote machines, execute commands on each machine and log the
@@ -9,7 +9,7 @@ and uses a syntax and design similar to git.
 
 It was written by Jens Nyberg.
 
-# GETTING STARTED
+# Getting started
 
 First choose a directory where to store your berk configuration. The
 recommended directory is the root of your source tree, the same directory
