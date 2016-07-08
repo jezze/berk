@@ -262,6 +262,9 @@ static int parseexec(int argc, char **argv)
     if (event_begin(gid))
         return util_error("Could not run event.");
 
+    if (remote_logprepare(gid))
+        return util_error("Could not prepare log.");
+
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
@@ -279,10 +282,10 @@ static int parseexec(int argc, char **argv)
             if (remote_load(&remote, name))
                 return errorload(name);
 
-            remote.gid = gid;
             remote.pid = i;
 
-            remote_openlog(&remote);
+            if (remote_openlog(&remote, gid) < 0)
+                return util_error("Could not open log.");
 
             if (event_start(&remote))
                 return util_error("Could not run event.");

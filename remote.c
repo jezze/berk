@@ -237,6 +237,27 @@ int remote_init(struct remote *remote, char *name, char *hostname, char *usernam
 
 }
 
+int remote_logprepare(int gid)
+{
+
+    char path[BUFSIZ];
+
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    if (config_getgroupbygid(path, BUFSIZ, gid))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    return 0;
+
+}
+
 int remote_loghead(int gid, int total, int complete, int success)
 {
 
@@ -246,12 +267,6 @@ int remote_loghead(int gid, int total, int complete, int success)
     int fd;
 
     count = snprintf(buffer, BUFSIZ, "%d 0000-00-00T00:00:00 %d %d %d\n", gid, total, complete, success);
-
-    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
 
     if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
         return -1;
@@ -268,24 +283,12 @@ int remote_loghead(int gid, int total, int complete, int success)
 
 }
 
-int remote_openlog(struct remote *remote)
+int remote_openlog(struct remote *remote, int gid)
 {
 
     char path[BUFSIZ];
 
-    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    if (config_getgroupbygid(path, BUFSIZ, remote->gid))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    if (config_getprocessbypid(path, BUFSIZ, remote->gid, remote->pid))
+    if (config_getprocessbypid(path, BUFSIZ, gid, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
