@@ -19,7 +19,9 @@ struct command
 
     char *name;
     int (*parse)(int argc, char **argv);
-    int argc;
+    int minargc;
+    int maxargc;
+    char *usage;
     char *description;
 
 };
@@ -45,13 +47,6 @@ static int errorsave(char *name)
 
 }
 
-static int errorparse(char *value)
-{
-
-    return util_error("Could not parse value '%s'.", value);
-
-}
-
 static int checkargs(struct command *commands, int argc, char **argv)
 {
 
@@ -64,7 +59,7 @@ static int checkargs(struct command *commands, int argc, char **argv)
         printf("List of commands:\n");
 
         for (i = 0; commands[i].name; i++)
-            printf("    %s%s\n", commands[i].name, commands[i].description);
+            printf("    %s%s\n", commands[i].name, commands[i].usage);
 
         return EXIT_SUCCESS;
 
@@ -76,10 +71,13 @@ static int checkargs(struct command *commands, int argc, char **argv)
         if (strcmp(argv[0], commands[i].name))
             continue;
 
-        if ((argc - 1) < commands[i].argc)
+        if ((argc - 1) < commands[i].minargc || (argc - 1) > commands[i].maxargc)
         {
 
-            printf("Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].description);
+            printf("Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].usage);
+
+            if (commands[i].description)            
+                printf("\n%s", commands[i].description);
 
             return EXIT_SUCCESS;
 
@@ -99,7 +97,7 @@ static char *checkalpha(char *arg)
     util_trim(arg);
 
     if (util_checkalpha(arg))
-        errorparse(arg);
+        exit(util_error("Could not parse alpha value '%s'.", arg));
 
     return arg;
 
@@ -111,7 +109,7 @@ static char *checkdigit(char *arg)
     util_trim(arg);
 
     if (util_checkdigit(arg))
-        errorparse(arg);
+        exit(util_error("Could not parse digit value '%s'.", arg));
 
     return arg;
 
@@ -123,7 +121,7 @@ static char *checkprint(char *arg)
     util_trim(arg);
 
     if (util_checkprint(arg))
-        errorparse(arg);
+        exit(util_error("Could not parse printable value '%s'.", arg));
 
     return arg;
 
@@ -135,6 +133,9 @@ static char *checklist(char *arg)
     util_trim(arg);
     util_strip(arg);
 
+    if (util_checkprintspace(arg))
+        exit(util_error("Could not parse list:\n%s.", arg));
+
     return arg;
 
 }
@@ -144,13 +145,12 @@ static int parseadd(int argc, char **argv)
 
     char *name = checkprint(argv[0]);
     char *hostname = checkprint(argv[1]);
-    char *username = getenv("USER");
     struct remote remote;
 
     if (config_init())
         return errorinit();
 
-    if (remote_init(&remote, name, hostname, username))
+    if (remote_initrequired(&remote, name, hostname))
         return util_error("Could not init remote '%s'.", name);
 
     if (remote_save(&remote))
@@ -178,16 +178,18 @@ static int parseconfig(int argc, char **argv)
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
-        if (util_checkprint(name))
-            return errorparse(name);
-
         if (remote_load(&remote, name))
             return errorload(name);
 
         if (value)
         {
 
-            if (remote_setvalue(&remote, remote_gettype(key), value) == NULL)
+            int keytype = remote_gettype(key);
+
+            if (keytype == -1)
+                return util_error("Invalid key '%s'.", key);
+
+            if (remote_setvalue(&remote, keytype, value) == NULL)
                 return util_error("Could not run configure remote '%s'.", remote.name);
 
             if (remote_save(&remote))
@@ -201,12 +203,15 @@ static int parseconfig(int argc, char **argv)
             if (key)
             {
 
-                char *value = remote_getvalue(&remote, remote_gettype(key));
+                int keytype = remote_gettype(key);
+                char *value;
 
-                if (!value)
-                    return util_error("Could not find key '%s'.", key);
+                if (keytype == -1)
+                    return util_error("Invalid key '%s'.", key);
 
-                printf("%s\n", value);
+                value = remote_getvalue(&remote, keytype);
+
+                printf("%s: %s\n", remote.name, value);
 
             }
 
@@ -215,11 +220,21 @@ static int parseconfig(int argc, char **argv)
 
                 printf("name=%s\n", remote.name);
                 printf("hostname=%s\n", remote.hostname);
-                printf("port=%s\n", remote.port ? remote.port : "");
-                printf("username=%s\n", remote.username ? remote.username : "");
-                printf("privatekey=%s\n", remote.privatekey ? remote.privatekey : "");
-                printf("publickey=%s\n", remote.publickey ? remote.publickey : "");
-                printf("label=%s\n", remote.label ? remote.label : "");
+
+                if (remote.port)
+                    printf("port=%s\n", remote.port);
+
+                if (remote.username)                
+                    printf("username=%s\n", remote.username);
+
+                if (remote.privatekey)
+                    printf("privatekey=%s\n", remote.privatekey);
+
+                if (remote.publickey)
+                    printf("publickey=%s\n", remote.publickey);
+
+                if (remote.label)
+                    printf("label=%s\n", remote.label);
 
             }
 
@@ -268,9 +283,6 @@ static int parseexec(int argc, char **argv)
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
-        if (util_checkprint(name))
-            return errorparse(name);
-
         pid_t pid = fork();
 
         if (pid == 0)
@@ -281,6 +293,9 @@ static int parseexec(int argc, char **argv)
 
             if (remote_load(&remote, name))
                 return errorload(name);
+
+            if (remote_initoptional(&remote))
+                return util_error("Could not init remote '%s'.", name);
 
             remote.pid = i;
 
@@ -569,9 +584,6 @@ static int parseremove(int argc, char **argv)
     for (i = 0; (name = util_nextword(name, i, names)); i++)
     {
 
-        if (util_checkprint(name))
-            return errorparse(name);
-
         if (remote_load(&remote, name))
             return errorload(name);
 
@@ -610,6 +622,9 @@ static int parseshell(int argc, char **argv)
     if (remote_load(&remote, name))
         return errorload(name);
 
+    if (remote_initoptional(&remote))
+        return util_error("Could not init remote '%s'.", name);
+
     if (ssh_connect(&remote) < 0)
         return util_error("Could not connect to remote '%s'.", remote.name);
 
@@ -635,17 +650,17 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parseadd, 2, " <name> <hostname>"},
-        {"config", parseconfig, 1, " <namelist> [<key>] [<value>]"},
-        {"copy", parsecopy, 2, " <name:file> <name:file>"},
-        {"exec", parseexec, 2, " <namelist> <command>"},
-        {"init", parseinit, 0, ""},
-        {"list", parselist, 0, " [<label>]"},
-        {"log", parselog, 0, " [<gid>] [<pid>]"},
-        {"remove", parseremove, 1, " <namelist>"},
-        {"send", parsesend, 2, " <namelist> <file>"},
-        {"shell", parseshell, 1, " <name>"},
-        {"version", parseversion, 0, ""},
+        {"add", parseadd, 2, 2, " <name> <hostname>", 0},
+        {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username privatekey publickey label\n"},
+        {"copy", parsecopy, 2, 2, " <name:file> <name:file>", 0},
+        {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
+        {"init", parseinit, 0, 0, "", 0},
+        {"list", parselist, 0, 1, " [<label>]", 0},
+        {"log", parselog, 0, 2, " [<gid>] [<pid>]", 0},
+        {"remove", parseremove, 1, 1, " <namelist>", 0},
+        {"send", parsesend, 2, 2, " <namelist> <file>", 0},
+        {"shell", parseshell, 1, 1, " <name>", 0},
+        {"version", parseversion, 0, 0, "", 0},
         {0}
     };
 

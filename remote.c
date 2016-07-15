@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -128,7 +129,8 @@ static int loadcallback(void *user, char *section, char *key, char *value)
     if (strcmp(section, "remote"))
         return 0;
 
-    remote_setvalue(remote, remote_gettype(key), value);
+    if (strlen(value))
+        remote_setvalue(remote, remote_gettype(key), value);
 
     return 0;
 
@@ -172,19 +174,19 @@ int remote_save(struct remote *remote)
     ini_writestring(file, "name", remote->name);
     ini_writestring(file, "hostname", remote->hostname);
 
-    if (remote->port)
+    if (remote->port && strlen(remote->port))
         ini_writestring(file, "port", remote->port);
 
-    if (remote->username)
+    if (remote->username && strlen(remote->username))
         ini_writestring(file, "username", remote->username);
 
-    if (remote->privatekey)
+    if (remote->privatekey && strlen(remote->privatekey))
         ini_writestring(file, "privatekey", remote->privatekey);
 
-    if (remote->publickey)
+    if (remote->publickey && strlen(remote->publickey))
         ini_writestring(file, "publickey", remote->publickey);
 
-    if (remote->label)
+    if (remote->label && strlen(remote->label))
         ini_writestring(file, "label", remote->label);
 
     fclose(file);
@@ -208,28 +210,46 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_init(struct remote *remote, char *name, char *hostname, char *username)
+int remote_initrequired(struct remote *remote, char *name, char *hostname)
 {
-
-    struct passwd passwd, *current;
-    char buffer[BUFSIZ];
 
     memset(remote, 0, sizeof (struct remote));
     remote_setvalue(remote, REMOTE_NAME, name);
     remote_setvalue(remote, REMOTE_HOSTNAME, hostname);
-    remote_setvalue(remote, REMOTE_PORT, "22");
-    remote_setvalue(remote, REMOTE_USERNAME, username);
 
-    if (!getpwnam_r(username, &passwd, buffer, BUFSIZ, &current))
+    return 0;
+
+}
+
+int remote_initoptional(struct remote *remote)
+{
+
+    char buffer[BUFSIZ];
+    char keybuffer[BUFSIZ];
+    struct passwd passwd, *current;
+
+    if (!remote->port)
+        remote_setvalue(remote, REMOTE_PORT, "22");
+
+    if (!remote->username)    
+        remote_setvalue(remote, REMOTE_USERNAME, getenv("USER"));
+
+    if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
+        return 1;
+
+    if (!remote->privatekey)
     {
 
-        char privatekey[BUFSIZ];
-        char publickey[BUFSIZ];
+        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
+        remote_setvalue(remote, REMOTE_PRIVATEKEY, keybuffer);
 
-        snprintf(privatekey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-        remote_setvalue(remote, REMOTE_PRIVATEKEY, privatekey);
-        snprintf(publickey, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-        remote_setvalue(remote, REMOTE_PUBLICKEY, publickey);
+    }
+
+    if (!remote->publickey)
+    {
+
+        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
+        remote_setvalue(remote, REMOTE_PUBLICKEY, keybuffer);
 
     }
 
@@ -263,10 +283,19 @@ int remote_loghead(int gid, int total, int complete, int success)
 
     char path[BUFSIZ];
     char buffer[BUFSIZ];
+    char datetime[64];
     unsigned int count;
     int fd;
+    time_t timeraw;
+    struct tm *timeinfo;
 
-    count = snprintf(buffer, BUFSIZ, "%d 0000-00-00T00:00:00 %d %d %d\n", gid, total, complete, success);
+    time(&timeraw);
+
+    timeinfo = localtime(&timeraw);
+
+    strftime(datetime, 64, "%FT%T%z", timeinfo);
+
+    count = snprintf(buffer, BUFSIZ, "%d %s %d %d %d\n", gid, datetime, total, complete, success);
 
     if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
         return -1;

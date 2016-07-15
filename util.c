@@ -106,6 +106,23 @@ int util_checkspace(char *str)
 
 }
 
+int util_checkprintspace(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isprint(*str) && !isspace(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
 void util_trim(char *str)
 {
 
