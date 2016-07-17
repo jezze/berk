@@ -1,8 +1,8 @@
 # About
 
 This program called berk is a simple but versatile job dispatcher. It can,
-given a set of remote machines, execute commands on each machine and log the
-output.
+given a set of machines, called remotes, execute commands on each machine and
+log the outputs.
 
 It was written to be a replacement for Jenkins and similar bloated software
 and uses a syntax and design similar to git.
@@ -19,11 +19,11 @@ Then issue this command:
 
     $ berk init
 
-This will create a .berk folder. If you later invoke berk from either here
-or from a subdirectory this is where berk will look for it's configuration.
+This will create a .berk folder. If you later invoke berk from either here or
+from a subdirectory this is where berk will look for it's configuration.
 
-Next we need to add a remote. A remote is basically just a machine with an
-ssh server running that we can contact and tell it to do work for us.
+Next we need to add a remote. A remote is basically just a machine with a
+running ssh server that we can contact and tell it to execute commands.
 
 This command will add a new remote called "myhost":
 
@@ -42,12 +42,14 @@ be called "testuser" instead you can write:
 
     $ berk config myhost username testuser
 
-Make sure the path to the SSH keys are correct. Also, make sure that the public
-key exist in the authorized_keys file for the current user on each remote.
+By default the private and public key pairs will be the id_rsa and id_rsa.pub
+keys located in ~/.ssh. If you want to use different keys you can configure
+those now as well. Also, make sure that the public key you want to use exist in
+the authorized_keys file for the current user on each remote.
 
-Now it's time to execute a command on your remote, but because berk is
-intended to be used with many remotes simultanously we are gonna issue the
-same command multiple times on the same remote.
+Now it's time to execute a command on your remote. Since berk is intended to be
+used with many remotes simultanously we are gonna issue the same command
+multiple times on the same remote.
 
     $ berk exec "myhost myhost" "uptime"
 
