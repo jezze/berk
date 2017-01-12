@@ -127,9 +127,9 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
 {
 
     struct stat fileinfo;
+    char buffer[BUFSIZ];
+    size_t total;
     FILE *file;
-    char mem[BUFSIZ];
-    char *ptr;
 
     if (stat(localpath, &fileinfo))
         return util_error("Could not stat file.");
@@ -144,46 +144,28 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
     if (remote->channel == NULL)
         return util_error("Could not open channel.");
 
-    do
+    while ((total = fread(buffer, 1, BUFSIZ, file)))
     {
 
-        size_t nread = fread(mem, 1, BUFSIZ, file);
-        int rc;
+        char *current = buffer;
 
-        if (nread <= 0)
-        {
-
+        if (total <= 0)
             break;
 
-        }
-
-        ptr = mem;
- 
         do
         {
 
-            rc = libssh2_channel_write(remote->channel, ptr, nread);
+            int count = libssh2_channel_write(remote->channel, current, total);
 
-            if (rc < 0)
-            {
-
-                fprintf(stderr, "ERROR %d\n", rc);
-
+            if (count < 0)
                 break;
 
-            }
+            current += count;
+            total -= count;
 
-            else
-            {
-
-                ptr += rc;
-                nread -= rc;
-
-            }
-
-        } while (nread);
+        } while (total);
  
-    } while (1);
+    };
 
     libssh2_channel_send_eof(remote->channel);
     libssh2_channel_wait_eof(remote->channel);
