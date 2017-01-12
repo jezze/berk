@@ -123,7 +123,7 @@ int ssh_exec(struct remote *remote, char *command)
 
 }
 
-int ssh_send(struct remote *remote, char *filepath)
+int ssh_send(struct remote *remote, char *localpath, char *remotepath)
 {
 
     struct stat fileinfo;
@@ -131,15 +131,15 @@ int ssh_send(struct remote *remote, char *filepath)
     char mem[BUFSIZ];
     char *ptr;
 
-    file = fopen(filepath, "rb");
+    if (stat(localpath, &fileinfo))
+        return util_error("Could not stat file.");
+
+    file = fopen(localpath, "rb");
 
     if (file == NULL)
         return util_error("Could not open file.");
 
-    if (stat(filepath, &fileinfo))
-        return util_error("Could not stat file.");
-
-    remote->channel = libssh2_scp_send(remote->session, "test.txt", fileinfo.st_mode & 0777, fileinfo.st_size);
+    remote->channel = libssh2_scp_send(remote->session, remotepath, fileinfo.st_mode & 0777, fileinfo.st_size);
 
     if (remote->channel == NULL)
         return util_error("Could not open channel.");

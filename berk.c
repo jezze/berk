@@ -284,7 +284,7 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
 
 }
 
-static int runsend(int gid, unsigned int pid, char *name, char *file)
+static int runsend(int gid, unsigned int pid, char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
@@ -301,7 +301,7 @@ static int runsend(int gid, unsigned int pid, char *name, char *file)
     if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
 
-    rc = ssh_send(&remote, file);
+    rc = ssh_send(&remote, localpath, remotepath);
 
     if (ssh_disconnect(&remote))
         return util_error("Could not disconnect from remote '%s'.", remote.name);
@@ -664,7 +664,8 @@ static int parsesend(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
-    char *file = checkprint(argv[1]);
+    char *localpath = checkprint(argv[1]);
+    char *remotepath = checkprint(argv[2]);
     unsigned int names = util_split(name);
     unsigned int i;
     int gid = getpid();
@@ -673,11 +674,7 @@ static int parsesend(int argc, char **argv)
         return errorinit();
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
-    {
-
-        runsend(gid, i, name, file);
-
-    }
+        runsend(gid, i, name, localpath, remotepath);
 
     return EXIT_SUCCESS;
 
@@ -732,7 +729,7 @@ int main(int argc, char **argv)
         {"list", parselist, 0, 1, " [<label>]", 0},
         {"log", parselog, 0, 2, " [<gid>] [<pid>]", 0},
         {"remove", parseremove, 1, 1, " <namelist>", 0},
-        {"send", parsesend, 2, 2, " <namelist> <file>", 0},
+        {"send", parsesend, 3, 3, " <namelist> <localpath> <remotepath>", 0},
         {"shell", parseshell, 1, 1, " <name>", 0},
         {"version", parseversion, 0, 0, "", 0},
         {0}
