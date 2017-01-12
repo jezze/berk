@@ -258,7 +258,7 @@ static int parsecopy(int argc, char **argv)
 
 }
 
-static int runexec(int gid, unsigned int i, char *name, char *command)
+static int runexec(int gid, unsigned int pid, char *name, char *command)
 {
 
     struct remote remote;
@@ -270,7 +270,7 @@ static int runexec(int gid, unsigned int i, char *name, char *command)
     if (remote_initoptional(&remote))
         return util_error("Could not init remote '%s'.", name);
 
-    remote.pid = i;
+    remote.pid = pid;
 
     if (remote_openlog(&remote, gid) < 0)
         return util_error("Could not open log.");
