@@ -317,7 +317,16 @@ static int parseexec(int argc, char **argv)
         return util_error("Could not prepare log.");
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
-        runexec(gid, i, name, command);
+    {
+
+        total++;
+
+        if (runexec(gid, i, name, command) == 0)
+            success++;
+
+        complete++;
+
+    }
 
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
