@@ -278,12 +278,12 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
     if (event_start(&remote))
         return util_error("Could not run event.");
 
-    if (ssh_connect(&remote) < 0)
+    if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
 
     rc = ssh_exec(&remote, command);
 
-    if (ssh_disconnect(&remote) < 0)
+    if (ssh_disconnect(&remote))
         return util_error("Could not disconnect from remote '%s'.", remote.name);
 
     if (event_stop(&remote, rc))
@@ -661,12 +661,13 @@ static int parseshell(int argc, char **argv)
     if (remote_initoptional(&remote))
         return util_error("Could not init remote '%s'.", name);
 
-    if (ssh_connect(&remote) < 0)
+    if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
 
-    ssh_shell(&remote);
+    if (ssh_shell(&remote))
+        return util_error("Could not open shell on remote '%s'.", remote.name);
 
-    if (ssh_disconnect(&remote) < 0)
+    if (ssh_disconnect(&remote))
         return util_error("Could not disconnect from remote '%s'.", remote.name);
 
     return EXIT_SUCCESS;
