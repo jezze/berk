@@ -339,7 +339,7 @@ static int parseexec(int argc, char **argv)
 
 }
 
-static int parsepexec(int argc, char **argv)
+static int parseexecp(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
@@ -703,7 +703,7 @@ int main(int argc, char **argv)
         {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username privatekey publickey label\n"},
         {"copy", parsecopy, 2, 2, " <name:file> <name:file>", 0},
         {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
-        {"pexec", parsepexec, 2, 2, " <namelist> <command>", 0},
+        {"execp", parseexecp, 2, 2, " <namelist> <command>", 0},
         {"init", parseinit, 0, 0, "", 0},
         {"list", parselist, 0, 1, " [<label>]", 0},
         {"log", parselog, 0, 2, " [<gid>] [<pid>]", 0},
