@@ -326,10 +326,12 @@ int remote_openlog(struct remote *remote, int gid)
 
 }
 
-void remote_closelog(struct remote *remote)
+int remote_closelog(struct remote *remote)
 {
 
     close(remote->logfd);
+
+    return 0;
 
 }
 

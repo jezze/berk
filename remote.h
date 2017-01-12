@@ -27,5 +27,5 @@ int remote_initoptional(struct remote *remote);
 int remote_logprepare(int gid);
 int remote_loghead(int gid, int total, int complete, int success);
 int remote_openlog(struct remote *remote, int gid);
-void remote_closelog(struct remote *remote);
+int remote_closelog(struct remote *remote);
 int remote_log(struct remote *remote, char *buffer, unsigned int size);

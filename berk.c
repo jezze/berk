@@ -289,7 +289,8 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
     if (event_stop(&remote, rc))
         return util_error("Could not run event.");
 
-    remote_closelog(&remote);
+    if (remote_closelog(&remote))
+        return util_error("Could not close log.");
 
     return rc;
 
@@ -331,7 +332,8 @@ static int parseexec(int argc, char **argv)
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
 
-    remote_loghead(gid, total, complete, success);
+    if (remote_loghead(gid, total, complete, success))
+        return util_error("Could not log HEAD.");
 
     return EXIT_SUCCESS;
 
@@ -389,7 +391,8 @@ static int parsepexec(int argc, char **argv)
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
 
-    remote_loghead(gid, total, complete, success);
+    if (remote_loghead(gid, total, complete, success))
+        return util_error("Could not log HEAD.");
 
     return EXIT_SUCCESS;
 
