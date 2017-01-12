@@ -272,7 +272,7 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
 
     remote.pid = pid;
 
-    if (remote_openlog(&remote, gid) < 0)
+    if (remote_openlog(&remote, gid))
         return util_error("Could not open log.");
 
     if (event_start(&remote))

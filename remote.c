@@ -322,7 +322,7 @@ int remote_openlog(struct remote *remote, int gid)
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    return remote->logfd;
+    return 0;
 
 }
 
