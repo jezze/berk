@@ -246,18 +246,6 @@ static int parseconfig(int argc, char **argv)
 
 }
 
-static int parsecopy(int argc, char **argv)
-{
-
-    if (config_init())
-        return errorinit();
-
-    util_error("Copy not implemented.");
-
-    return EXIT_SUCCESS;
-
-}
-
 static int runexec(int gid, unsigned int pid, char *name, char *command)
 {
 
@@ -291,6 +279,32 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
 
     if (remote_closelog(&remote))
         return util_error("Could not close log.");
+
+    return rc;
+
+}
+
+static int runsend(int gid, unsigned int pid, char *name, char *file)
+{
+
+    struct remote remote;
+    int rc;
+
+    if (remote_load(&remote, name))
+        return errorload(name);
+
+    if (remote_initoptional(&remote))
+        return util_error("Could not init remote '%s'.", name);
+
+    remote.pid = pid;
+
+    if (ssh_connect(&remote))
+        return util_error("Could not connect to remote '%s'.", remote.name);
+
+    rc = ssh_send(&remote, file);
+
+    if (ssh_disconnect(&remote))
+        return util_error("Could not disconnect from remote '%s'.", remote.name);
 
     return rc;
 
@@ -649,10 +663,21 @@ static int parseremove(int argc, char **argv)
 static int parsesend(int argc, char **argv)
 {
 
+    char *name = checklist(argv[0]);
+    char *file = checkprint(argv[1]);
+    unsigned int names = util_split(name);
+    unsigned int i;
+    int gid = getpid();
+
     if (config_init())
         return errorinit();
 
-    util_error("Send not implemented.");
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    {
+
+        runsend(gid, i, name, file);
+
+    }
 
     return EXIT_SUCCESS;
 
@@ -701,7 +726,6 @@ int main(int argc, char **argv)
     static struct command commands[] = {
         {"add", parseadd, 2, 2, " <name> <hostname>", 0},
         {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username privatekey publickey label\n"},
-        {"copy", parsecopy, 2, 2, " <name:file> <name:file>", 0},
         {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
         {"execp", parseexecp, 2, 2, " <namelist> <command>", 0},
         {"init", parseinit, 0, 0, "", 0},
