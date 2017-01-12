@@ -258,7 +258,77 @@ static int parsecopy(int argc, char **argv)
 
 }
 
+static int runexec(int gid, unsigned int i, char *name, char *command)
+{
+
+    struct remote remote;
+    int rc;
+
+    if (remote_load(&remote, name))
+        return errorload(name);
+
+    if (remote_initoptional(&remote))
+        return util_error("Could not init remote '%s'.", name);
+
+    remote.pid = i;
+
+    if (remote_openlog(&remote, gid) < 0)
+        return util_error("Could not open log.");
+
+    if (event_start(&remote))
+        return util_error("Could not run event.");
+
+    if (ssh_connect(&remote) < 0)
+        return util_error("Could not connect to remote '%s'.", remote.name);
+
+    rc = ssh_exec(&remote, command);
+
+    if (ssh_disconnect(&remote) < 0)
+        return util_error("Could not disconnect from remote '%s'.", remote.name);
+
+    if (event_stop(&remote, rc))
+        return util_error("Could not run event.");
+
+    remote_closelog(&remote);
+
+    return rc;
+
+}
+
 static int parseexec(int argc, char **argv)
+{
+
+    char *name = checklist(argv[0]);
+    char *command = checkprint(argv[1]);
+    unsigned int names = util_split(name);
+    unsigned int total = 0;
+    unsigned int complete = 0;
+    unsigned int success = 0;
+    unsigned int i;
+    int gid = getpid();
+
+    if (config_init())
+        return errorinit();
+
+    if (event_begin(gid))
+        return util_error("Could not run event.");
+
+    if (remote_logprepare(gid))
+        return util_error("Could not prepare log.");
+
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+        runexec(gid, i, name, command);
+
+    if (event_end(total, complete, success))
+        return util_error("Could not run event.");
+
+    remote_loghead(gid, total, complete, success);
+
+    return EXIT_SUCCESS;
+
+}
+
+static int parsepexec(int argc, char **argv)
 {
 
     char *name = checklist(argv[0]);
@@ -286,41 +356,7 @@ static int parseexec(int argc, char **argv)
         pid_t pid = fork();
 
         if (pid == 0)
-        {
-
-            struct remote remote;
-            int rc;
-
-            if (remote_load(&remote, name))
-                return errorload(name);
-
-            if (remote_initoptional(&remote))
-                return util_error("Could not init remote '%s'.", name);
-
-            remote.pid = i;
-
-            if (remote_openlog(&remote, gid) < 0)
-                return util_error("Could not open log.");
-
-            if (event_start(&remote))
-                return util_error("Could not run event.");
-
-            if (ssh_connect(&remote) < 0)
-                return util_error("Could not connect to remote '%s'.", remote.name);
-
-            rc = ssh_exec(&remote, command);
-
-            if (ssh_disconnect(&remote) < 0)
-                return util_error("Could not disconnect from remote '%s'.", remote.name);
-
-            if (event_stop(&remote, rc))
-                return util_error("Could not run event.");
-
-            remote_closelog(&remote);
-
-            return rc;
-
-        }
+            return runexec(gid, i, name, command);
 
     }
 
@@ -654,6 +690,7 @@ int main(int argc, char **argv)
         {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username privatekey publickey label\n"},
         {"copy", parsecopy, 2, 2, " <name:file> <name:file>", 0},
         {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
+        {"pexec", parsepexec, 2, 2, " <namelist> <command>", 0},
         {"init", parseinit, 0, 0, "", 0},
         {"list", parselist, 0, 1, " [<label>]", 0},
         {"log", parselog, 0, 2, " [<gid>] [<pid>]", 0},
