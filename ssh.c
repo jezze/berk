@@ -149,7 +149,7 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
 
         char *current = buffer;
 
-        if (total <= 0)
+        if (total < 0)
             break;
 
         do
