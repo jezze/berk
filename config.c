@@ -7,7 +7,7 @@
 #include <libgen.h>
 #include "config.h"
 
-static char root[BUFSIZ];
+static char root[BUFSIZ + 32];
 
 int config_init()
 {
@@ -20,9 +20,9 @@ int config_init()
     {    
 
         if (strlen(path) == 1)
-            snprintf(root, BUFSIZ, "/%s", CONFIG_ROOT);
+            snprintf(root, BUFSIZ + 32, "/%s", CONFIG_ROOT);
         else
-            snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
+            snprintf(root, BUFSIZ + 32, "%s/%s", path, CONFIG_ROOT);
 
         if (access(root, F_OK) == 0)
             return 0;
