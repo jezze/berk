@@ -47,6 +47,16 @@ keys located in ~/.ssh. If you want to use different keys you can configure
 those now as well. Also, make sure that the public key you want to use exist in
 the authorized_keys file for the current user on each remote.
 
+    $ berk config myhost privatekey id_rsa
+    $ berk config myhost publickey id_rsa.pub
+
+It is also possible, but not exactly recommended to set a password for the
+remote machine as well. This password will be stored in clear text so only use
+this in an environment where you know its safe to store data like that. Use
+this command to set a password:
+
+    $ berk config myhost password MySecretPassword
+
 Now it's time to execute a command on your remote. Since berk is intended to be
 used with many remotes simultanously we are gonna issue the same command
 multiple times on the same remote.

@@ -227,6 +227,9 @@ static int parseconfig(int argc, char **argv)
                 if (remote.username)                
                     printf("username=%s\n", remote.username);
 
+                if (remote.password)                
+                    printf("password=%s\n", remote.password);
+
                 if (remote.privatekey)
                     printf("privatekey=%s\n", remote.privatekey);
 
@@ -722,7 +725,7 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parseadd, 2, 2, " <name> <hostname>", 0},
-        {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username privatekey publickey label\n"},
+        {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey label\n"},
         {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
         {"execp", parseexecp, 2, 2, " <namelist> <command>", 0},
         {"init", parseinit, 0, 0, "", 0},

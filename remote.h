@@ -5,6 +5,7 @@ struct remote
     char *hostname;
     char *port;
     char *username;
+    char *password;
     char *publickey;
     char *privatekey;
     char *label;

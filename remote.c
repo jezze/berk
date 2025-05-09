@@ -19,6 +19,7 @@ enum
     REMOTE_HOSTNAME,
     REMOTE_PORT,
     REMOTE_USERNAME,
+    REMOTE_PASSWORD,
     REMOTE_PRIVATEKEY,
     REMOTE_PUBLICKEY,
     REMOTE_LABEL
@@ -39,6 +40,7 @@ int remote_gettype(char *key)
         {"hostname", REMOTE_HOSTNAME},
         {"port", REMOTE_PORT},
         {"username", REMOTE_USERNAME},
+        {"password", REMOTE_PASSWORD},
         {"privatekey", REMOTE_PRIVATEKEY},
         {"publickey", REMOTE_PUBLICKEY},
         {"label", REMOTE_LABEL},
@@ -76,8 +78,14 @@ void *remote_getvalue(struct remote *remote, int key)
     case REMOTE_USERNAME:
         return remote->username;
 
+    case REMOTE_PASSWORD:
+        return remote->password;
+
     case REMOTE_PRIVATEKEY:
         return remote->privatekey;
+
+    case REMOTE_PUBLICKEY:
+        return remote->publickey;
 
     case REMOTE_LABEL:
         return remote->label;
@@ -105,6 +113,9 @@ void *remote_setvalue(struct remote *remote, int key, char *value)
 
     case REMOTE_USERNAME:
         return remote->username = strdup(value);
+
+    case REMOTE_PASSWORD:
+        return remote->password = strdup(value);
 
     case REMOTE_PRIVATEKEY:
         return remote->privatekey = strdup(value);
@@ -179,6 +190,9 @@ int remote_save(struct remote *remote)
 
     if (remote->username && strlen(remote->username))
         ini_writestring(file, "username", remote->username);
+
+    if (remote->password && strlen(remote->password))
+        ini_writestring(file, "password", remote->password);
 
     if (remote->privatekey && strlen(remote->privatekey))
         ini_writestring(file, "privatekey", remote->privatekey);

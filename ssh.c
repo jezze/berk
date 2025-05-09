@@ -44,8 +44,21 @@ int ssh_connect(struct remote *remote)
     if (libssh2_session_handshake(remote->session, remote->sock) < 0)
         return util_error("Could not handshake session.");
 
-    if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
-        return util_error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
+    if (remote->password)
+    {
+
+        if (libssh2_userauth_password(remote->session, remote->username, remote->password) < 0)
+            return util_error("Could not authorize user '%s' with password.", remote->username);
+
+    }
+
+    else
+    {
+
+        if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
+            return util_error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
+
+    }
 
     return 0;
 
