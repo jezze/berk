@@ -14,8 +14,7 @@ $(BIN): $(OBJ)
 	$(CC) -o $@ $^ -lssh2
 
 clean:
-	rm -rf $(BIN)
-	rm -rf $(OBJ)
+	rm -rf $(BIN) $(OBJ)
 
 install: $(BIN)
 	install -m 755 $(BIN) $(PREFIX)
