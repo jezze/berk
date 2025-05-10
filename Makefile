@@ -11,7 +11,7 @@ TARVER:=0.0.1
 TARDIR:=${TARNAME}-${TARVER}
 TARPKG:=${TARDIR}.tar.gz
 
-all: $(BIN)
+all: ${BIN}
 
 clean:
 	rm -rf $(BIN) $(OBJ) ${TARDIR} ${TARPKG}
@@ -19,13 +19,13 @@ clean:
 
 dist: ${TARPKG}
 
-install: $(BIN)
+install: ${BIN}
 	install -Dm 755 $(BIN) $(DESTDIR)/${BIN}
 
 .c.o:
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-$(BIN): $(OBJ)
+${BIN}: ${OBJ}
 	$(CC) -o $@ $^ -lssh2
 
 ${TARDIR}:
