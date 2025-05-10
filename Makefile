@@ -14,19 +14,19 @@ TARPKG:=${TARDIR}.tar.gz
 all: ${BIN}
 
 clean:
-	rm -rf $(BIN) $(OBJ) ${TARDIR} ${TARPKG}
+	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG}
 	make -C pkgbuild clean
 
 dist: ${TARPKG}
 
 install: ${BIN}
-	install -Dm 755 $(BIN) $(DESTDIR)/${BIN}
+	install -Dm 755 ${BIN} ${DESTDIR}/${BIN}
 
 .c.o:
-	$(CC) -c -o $@ $(CFLAGS) $<
+	${CC} -c -o $@ ${CFLAGS} $<
 
 ${BIN}: ${OBJ}
-	$(CC) -o $@ $^ -lssh2
+	${CC} -o $@ $^ -lssh2
 
 ${TARDIR}:
 	mkdir -p $@

@@ -6,7 +6,7 @@ TARPKG:=${NAME}-${VERSION}.tar.gz
 PKG:=${NAME}-${VERSION}-1-any.pkg.tar.zst
 DPKG:=${NAME}-debug-${VERSION}-1-any.pkg.tar.zst
 
-all: $(PKG)
+all: ${PKG}
 
 clean:
 	rm -rf src pkg ${TARPKG} ${PKG} ${DPKG}
