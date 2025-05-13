@@ -1,0 +1,19 @@
+Source: berk
+Section: misc
+Priority: optional
+Maintainer: Jens Nyberg <jens.nyberg@gmail.com>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ libssh2-1-dev,
+Standards-Version: 4.6.2
+Homepage: https://github.com/jezze/berk
+
+Package: berk
+Architecture: any
+Multi-Arch: foreign
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+ libssh2-1t64,
+Description: Berk is a versatile job dispatcher

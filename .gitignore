@@ -1,6 +1,10 @@
+*.o
+berk
 berk-*.tar.gz
 berk-*/
-pkgbuild/berk-*.pkg.tar.zst
-pkgbuild/berk-*.tar.gz
-pkgbuild/pkg/
-pkgbuild/src/
+deb/
+!deb/Makefile
+!deb/debian
+pkgbuild/
+!pkgbuild/Makefile
+!pkgbuild/PKGBUILD

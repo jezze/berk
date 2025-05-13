@@ -5,7 +5,6 @@ SRC:=berk.c config.c event.c ini.c remote.c ssh.c util.c
 HEADERS:=config.h event.h ini.h remote.h ssh.h util.h
 OBJ:=berk.o config.o event.o ini.o remote.o ssh.o util.o
 CFLAGS:=-Wall -Werror
-DESTDIR:=/usr/local/bin
 TARNAME:=berk
 TARVER:=0.0.1
 TARDIR:=${TARNAME}-${TARVER}
@@ -15,12 +14,11 @@ all: ${BIN}
 
 clean:
 	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG}
-	make -C pkgbuild clean
 
 dist: ${TARPKG}
 
 install: ${BIN}
-	install -Dm 755 ${BIN} ${DESTDIR}/${BIN}
+	install -Dm 755 ${BIN} ${DESTDIR}/usr/bin/${BIN}
 
 .c.o:
 	${CC} -c -o $@ ${CFLAGS} $<
