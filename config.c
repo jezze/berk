@@ -52,21 +52,21 @@ int config_getremotepath(char *path, unsigned int length, char *filename)
 
 }
 
-int config_getgroup(char *path, unsigned int length, char *id)
+int config_getrun(char *path, unsigned int length, char *id)
 {
 
     return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, id) < 0;
 
 }
 
-int config_getprocessbyvalue(char *path, unsigned int length, char *id, int pid)
+int config_getlogv(char *path, unsigned int length, char *id, int pid)
 {
 
     return snprintf(path, length, "%s/%s/%s/%d", root, CONFIG_LOGS, id, pid) < 0;
 
 }
 
-int config_getprocessbystring(char *path, unsigned int length, char *id, char *pid)
+int config_getlogs(char *path, unsigned int length, char *id, char *pid)
 {
 
     return snprintf(path, length, "%s/%s/%s/%s", root, CONFIG_LOGS, id, pid) < 0;

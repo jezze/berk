@@ -282,7 +282,7 @@ int remote_logprepare(char *id)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getgroup(path, BUFSIZ, id))
+    if (config_getrun(path, BUFSIZ, id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -331,7 +331,7 @@ int remote_openlog(struct remote *remote, char *id)
 
     char path[BUFSIZ];
 
-    if (config_getprocessbyvalue(path, BUFSIZ, id, remote->pid))
+    if (config_getlogv(path, BUFSIZ, id, remote->pid))
         return -1;
 
     remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

@@ -603,7 +603,7 @@ static int parselog(int argc, char **argv)
             char buffer[BUFSIZ];
             unsigned int count;
 
-            if (config_getprocessbystring(path, BUFSIZ, id, pid))
+            if (config_getlogs(path, BUFSIZ, id, pid))
                 return util_error("Could not get path.");
 
             fd = open(path, O_RDONLY, 0644);
@@ -624,7 +624,7 @@ static int parselog(int argc, char **argv)
             DIR *dir;
             struct dirent *entry;
 
-            if (config_getgroup(path, BUFSIZ, id))
+            if (config_getrun(path, BUFSIZ, id))
                 return util_error("Could not get path.");
 
             dir = opendir(path);
