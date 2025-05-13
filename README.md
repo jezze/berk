@@ -71,18 +71,18 @@ The output you see on screen is a set of events. You can hook into these
 events in the same way as git in order to let berk perform specific tasks like
 sending notifications. Check the samples in .berk/hooks/.
 
-Take notice of the gid value for the begin event. The gid number is used to
+Take notice of the id value for the begin event. The id number is used to
 identify each call to berk exec. You can use the number to inspect the log for
 that particular run:
 
-    $ berk log <gid>
+    $ berk log <id>
 
 Each remote in each run will have it's own unique index number called a pid so
 in our case you should see a 0 and 1 because we previously used two remotes in
 our execution. To look at the output for each remote you can do:
 
-    $ berk log <gid> 0
-    $ berk log <gid> 1
+    $ berk log <id> 0
+    $ berk log <id> 1
 
 To do more advanced setups you can, using berk config, set labels seperated by
 space, on each remote. This way you can tell berk to only execute commands on

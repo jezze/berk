@@ -2,6 +2,7 @@ int util_error(char *format, ...);
 int util_checkalnum(char *str);
 int util_checkalpha(char *str);
 int util_checkdigit(char *str);
+int util_checkxdigit(char *str);
 int util_checkprint(char *str);
 int util_checkspace(char *str);
 int util_checkprintspace(char *str);

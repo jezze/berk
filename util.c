@@ -72,6 +72,23 @@ int util_checkdigit(char *str)
 
 }
 
+int util_checkxdigit(char *str)
+{
+
+    while (*str)
+    {
+
+        if (!isxdigit(*str))
+            return -1;
+
+        str++;
+
+    }
+
+    return 0;
+
+}
+
 int util_checkprint(char *str)
 {
 

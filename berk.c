@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -110,6 +111,18 @@ static char *checkdigit(char *arg)
 
     if (util_checkdigit(arg))
         exit(util_error("Could not parse digit value '%s'.", arg));
+
+    return arg;
+
+}
+
+static char *checkxdigit(char *arg)
+{
+
+    util_trim(arg);
+
+    if (util_checkxdigit(arg))
+        exit(util_error("Could not parse hex value '%s'.", arg));
 
     return arg;
 
@@ -249,7 +262,7 @@ static int parseconfig(int argc, char **argv)
 
 }
 
-static int runexec(int gid, unsigned int pid, char *name, char *command)
+static int runexec(char *id, unsigned int pid, char *name, char *command)
 {
 
     struct remote remote;
@@ -263,7 +276,7 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
 
     remote.pid = pid;
 
-    if (remote_openlog(&remote, gid))
+    if (remote_openlog(&remote, id))
         return util_error("Could not open log.");
 
     if (event_start(&remote))
@@ -287,7 +300,7 @@ static int runexec(int gid, unsigned int pid, char *name, char *command)
 
 }
 
-static int runsend(int gid, unsigned int pid, char *name, char *localpath, char *remotepath)
+static int runsend(char *id, unsigned int pid, char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
@@ -313,6 +326,27 @@ static int runsend(int gid, unsigned int pid, char *name, char *localpath, char 
 
 }
 
+static void encode(char *dest, unsigned int length)
+{
+
+    char charset[] = "0123456789abcdef";
+    unsigned int i;
+
+    srand(time(NULL));
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned int index = (double)rand() / RAND_MAX * 16;
+
+        dest[i] = charset[index];
+
+    }
+
+    dest[length - 1] = '\0';
+
+}
+
 static int parseexec(int argc, char **argv)
 {
 
@@ -323,15 +357,17 @@ static int parseexec(int argc, char **argv)
     unsigned int complete = 0;
     unsigned int success = 0;
     unsigned int i;
-    int gid = getpid();
+    char id[16];
+
+    encode(id, 16);
 
     if (config_init())
         return errorinit();
 
-    if (event_begin(gid))
+    if (event_begin(id))
         return util_error("Could not run event.");
 
-    if (remote_logprepare(gid))
+    if (remote_logprepare(id))
         return util_error("Could not prepare log.");
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
@@ -339,7 +375,7 @@ static int parseexec(int argc, char **argv)
 
         total++;
 
-        if (runexec(gid, i, name, command) == 0)
+        if (runexec(id, i, name, command) == 0)
             success++;
 
         complete++;
@@ -349,7 +385,7 @@ static int parseexec(int argc, char **argv)
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
 
-    if (remote_loghead(gid, total, complete, success))
+    if (remote_loghead(id, total, complete, success))
         return util_error("Could not log HEAD.");
 
     return EXIT_SUCCESS;
@@ -366,16 +402,18 @@ static int parseexecp(int argc, char **argv)
     unsigned int complete = 0;
     unsigned int success = 0;
     unsigned int i;
-    int gid = getpid();
     int status;
+    char id[16];
+
+    encode(id, 16);
 
     if (config_init())
         return errorinit();
 
-    if (event_begin(gid))
+    if (event_begin(id))
         return util_error("Could not run event.");
 
-    if (remote_logprepare(gid))
+    if (remote_logprepare(id))
         return util_error("Could not prepare log.");
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
@@ -384,7 +422,7 @@ static int parseexecp(int argc, char **argv)
         pid_t pid = fork();
 
         if (pid == 0)
-            return runexec(gid, i, name, command);
+            return runexec(id, i, name, command);
 
     }
 
@@ -408,7 +446,7 @@ static int parseexecp(int argc, char **argv)
     if (event_end(total, complete, success))
         return util_error("Could not run event.");
 
-    if (remote_loghead(gid, total, complete, success))
+    if (remote_loghead(id, total, complete, success))
         return util_error("Could not log HEAD.");
 
     return EXIT_SUCCESS;
@@ -548,14 +586,14 @@ static int parselist(int argc, char **argv)
 static int parselog(int argc, char **argv)
 {
 
-    char *gid = (argc > 0) ? checkdigit(argv[0]) : NULL;
+    char *id = (argc > 0) ? checkxdigit(argv[0]) : NULL;
     char *pid = (argc > 1) ? checkdigit(argv[1]) : NULL;
     char path[BUFSIZ];
 
     if (config_init())
         return errorinit();
 
-    if (gid)
+    if (id)
     {
 
         if (pid)
@@ -565,7 +603,7 @@ static int parselog(int argc, char **argv)
             char buffer[BUFSIZ];
             unsigned int count;
 
-            if (config_getprocessbyname(path, BUFSIZ, gid, pid))
+            if (config_getprocessbyname(path, BUFSIZ, id, pid))
                 return util_error("Could not get path.");
 
             fd = open(path, O_RDONLY, 0644);
@@ -586,7 +624,7 @@ static int parselog(int argc, char **argv)
             DIR *dir;
             struct dirent *entry;
 
-            if (config_getgroupbyname(path, BUFSIZ, gid))
+            if (config_getgroupbyname(path, BUFSIZ, id))
                 return util_error("Could not get path.");
 
             dir = opendir(path);
@@ -671,13 +709,15 @@ static int parsesend(int argc, char **argv)
     char *remotepath = checkprint(argv[2]);
     unsigned int names = util_split(name);
     unsigned int i;
-    int gid = getpid();
+    char id[16];
+
+    encode(id, 16);
 
     if (config_init())
         return errorinit();
 
     for (i = 0; (name = util_nextword(name, i, names)); i++)
-        runsend(gid, i, name, localpath, remotepath);
+        runsend(id, i, name, localpath, remotepath);
 
     return EXIT_SUCCESS;
 
@@ -730,7 +770,7 @@ int main(int argc, char **argv)
         {"execp", parseexecp, 2, 2, " <namelist> <command>", 0},
         {"init", parseinit, 0, 0, "", 0},
         {"list", parselist, 0, 1, " [<label>]", 0},
-        {"log", parselog, 0, 2, " [<gid>] [<pid>]", 0},
+        {"log", parselog, 0, 2, " [<id>] [<pid>]", 0},
         {"remove", parseremove, 1, 1, " <namelist>", 0},
         {"send", parsesend, 3, 3, " <namelist> <localpath> <remotepath>", 0},
         {"shell", parseshell, 1, 1, " <name>", 0},

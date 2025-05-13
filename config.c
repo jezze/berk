@@ -52,31 +52,31 @@ int config_getremotepath(char *path, unsigned int length, char *filename)
 
 }
 
-int config_getgroupbygid(char *path, unsigned int length, int gid)
+int config_getgroupbyid(char *path, unsigned int length, char *id)
 {
 
-    return snprintf(path, length, "%s/%s/%d", root, CONFIG_LOGS, gid) < 0;
+    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, id) < 0;
 
 }
 
-int config_getgroupbyname(char *path, unsigned int length, char *gid)
+int config_getgroupbyname(char *path, unsigned int length, char *id)
 {
 
-    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, gid) < 0;
+    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, id) < 0;
 
 }
 
-int config_getprocessbypid(char *path, unsigned int length, int gid, int pid)
+int config_getprocessbypid(char *path, unsigned int length, char *id, int pid)
 {
 
-    return snprintf(path, length, "%s/%s/%d/%d", root, CONFIG_LOGS, gid, pid) < 0;
+    return snprintf(path, length, "%s/%s/%s/%d", root, CONFIG_LOGS, id, pid) < 0;
 
 }
 
-int config_getprocessbyname(char *path, unsigned int length, char *gid, char *pid)
+int config_getprocessbyname(char *path, unsigned int length, char *id, char *pid)
 {
 
-    return snprintf(path, length, "%s/%s/%s/%s", root, CONFIG_LOGS, gid, pid) < 0;
+    return snprintf(path, length, "%s/%s/%s/%s", root, CONFIG_LOGS, id, pid) < 0;
 
 }
 
