@@ -8,8 +8,7 @@
 int config_init();
 int config_getpath(char *path, unsigned int length, char *name);
 int config_getremotepath(char *path, unsigned int length, char *filename);
-int config_getgroupbyid(char *path, unsigned int length, char *id);
-int config_getgroupbyname(char *path, unsigned int length, char *id);
-int config_getprocessbypid(char *path, unsigned int length, char *id, int pid);
-int config_getprocessbyname(char *path, unsigned int length, char *id, char *pid);
+int config_getgroup(char *path, unsigned int length, char *id);
+int config_getprocessbyvalue(char *path, unsigned int length, char *id, int pid);
+int config_getprocessbystring(char *path, unsigned int length, char *id, char *pid);
 int config_gethookpath(char *path, unsigned int length, char *filename);
