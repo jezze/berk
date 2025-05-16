@@ -326,7 +326,7 @@ static int runsend(char *id, unsigned int pid, char *name, char *localpath, char
 
 }
 
-static void encode(char *dest, unsigned int length)
+static void createid(char *dest, unsigned int length)
 {
 
     char charset[] = "0123456789abcdef";
@@ -357,9 +357,9 @@ static int parseexec(int argc, char **argv)
     unsigned int complete = 0;
     unsigned int success = 0;
     unsigned int i;
-    char id[16];
+    char id[32];
 
-    encode(id, 16);
+    createid(id, 32);
 
     if (config_init())
         return errorinit();
@@ -403,9 +403,9 @@ static int parseexecp(int argc, char **argv)
     unsigned int success = 0;
     unsigned int i;
     int status;
-    char id[16];
+    char id[32];
 
-    encode(id, 16);
+    createid(id, 32);
 
     if (config_init())
         return errorinit();
@@ -709,9 +709,9 @@ static int parsesend(int argc, char **argv)
     char *remotepath = checkprint(argv[2]);
     unsigned int names = util_split(name);
     unsigned int i;
-    char id[16];
+    char id[32];
 
-    encode(id, 16);
+    createid(id, 32);
 
     if (config_init())
         return errorinit();
