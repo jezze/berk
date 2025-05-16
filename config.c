@@ -52,24 +52,31 @@ int config_getremotepath(char *path, unsigned int length, char *filename)
 
 }
 
-int config_getrun(char *path, unsigned int length, char *id)
+int config_getshortrun(char *path, unsigned int length, char *id)
 {
 
-    return snprintf(path, length, "%s/%s/%s", root, CONFIG_LOGS, id) < 0;
+    return snprintf(path, length, "%s/%s/%c%c", root, CONFIG_LOGS, id[0], id[1]) < 0;
+
+}
+
+int config_getfullrun(char *path, unsigned int length, char *id)
+{
+
+    return snprintf(path, length, "%s/%s/%c%c/%s", root, CONFIG_LOGS, id[0], id[1], id) < 0;
 
 }
 
 int config_getlogv(char *path, unsigned int length, char *id, int pid)
 {
 
-    return snprintf(path, length, "%s/%s/%s/%d", root, CONFIG_LOGS, id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
 
 }
 
 int config_getlogs(char *path, unsigned int length, char *id, char *pid)
 {
 
-    return snprintf(path, length, "%s/%s/%s/%s", root, CONFIG_LOGS, id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%s", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
 
 }
 

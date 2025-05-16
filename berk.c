@@ -624,7 +624,7 @@ static int parselog(int argc, char **argv)
             DIR *dir;
             struct dirent *entry;
 
-            if (config_getrun(path, BUFSIZ, id))
+            if (config_getfullrun(path, BUFSIZ, id))
                 return util_error("Could not get path.");
 
             dir = opendir(path);

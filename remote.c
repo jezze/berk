@@ -282,7 +282,13 @@ int remote_logprepare(char *id)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getrun(path, BUFSIZ, id))
+    if (config_getshortrun(path, BUFSIZ, id))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    if (config_getfullrun(path, BUFSIZ, id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
