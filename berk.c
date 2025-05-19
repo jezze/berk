@@ -655,7 +655,7 @@ static int parselog(int argc, char **argv)
     {
 
         FILE *file;
-        char buffer[BUFSIZ];
+        char buffer[73];
 
         if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
             return util_error("Could not get path.");
@@ -665,8 +665,30 @@ static int parselog(int argc, char **argv)
         if (file == NULL)
             return EXIT_SUCCESS;
 
-        while (fgets(buffer, BUFSIZ, file) != NULL)
-            printf("%s", buffer);
+        buffer[72] = '\0';
+
+        while (fgets(buffer, 72, file) != NULL)
+        {
+
+            char id[33];
+            char datetime[25];
+            unsigned int total;
+            unsigned int complete;
+            unsigned int success;
+            int result = sscanf(buffer, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
+
+            if (result == 5)
+            {
+
+                printf("id:           %s\n", id);
+                printf("total:        %04u\n", total);
+                printf("complete:     %04u/%04u (%04u)\n", complete, total, total - complete);
+                printf("successful:   %04u/%04u (%04u)\n", success, total, total - success);
+                printf("datetime:     %s\n\n", datetime);
+
+            }
+
+        }
 
         fclose(file);
 
