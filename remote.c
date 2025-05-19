@@ -347,15 +347,29 @@ int remote_createlog(struct remote *remote, char *id)
 
 }
 
-int remote_openlog(struct remote *remote, char *id)
+int remote_openlogstderr(struct remote *remote, char *id)
 {
 
     char path[BUFSIZ];
 
-    if (config_getlogv(path, BUFSIZ, id, remote->pid))
+    if (config_getlogvstdout(path, BUFSIZ, id, remote->pid))
         return -1;
 
-    remote->logfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    return 0;
+
+}
+
+int remote_openlogstdout(struct remote *remote, char *id)
+{
+
+    char path[BUFSIZ];
+
+    if (config_getlogvstdout(path, BUFSIZ, id, remote->pid))
+        return -1;
+
+    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
     return 0;
 
@@ -364,16 +378,24 @@ int remote_openlog(struct remote *remote, char *id)
 int remote_closelog(struct remote *remote)
 {
 
-    close(remote->logfd);
+    close(remote->stderrfd);
+    close(remote->stdoutfd);
 
     return 0;
 
 }
 
-int remote_log(struct remote *remote, char *buffer, unsigned int size)
+int remote_logsdterr(struct remote *remote, char *buffer, unsigned int size)
 {
 
-    return write(remote->logfd, buffer, size);
+    return write(remote->stderrfd, buffer, size);
+
+}
+
+int remote_logstdout(struct remote *remote, char *buffer, unsigned int size)
+{
+
+    return write(remote->stdoutfd, buffer, size);
 
 }
 

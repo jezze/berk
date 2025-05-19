@@ -119,7 +119,7 @@ int ssh_exec(struct remote *remote, char *command)
                 break;
 
             if (count > 0)
-                remote_log(remote, buffer, count);
+                remote_logstdout(remote, buffer, count);
 
         }
 

@@ -279,8 +279,11 @@ static int runexec(char *id, unsigned int pid, char *name, char *command)
     if (remote_createlog(&remote, id))
         return util_error("Could not create log.");
 
-    if (remote_openlog(&remote, id))
-        return util_error("Could not open log.");
+    if (remote_openlogstderr(&remote, id))
+        return util_error("Could not open stderr log.");
+
+    if (remote_openlogstdout(&remote, id))
+        return util_error("Could not open stdout log.");
 
     if (event_start(&remote))
         return util_error("Could not run event.");
@@ -594,7 +597,7 @@ static int parselog_readlog(char *id, char *pid)
     char path[BUFSIZ];
     int fd;
 
-    if (config_getlogs(path, BUFSIZ, id, pid))
+    if (config_getlogsstdout(path, BUFSIZ, id, pid))
         return util_error("Could not get path.");
 
     fd = open(path, O_RDONLY, 0644);
