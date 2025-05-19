@@ -332,6 +332,21 @@ int remote_loghead(char *id, int total, int complete, int success)
 
 }
 
+int remote_createlog(struct remote *remote, char *id)
+{
+
+    char path[BUFSIZ];
+
+    if (config_getlogdir(path, BUFSIZ, id, remote->pid))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    return 0;
+
+}
+
 int remote_openlog(struct remote *remote, char *id)
 {
 

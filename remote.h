@@ -27,6 +27,7 @@ int remote_initrequired(struct remote *remote, char *name, char *hostname);
 int remote_initoptional(struct remote *remote);
 int remote_logprepare(char *id);
 int remote_loghead(char *id, int total, int complete, int success);
+int remote_createlog(struct remote *remote, char *id);
 int remote_openlog(struct remote *remote, char *id);
 int remote_closelog(struct remote *remote);
 int remote_log(struct remote *remote, char *buffer, unsigned int size);

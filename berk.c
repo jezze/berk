@@ -276,6 +276,9 @@ static int runexec(char *id, unsigned int pid, char *name, char *command)
 
     remote.pid = pid;
 
+    if (remote_createlog(&remote, id))
+        return util_error("Could not create log.");
+
     if (remote_openlog(&remote, id))
         return util_error("Could not open log.");
 
