@@ -680,11 +680,11 @@ static int parselog(int argc, char **argv)
             if (result == 5)
             {
 
-                printf("id:           %s\n", id);
-                printf("total:        %04u\n", total);
-                printf("complete:     %04u/%04u (%04u)\n", complete, total, total - complete);
-                printf("successful:   %04u/%04u (%04u)\n", success, total, total - success);
-                printf("datetime:     %s\n\n", datetime);
+                printf("id             %s\n", id);
+                printf("total          %04u\n", total);
+                printf("complete       %04u/%04u (%04u)\n", complete, total, total - complete);
+                printf("successful     %04u/%04u (%04u)\n", success, total, total - success);
+                printf("datetime       %s\n\n", datetime);
 
             }
 
