@@ -586,115 +586,123 @@ static int parselist(int argc, char **argv)
 
 }
 
+static int parselog_readlog(char *id, char *pid)
+{
+
+    char buffer[BUFSIZ];
+    unsigned int count;
+    char path[BUFSIZ];
+    int fd;
+
+    if (config_getlogs(path, BUFSIZ, id, pid))
+        return util_error("Could not get path.");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return util_error("Could not open '%s'.", path);
+
+    while ((count = read(fd, buffer, BUFSIZ)))
+        write(STDOUT_FILENO, buffer, count);
+
+    close(fd);
+
+    return EXIT_SUCCESS;
+
+}
+
+static int parselog_readrun(char *id)
+{
+
+    struct dirent *entry;
+    char path[BUFSIZ];
+    DIR *dir;
+
+    if (config_getfullrun(path, BUFSIZ, id))
+        return util_error("Could not get path.");
+
+    dir = opendir(path);
+
+    if (dir == NULL)
+        return util_error("Could not open '%s'.", path);
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+            continue;
+
+        printf("%s\n", entry->d_name);
+
+    }
+
+    closedir(dir);
+
+    return EXIT_SUCCESS;
+
+}
+
+static int parselog_readhead(void)
+{
+
+    char path[BUFSIZ];
+    char buffer[73];
+    FILE *file;
+
+    if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+        return util_error("Could not get path.");
+
+    file = fopen(path, "r");
+
+    if (file == NULL)
+        return EXIT_SUCCESS;
+
+    buffer[72] = '\0';
+
+    while (fgets(buffer, 72, file) != NULL)
+    {
+
+        char id[33];
+        char datetime[25];
+        unsigned int total;
+        unsigned int complete;
+        unsigned int success;
+        int result = sscanf(buffer, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
+
+        if (result == 5)
+        {
+
+            printf("id             %s\n", id);
+            printf("total          %04u\n", total);
+            printf("complete       %04u/%04u (%04u)\n", complete, total, total - complete);
+            printf("successful     %04u/%04u (%04u)\n", success, total, total - success);
+            printf("datetime       %s\n\n", datetime);
+
+        }
+
+    }
+
+    fclose(file);
+
+    return EXIT_SUCCESS;
+
+}
+
 static int parselog(int argc, char **argv)
 {
 
     char *id = (argc > 0) ? checkxdigit(argv[0]) : NULL;
     char *pid = (argc > 1) ? checkdigit(argv[1]) : NULL;
-    char path[BUFSIZ];
 
     if (config_init())
         return errorinit();
 
-    if (id)
-    {
+    if (id && pid)
+        return parselog_readlog(id, pid);
+    else if (id)
+        return parselog_readrun(id);
 
-        if (pid)
-        {
-
-            int fd;
-            char buffer[BUFSIZ];
-            unsigned int count;
-
-            if (config_getlogs(path, BUFSIZ, id, pid))
-                return util_error("Could not get path.");
-
-            fd = open(path, O_RDONLY, 0644);
-
-            if (fd < 0)
-                return util_error("Could not open '%s'.", path);
-
-            while ((count = read(fd, buffer, BUFSIZ)))
-                write(STDOUT_FILENO, buffer, count);
-
-            close(fd);
-
-        }
-
-        else
-        {
-
-            DIR *dir;
-            struct dirent *entry;
-
-            if (config_getfullrun(path, BUFSIZ, id))
-                return util_error("Could not get path.");
-
-            dir = opendir(path);
-
-            if (dir == NULL)
-                return util_error("Could not open '%s'.", path);
-
-            while ((entry = readdir(dir)) != NULL)
-            {
-
-                if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
-                    continue;
-
-                printf("%s\n", entry->d_name);
-
-            }
-
-            closedir(dir);
-
-        }
-
-    }
-
-    else
-    {
-
-        FILE *file;
-        char buffer[73];
-
-        if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
-            return util_error("Could not get path.");
-
-        file = fopen(path, "r");
-
-        if (file == NULL)
-            return EXIT_SUCCESS;
-
-        buffer[72] = '\0';
-
-        while (fgets(buffer, 72, file) != NULL)
-        {
-
-            char id[33];
-            char datetime[25];
-            unsigned int total;
-            unsigned int complete;
-            unsigned int success;
-            int result = sscanf(buffer, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
-
-            if (result == 5)
-            {
-
-                printf("id             %s\n", id);
-                printf("total          %04u\n", total);
-                printf("complete       %04u/%04u (%04u)\n", complete, total, total - complete);
-                printf("successful     %04u/%04u (%04u)\n", success, total, total - success);
-                printf("datetime       %s\n\n", datetime);
-
-            }
-
-        }
-
-        fclose(file);
-
-    }
-
-    return EXIT_SUCCESS;
+    return parselog_readhead();
 
 }
 
