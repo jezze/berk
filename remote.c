@@ -352,7 +352,7 @@ int remote_openlogstderr(struct remote *remote, char *id)
 
     char path[BUFSIZ];
 
-    if (config_getlogvstdout(path, BUFSIZ, id, remote->pid))
+    if (config_getlogvstderr(path, BUFSIZ, id, remote->pid))
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -385,7 +385,7 @@ int remote_closelog(struct remote *remote)
 
 }
 
-int remote_logsdterr(struct remote *remote, char *buffer, unsigned int size)
+int remote_logstderr(struct remote *remote, char *buffer, unsigned int size)
 {
 
     return write(remote->stderrfd, buffer, size);

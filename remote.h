@@ -32,5 +32,5 @@ int remote_createlog(struct remote *remote, char *id);
 int remote_openlogstderr(struct remote *remote, char *id);
 int remote_openlogstdout(struct remote *remote, char *id);
 int remote_closelog(struct remote *remote);
-int remote_logsdterr(struct remote *remote, char *buffer, unsigned int size);
+int remote_logstderr(struct remote *remote, char *buffer, unsigned int size);
 int remote_logstdout(struct remote *remote, char *buffer, unsigned int size);

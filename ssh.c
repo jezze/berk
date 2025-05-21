@@ -115,11 +115,16 @@ int ssh_exec(struct remote *remote, char *command)
             if (count == LIBSSH2_ERROR_EAGAIN)
                 continue;
 
-            if (count == 0)
-                break;
-
             if (count > 0)
                 remote_logstdout(remote, buffer, count);
+
+            count = libssh2_channel_read_stderr(remote->channel, buffer, BUFSIZ);
+
+            if (count == LIBSSH2_ERROR_EAGAIN)
+                continue;
+
+            if (count > 0)
+                remote_logstderr(remote, buffer, count);
 
         }
 
@@ -239,9 +244,6 @@ int ssh_shell(struct remote *remote)
 
             if (count == LIBSSH2_ERROR_EAGAIN)
                 continue;
-
-            if (count == 0)
-                break;
 
             if (count > 0)
                 write(STDOUT_FILENO, buffer, count);
