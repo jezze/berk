@@ -20,8 +20,6 @@ struct command
 
     char *name;
     int (*parse)(int argc, char **argv);
-    int minargc;
-    int maxargc;
     char *usage;
     char *description;
 
@@ -71,18 +69,6 @@ static int checkargs(struct command *commands, int argc, char **argv)
 
         if (strcmp(argv[0], commands[i].name))
             continue;
-
-        if ((argc - 1) < commands[i].minargc || (argc - 1) > commands[i].maxargc)
-        {
-
-            printf("Usage: %s %s%s\n", CONFIG_PROGNAME, commands[i].name, commands[i].usage);
-
-            if (commands[i].description)            
-                printf("\n%s", commands[i].description);
-
-            return EXIT_SUCCESS;
-
-        }
 
         return commands[i].parse(argc - 1, argv + 1);
 
@@ -150,115 +136,6 @@ static char *checklist(char *arg)
         exit(util_error("Could not parse list:\n%s.", arg));
 
     return arg;
-
-}
-
-static int parseadd(int argc, char **argv)
-{
-
-    char *name = checkprint(argv[0]);
-    char *hostname = checkprint(argv[1]);
-    struct remote remote;
-
-    if (config_init())
-        return errorinit();
-
-    if (remote_initrequired(&remote, name, hostname))
-        return util_error("Could not init remote '%s'.", name);
-
-    if (remote_save(&remote))
-        return errorsave(name);
-
-    printf("Remote '%s' added.\n", name);
-
-    return EXIT_SUCCESS;
-
-}
-
-static int parseconfig(int argc, char **argv)
-{
-
-    char *name = checklist(argv[0]);
-    char *key = (argc > 1) ? checkalpha(argv[1]) : NULL;
-    char *value = (argc > 2) ? checkprint(argv[2]) : NULL;
-    unsigned int names = util_split(name);
-    struct remote remote;
-    unsigned int i;
-
-    if (config_init())
-        return errorinit();
-
-    for (i = 0; (name = util_nextword(name, i, names)); i++)
-    {
-
-        if (remote_load(&remote, name))
-            return errorload(name);
-
-        if (value)
-        {
-
-            int keytype = remote_gettype(key);
-
-            if (keytype == -1)
-                return util_error("Invalid key '%s'.", key);
-
-            if (remote_setvalue(&remote, keytype, value) == NULL)
-                return util_error("Could not run configure remote '%s'.", remote.name);
-
-            if (remote_save(&remote))
-                return errorsave(name);
-
-        }
-
-        else
-        {
-
-            if (key)
-            {
-
-                int keytype = remote_gettype(key);
-                char *value;
-
-                if (keytype == -1)
-                    return util_error("Invalid key '%s'.", key);
-
-                value = remote_getvalue(&remote, keytype);
-
-                printf("%s: %s\n", remote.name, value);
-
-            }
-
-            else
-            {
-
-                printf("name=%s\n", remote.name);
-                printf("hostname=%s\n", remote.hostname);
-
-                if (remote.port)
-                    printf("port=%s\n", remote.port);
-
-                if (remote.username)                
-                    printf("username=%s\n", remote.username);
-
-                if (remote.password)                
-                    printf("password=%s\n", remote.password);
-
-                if (remote.privatekey)
-                    printf("privatekey=%s\n", remote.privatekey);
-
-                if (remote.publickey)
-                    printf("publickey=%s\n", remote.publickey);
-
-                if (remote.label)
-                    printf("label=%s\n", remote.label);
-
-            }
-
-        }
-
-    }
-
-    return EXIT_SUCCESS;
 
 }
 
@@ -353,63 +230,323 @@ static void createid(char *dest, unsigned int length)
 
 }
 
-static int parseexec(int argc, char **argv)
+static int parseadd(int argc, char **argv)
 {
 
-    char *name = checklist(argv[0]);
-    char *command = checkprint(argv[1]);
-    unsigned int names = util_split(name);
-    unsigned int total = 0;
-    unsigned int complete = 0;
-    unsigned int success = 0;
+    unsigned int position = 0;
+    char *hostname = NULL;
+    struct remote remote;
+    char *name = NULL;
     unsigned int i;
-    char id[32];
 
-    createid(id, 32);
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checkprint(k))
+                    name = k;
+
+                break;
+
+            case 1:
+                if (checkprint(k))
+                    hostname = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (config_init())
         return errorinit();
 
-    if (event_begin(id))
-        return util_error("Could not run event.");
+    if (remote_initrequired(&remote, name, hostname))
+        return util_error("Could not init remote '%s'.", name);
 
-    if (remote_logprepare(id))
-        return util_error("Could not prepare log.");
+    if (remote_save(&remote))
+        return errorsave(name);
 
-    for (i = 0; (name = util_nextword(name, i, names)); i++)
-    {
-
-        total++;
-
-        if (runexec(id, i, name, command) == 0)
-            success++;
-
-        complete++;
-
-    }
-
-    if (event_end(total, complete, success))
-        return util_error("Could not run event.");
-
-    if (remote_loghead(id, total, complete, success))
-        return util_error("Could not log HEAD.");
+    printf("Remote '%s' added.\n", name);
 
     return EXIT_SUCCESS;
 
 }
 
-static int parseexecp(int argc, char **argv)
+static int parseconfig(int argc, char **argv)
 {
 
-    char *name = checklist(argv[0]);
-    char *command = checkprint(argv[1]);
-    unsigned int names = util_split(name);
+    unsigned int position = 0;
+    unsigned int names = 0;
+    struct remote remote;
+    char *value = NULL;
+    char *name = NULL;
+    char *key = NULL;
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checklist(k))
+                {
+
+                    name = k;
+                    names = util_split(name);
+
+                }
+
+                break;
+
+            case 1:
+                if (checkalpha(k))
+                    key = k;
+
+                break;
+
+            case 2:
+                if (checkprint(k))
+                    value = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
+
+    if (config_init())
+        return errorinit();
+
+    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    {
+
+        if (remote_load(&remote, name))
+            return errorload(name);
+
+        if (value)
+        {
+
+            int keytype = remote_gettype(key);
+
+            if (keytype == -1)
+                return util_error("Invalid key '%s'.", key);
+
+            if (remote_setvalue(&remote, keytype, value) == NULL)
+                return util_error("Could not run configure remote '%s'.", remote.name);
+
+            if (remote_save(&remote))
+                return errorsave(name);
+
+        }
+
+        else
+        {
+
+            if (key)
+            {
+
+                int keytype = remote_gettype(key);
+                char *value;
+
+                if (keytype == -1)
+                    return util_error("Invalid key '%s'.", key);
+
+                value = remote_getvalue(&remote, keytype);
+
+                printf("%s: %s\n", remote.name, value);
+
+            }
+
+            else
+            {
+
+                printf("name=%s\n", remote.name);
+                printf("hostname=%s\n", remote.hostname);
+
+                if (remote.port)
+                    printf("port=%s\n", remote.port);
+
+                if (remote.username)                
+                    printf("username=%s\n", remote.username);
+
+                if (remote.password)                
+                    printf("password=%s\n", remote.password);
+
+                if (remote.privatekey)
+                    printf("privatekey=%s\n", remote.privatekey);
+
+                if (remote.publickey)
+                    printf("publickey=%s\n", remote.publickey);
+
+                if (remote.label)
+                    printf("label=%s\n", remote.label);
+
+            }
+
+        }
+
+    }
+
+    return EXIT_SUCCESS;
+
+}
+
+static int parseexec(int argc, char **argv)
+{
+
+    unsigned int parallel = 0;
+    unsigned int position = 0;
+    unsigned int names = 0;
     unsigned int total = 0;
     unsigned int complete = 0;
     unsigned int success = 0;
+    char *command = NULL;
+    char *name = NULL;
     unsigned int i;
-    int status;
     char id[32];
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case 'p':
+                parallel = 1;
+
+                break;
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checklist(k))
+                {
+
+                    name = k;
+                    names = util_split(name);
+
+                }
+
+                break;
+
+            case 1:
+                if (checkprint(k))
+                    command = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     createid(id, 32);
 
@@ -422,28 +559,52 @@ static int parseexecp(int argc, char **argv)
     if (remote_logprepare(id))
         return util_error("Could not prepare log.");
 
-    for (i = 0; (name = util_nextword(name, i, names)); i++)
+    if (parallel)
     {
 
-        pid_t pid = fork();
+        int status;
 
-        if (pid == 0)
-            return runexec(id, i, name, command);
+        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        {
+
+            pid_t pid = fork();
+
+            if (pid == 0)
+                return runexec(id, i, name, command);
+
+        }
+
+        while (wait(&status) > 0)
+        {
+
+            total++;
+
+            if (WIFEXITED(status))
+            {
+
+                complete++;
+
+                if (WEXITSTATUS(status) == 0)
+                    success++;
+
+            }
+
+        }
 
     }
 
-    while (wait(&status) > 0)
+    else
     {
 
-        total++;
-
-        if (WIFEXITED(status))
+        for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
-            complete++;
+            total++;
 
-            if (WEXITSTATUS(status) == 0)
+            if (runexec(id, i, name, command) == 0)
                 success++;
+
+            complete++;
 
         }
 
@@ -462,11 +623,57 @@ static int parseexecp(int argc, char **argv)
 static int parseinit(int argc, char **argv)
 {
 
-    FILE *file;
-    char path[BUFSIZ];
     char *hooks[] = {"begin", "end", "start", "stop", 0};
+    unsigned int position = 0;
+    char path[BUFSIZ];
     unsigned int i;
+    FILE *file;
     int fd;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (mkdir(CONFIG_ROOT, 0775) < 0)
         return util_error("Already initialized.");
@@ -524,10 +731,63 @@ static int parseinit(int argc, char **argv)
 static int parselist(int argc, char **argv)
 {
 
-    char *label = (argc > 0) ? checkprint(argv[0]) : NULL;
-    DIR *dir;
+    unsigned int position = 0;
     struct dirent *entry;
+    char *label = NULL;
     char path[BUFSIZ];
+    unsigned int i;
+    DIR *dir;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checkprint(k))
+                    label = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (config_init())
         return errorinit();
@@ -589,7 +849,7 @@ static int parselist(int argc, char **argv)
 
 }
 
-static int parselog_readlog(char *id, char *pid)
+static int parselog_readlog(char *id, char *pid, unsigned int descriptor)
 {
 
     char buffer[BUFSIZ];
@@ -597,8 +857,22 @@ static int parselog_readlog(char *id, char *pid)
     char path[BUFSIZ];
     int fd;
 
-    if (config_getlogsstdout(path, BUFSIZ, id, pid))
-        return util_error("Could not get path.");
+    switch (descriptor)
+    {
+
+    case 1:
+        if (config_getlogsstdout(path, BUFSIZ, id, pid))
+            return util_error("Could not get path.");
+
+        break;
+
+    case 2:
+        if (config_getlogsstderr(path, BUFSIZ, id, pid))
+            return util_error("Could not get path.");
+
+        break;
+
+    }
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -694,14 +968,79 @@ static int parselog_readhead(void)
 static int parselog(int argc, char **argv)
 {
 
-    char *id = (argc > 0) ? checkxdigit(argv[0]) : NULL;
-    char *pid = (argc > 1) ? checkdigit(argv[1]) : NULL;
+    unsigned int descriptor = 1;
+    unsigned int position = 0;
+    char *pid = NULL;
+    char *id = NULL;
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case 'e':
+                descriptor = 2;
+
+                break;
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checkxdigit(k))
+                    id = k;
+
+                break;
+
+            case 1:
+                if (checkdigit(k))
+                    pid = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (config_init())
         return errorinit();
 
     if (id && pid)
-        return parselog_readlog(id, pid);
+        return parselog_readlog(id, pid, descriptor);
     else if (id)
         return parselog_readrun(id);
 
@@ -712,10 +1051,67 @@ static int parselog(int argc, char **argv)
 static int parseremove(int argc, char **argv)
 {
 
-    char *name = checklist(argv[0]);
-    unsigned int names = util_split(name);
+    unsigned int position = 0;
+    unsigned int names = 0;
     struct remote remote;
+    char *name = NULL;
     unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checklist(k))
+                {
+
+                    name = k;
+                    names = util_split(name);
+
+                }
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (config_init())
         return errorinit();
@@ -740,12 +1136,81 @@ static int parseremove(int argc, char **argv)
 static int parsesend(int argc, char **argv)
 {
 
-    char *name = checklist(argv[0]);
-    char *localpath = checkprint(argv[1]);
-    char *remotepath = checkprint(argv[2]);
-    unsigned int names = util_split(name);
+    unsigned int position = 0;
+    char *remotepath = NULL;
+    char *localpath = NULL;
+    unsigned int names = 0;
+    char *name = NULL;
     unsigned int i;
     char id[32];
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checklist(k))
+                {
+
+                    name = k;
+                    names = util_split(k);
+
+                }
+
+                break;
+
+            case 1:
+                if (checkprint(k))
+                    localpath = k;
+
+                break;
+
+            case 2:
+                if (checkprint(k))
+                    remotepath = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     createid(id, 32);
 
@@ -762,8 +1227,61 @@ static int parsesend(int argc, char **argv)
 static int parseshell(int argc, char **argv)
 {
 
-    char *name = checkprint(argv[0]);
     struct remote remote;
+    char *name = NULL;
+    unsigned int position = 0;
+    unsigned int i;
+
+    for (i = 0; i < argc; i++)
+    {
+
+        char *k = argv[i];
+
+        switch (k[0])
+        {
+
+        case '-':
+            switch (k[1])
+            {
+
+            case '\0':
+                util_error("Incorrect flag argument.");
+
+                break;
+
+            default:
+                util_error("Unknown flag '%s'.", k);
+
+                break;
+
+            }
+
+            break;
+
+        default:
+            switch (position)
+            {
+
+            case 0:
+                if (checkprint(k))
+                    name = k;
+
+                break;
+
+            default:
+                util_error("Too many arguments");
+
+                break;
+
+            }
+
+            position++;
+
+            break;
+
+        }
+
+    }
 
     if (config_init())
         return errorinit();
@@ -800,17 +1318,16 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parseadd, 2, 2, " <name> <hostname>", 0},
-        {"config", parseconfig, 1, 3, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey label\n"},
-        {"exec", parseexec, 2, 2, " <namelist> <command>", 0},
-        {"execp", parseexecp, 2, 2, " <namelist> <command>", 0},
-        {"init", parseinit, 0, 0, "", 0},
-        {"list", parselist, 0, 1, " [<label>]", 0},
-        {"log", parselog, 0, 2, " [<id>] [<pid>]", 0},
-        {"remove", parseremove, 1, 1, " <namelist>", 0},
-        {"send", parsesend, 3, 3, " <namelist> <localpath> <remotepath>", 0},
-        {"shell", parseshell, 1, 1, " <name>", 0},
-        {"version", parseversion, 0, 0, "", 0},
+        {"add", parseadd, " <name> <hostname>", 0},
+        {"config", parseconfig, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey label\n"},
+        {"exec", parseexec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
+        {"init", parseinit, "", 0},
+        {"list", parselist, " [<label>]", 0},
+        {"log", parselog, " [-e] [<id>] [<pid>]", "Args:\n    -e  Show stderr\n"},
+        {"remove", parseremove, " <namelist>", 0},
+        {"send", parsesend, " <namelist> <localpath> <remotepath>", 0},
+        {"shell", parseshell, " <name>", 0},
+        {"version", parseversion, "", 0},
         {0}
     };
 
