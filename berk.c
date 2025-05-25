@@ -264,13 +264,16 @@ static int parseadd(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -288,8 +291,6 @@ static int parseadd(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -333,13 +334,16 @@ static int parseconfig(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -362,8 +366,6 @@ static int parseconfig(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -495,10 +497,9 @@ static int parseexec(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             switch (arg[1])
             {
 
@@ -512,9 +513,11 @@ static int parseexec(int argc, char **argv)
 
             }
 
-            break;
+        }
 
-        default:
+        else
+        {
+
             switch (argp++)
             {
 
@@ -532,8 +535,6 @@ static int parseexec(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -637,16 +638,10 @@ static int parseinit(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
-        {
-
-        case '-':
+        if (arg[0] == '-')
             return errorunknownflag(arg);
-
-        default:
+        else
             return errortoomany();
-
-        }
 
     }
 
@@ -727,13 +722,16 @@ static int parselist(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -746,8 +744,6 @@ static int parselist(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -837,10 +833,9 @@ static int parselog(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             switch (arg[1])
             {
 
@@ -854,9 +849,11 @@ static int parselog(int argc, char **argv)
 
             }
 
-            break;
+        }
 
-        default:
+        else
+        {
+
             switch (argp++)
             {
 
@@ -874,8 +871,6 @@ static int parselog(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -1022,13 +1017,16 @@ static int parseremove(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -1041,8 +1039,6 @@ static int parseremove(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -1093,13 +1089,16 @@ static int parsesend(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -1122,8 +1121,6 @@ static int parsesend(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -1164,13 +1161,16 @@ static int parseshell(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
+        if (arg[0] == '-')
         {
 
-        case '-':
             return errorunknownflag(arg);
 
-        default:
+        }
+
+        else
+        {
+
             switch (argp++)
             {
 
@@ -1183,8 +1183,6 @@ static int parseshell(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            break;
 
         }
 
@@ -1231,16 +1229,10 @@ static int parseversion(int argc, char **argv)
 
         char *arg = argv[argi];
 
-        switch (arg[0])
-        {
-
-        case '-':
+        if (arg[0] == '-')
             return errorunknownflag(arg);
-
-        default:
+        else
             return errortoomany();
-
-        }
 
     }
 
