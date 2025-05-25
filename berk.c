@@ -60,13 +60,6 @@ static int errortoomany(void)
 
 }
 
-static int errorflag(void)
-{
-
-    return util_error("Incorrect flag argument.");
-
-}
-
 static int errorunknownflag(char *arg)
 {
 
@@ -275,18 +268,7 @@ static int parseadd(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -357,18 +339,7 @@ static int parseconfig(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -540,9 +511,6 @@ static int parseexec(int argc, char **argv)
 
                 break;
 
-            case '\0':
-                return errorflag();
-
             default:
                 return errorunknownflag(arg);
 
@@ -668,7 +636,6 @@ static int parseexec(int argc, char **argv)
 static int parseinit(int argc, char **argv)
 {
 
-    unsigned int argp = 0;
     unsigned int argi;
 
     for (argi = 0; argi < argc; argi++)
@@ -680,31 +647,10 @@ static int parseinit(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
-            switch (argp)
-            {
-
-            default:
-                return errortoomany();
-
-            }
-
-            argp++;
-
-            break;
+            return errortoomany();
 
         }
 
@@ -791,18 +737,7 @@ static int parselist(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -921,9 +856,6 @@ static int parselog(int argc, char **argv)
                 descriptor = 2;
 
                 break;
-
-            case '\0':
-                return errorflag();
 
             default:
                 return errorunknownflag(arg);
@@ -1104,18 +1036,7 @@ static int parseremove(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -1188,18 +1109,7 @@ static int parsesend(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -1272,18 +1182,7 @@ static int parseshell(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
             switch (argp)
@@ -1341,7 +1240,6 @@ static int parseshell(int argc, char **argv)
 static int parseversion(int argc, char **argv)
 {
 
-    unsigned int argp = 0;
     unsigned int argi;
 
     for (argi = 0; argi < argc; argi++)
@@ -1353,31 +1251,10 @@ static int parseversion(int argc, char **argv)
         {
 
         case '-':
-            switch (arg[1])
-            {
-
-            case '\0':
-                return errorflag();
-
-            default:
-                return errorunknownflag(arg);
-
-            }
-
-            break;
+            return errorunknownflag(arg);
 
         default:
-            switch (argp)
-            {
-
-            default:
-                return errortoomany();
-
-            }
-
-            argp++;
-
-            break;
+            return errortoomany();
 
         }
 
