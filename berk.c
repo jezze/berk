@@ -271,7 +271,7 @@ static int parseadd(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -288,8 +288,6 @@ static int parseadd(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -342,7 +340,7 @@ static int parseconfig(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -364,8 +362,6 @@ static int parseconfig(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -519,7 +515,7 @@ static int parseexec(int argc, char **argv)
             break;
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -536,8 +532,6 @@ static int parseexec(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -740,7 +734,7 @@ static int parselist(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -752,8 +746,6 @@ static int parselist(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -865,7 +857,7 @@ static int parselog(int argc, char **argv)
             break;
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -882,8 +874,6 @@ static int parselog(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -1039,7 +1029,7 @@ static int parseremove(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -1051,8 +1041,6 @@ static int parseremove(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -1112,7 +1100,7 @@ static int parsesend(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -1134,8 +1122,6 @@ static int parsesend(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
@@ -1185,7 +1171,7 @@ static int parseshell(int argc, char **argv)
             return errorunknownflag(arg);
 
         default:
-            switch (argp)
+            switch (argp++)
             {
 
             case 0:
@@ -1197,8 +1183,6 @@ static int parseshell(int argc, char **argv)
                 return errortoomany();
 
             }
-
-            argp++;
 
             break;
 
