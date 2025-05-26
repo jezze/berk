@@ -530,7 +530,7 @@ static int parse_exec(int argc, char **argv)
                 break;
 
             case 1:
-                command = assert_print(arg);
+                command = arg;
 
                 break;
 
