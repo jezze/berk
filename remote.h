@@ -30,6 +30,3 @@ int remote_log_create(struct remote *remote, char *id);
 int remote_log_open_stderr(struct remote *remote, char *id);
 int remote_log_open_stdout(struct remote *remote, char *id);
 int remote_log_close(struct remote *remote);
-int remote_log_write_head(char *id, int total, int complete, int success);
-int remote_log_write_stderr(struct remote *remote, char *buffer, unsigned int size);
-int remote_log_write_stdout(struct remote *remote, char *buffer, unsigned int size);

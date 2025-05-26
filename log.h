@@ -26,3 +26,5 @@ long log_previous(struct log_state *state);
 int log_readentry(struct log_state *state, struct log_entry *entry);
 int log_find(struct log_state *state, struct log_entry *entry, char *id);
 int log_printentry(struct log_entry *entry);
+int log_write(int fd, char *buffer, unsigned int size);
+int log_write_head(char *id, int total, int complete, int success);

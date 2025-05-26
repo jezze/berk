@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include "config.h"
@@ -118,6 +120,47 @@ int log_printentry(struct log_entry *entry)
         printf("    run=%u remote=xxx status=successful\n", i);
 
     printf("\n");
+
+    return 0;
+
+}
+
+int log_write(int fd, char *buffer, unsigned int size)
+{
+
+    return write(fd, buffer, size);
+
+}
+
+int log_write_head(char *id, int total, int complete, int success)
+{
+
+    char path[BUFSIZ];
+    char buffer[BUFSIZ];
+    char datetime[64];
+    unsigned int count;
+    int fd;
+    time_t timeraw;
+    struct tm *timeinfo;
+
+    time(&timeraw);
+
+    timeinfo = localtime(&timeraw);
+
+    strftime(datetime, 64, "%FT%T%z", timeinfo);
+
+    count = snprintf(buffer, BUFSIZ, "%s %s %04d %04d %04d\n", id, datetime, total, complete, success);
+
+    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+        return -1;
+
+    fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    write(fd, buffer, count);
+    close(fd);
 
     return 0;
 

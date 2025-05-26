@@ -634,7 +634,7 @@ static int parse_exec(int argc, char **argv)
         if (event_end(total, complete, success))
             return util_error("Could not run event.");
 
-        if (remote_log_write_head(id, total, complete, success))
+        if (log_write_head(id, total, complete, success))
             return util_error("Could not log HEAD.");
 
         return EXIT_SUCCESS;

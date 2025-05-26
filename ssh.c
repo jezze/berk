@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include "util.h"
 #include "remote.h"
+#include "log.h"
 #include "ssh.h"
 
 int ssh_connect(struct remote *remote)
@@ -116,7 +117,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                remote_log_write_stdout(remote, buffer, count);
+                log_write(remote->stdoutfd, buffer, count);
 
             count = libssh2_channel_read_stderr(remote->channel, buffer, BUFSIZ);
 
@@ -124,7 +125,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                remote_log_write_stderr(remote, buffer, count);
+                log_write(remote->stderrfd, buffer, count);
 
         }
 
