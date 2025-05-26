@@ -21,7 +21,7 @@ int util_error(char *format, ...)
 
 }
 
-int util_checkalnum(char *str)
+int util_assert_alnum(char *str)
 {
 
     while (*str)
@@ -38,7 +38,7 @@ int util_checkalnum(char *str)
 
 }
 
-int util_checkalpha(char *str)
+int util_assert_alpha(char *str)
 {
 
     while (*str)
@@ -55,7 +55,7 @@ int util_checkalpha(char *str)
 
 }
 
-int util_checkdigit(char *str)
+int util_assert_digit(char *str)
 {
 
     while (*str)
@@ -72,7 +72,7 @@ int util_checkdigit(char *str)
 
 }
 
-int util_checkxdigit(char *str)
+int util_assert_xdigit(char *str)
 {
 
     while (*str)
@@ -89,7 +89,7 @@ int util_checkxdigit(char *str)
 
 }
 
-int util_checkprint(char *str)
+int util_assert_print(char *str)
 {
 
     while (*str)
@@ -106,7 +106,7 @@ int util_checkprint(char *str)
 
 }
 
-int util_checkspace(char *str)
+int util_assert_space(char *str)
 {
 
     while (*str)
@@ -123,7 +123,7 @@ int util_checkspace(char *str)
 
 }
 
-int util_checkprintspace(char *str)
+int util_assert_printspace(char *str)
 {
 
     while (*str)

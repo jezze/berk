@@ -18,19 +18,19 @@ struct remote
 
 };
 
-int remote_gettype(char *key);
-void *remote_getvalue(struct remote *remote, int type);
-void *remote_setvalue(struct remote *remote, int type, char *value);
+int remote_get_type(char *key);
+void *remote_get_value(struct remote *remote, int type);
+void *remote_set_value(struct remote *remote, int type, char *value);
 int remote_load(struct remote *remote, char *name);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
-int remote_initrequired(struct remote *remote, char *name, char *hostname);
-int remote_initoptional(struct remote *remote);
-int remote_logprepare(char *id);
-int remote_loghead(char *id, int total, int complete, int success);
-int remote_createlog(struct remote *remote, char *id);
-int remote_openlogstderr(struct remote *remote, char *id);
-int remote_openlogstdout(struct remote *remote, char *id);
-int remote_closelog(struct remote *remote);
-int remote_logstderr(struct remote *remote, char *buffer, unsigned int size);
-int remote_logstdout(struct remote *remote, char *buffer, unsigned int size);
+int remote_init_required(struct remote *remote, char *name, char *hostname);
+int remote_init_optional(struct remote *remote);
+int remote_log_prepare(char *id);
+int remote_log_create(struct remote *remote, char *id);
+int remote_log_open_stderr(struct remote *remote, char *id);
+int remote_log_open_stdout(struct remote *remote, char *id);
+int remote_log_close(struct remote *remote);
+int remote_log_write_head(char *id, int total, int complete, int success);
+int remote_log_write_stderr(struct remote *remote, char *buffer, unsigned int size);
+int remote_log_write_stdout(struct remote *remote, char *buffer, unsigned int size);

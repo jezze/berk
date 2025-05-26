@@ -11,7 +11,7 @@ static int runhook(char *name)
 
     char path[BUFSIZ];
 
-    if (config_gethookpath(path, BUFSIZ, name))
+    if (config_get_hookpath(path, BUFSIZ, name))
         return -1;
 
     if (access(path, F_OK | X_OK) == 0)

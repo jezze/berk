@@ -26,7 +26,7 @@ enum
 
 };
 
-int remote_gettype(char *key)
+int remote_get_type(char *key)
 {
 
     static struct keynum
@@ -60,7 +60,7 @@ int remote_gettype(char *key)
 
 }
 
-void *remote_getvalue(struct remote *remote, int key)
+void *remote_get_value(struct remote *remote, int key)
 {
 
     switch (key)
@@ -96,7 +96,7 @@ void *remote_getvalue(struct remote *remote, int key)
 
 }
 
-void *remote_setvalue(struct remote *remote, int key, char *value)
+void *remote_set_value(struct remote *remote, int key, char *value)
 {
 
     switch (key)
@@ -141,7 +141,7 @@ static int loadcallback(void *user, char *section, char *key, char *value)
         return 0;
 
     if (strlen(value))
-        remote_setvalue(remote, remote_gettype(key), value);
+        remote_set_value(remote, remote_get_type(key), value);
 
     return 0;
 
@@ -152,7 +152,7 @@ int remote_load(struct remote *remote, char *name)
 
     char path[BUFSIZ];
 
-    if (config_getremotepath(path, BUFSIZ, name))
+    if (config_get_remotepath(path, BUFSIZ, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -167,13 +167,13 @@ int remote_save(struct remote *remote)
     FILE *file;
     char path[BUFSIZ];
 
-    if (config_getpath(path, BUFSIZ, CONFIG_REMOTES))
+    if (config_get_path(path, BUFSIZ, CONFIG_REMOTES))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getremotepath(path, BUFSIZ, remote->name))
+    if (config_get_remotepath(path, BUFSIZ, remote->name))
         return -1;
 
     file = fopen(path, "w");
@@ -181,27 +181,27 @@ int remote_save(struct remote *remote)
     if (file == NULL)
         return -1;
 
-    ini_writesection(file, "remote");
-    ini_writestring(file, "name", remote->name);
-    ini_writestring(file, "hostname", remote->hostname);
+    ini_write_section(file, "remote");
+    ini_write_string(file, "name", remote->name);
+    ini_write_string(file, "hostname", remote->hostname);
 
     if (remote->port && strlen(remote->port))
-        ini_writestring(file, "port", remote->port);
+        ini_write_string(file, "port", remote->port);
 
     if (remote->username && strlen(remote->username))
-        ini_writestring(file, "username", remote->username);
+        ini_write_string(file, "username", remote->username);
 
     if (remote->password && strlen(remote->password))
-        ini_writestring(file, "password", remote->password);
+        ini_write_string(file, "password", remote->password);
 
     if (remote->privatekey && strlen(remote->privatekey))
-        ini_writestring(file, "privatekey", remote->privatekey);
+        ini_write_string(file, "privatekey", remote->privatekey);
 
     if (remote->publickey && strlen(remote->publickey))
-        ini_writestring(file, "publickey", remote->publickey);
+        ini_write_string(file, "publickey", remote->publickey);
 
     if (remote->label && strlen(remote->label))
-        ini_writestring(file, "label", remote->label);
+        ini_write_string(file, "label", remote->label);
 
     fclose(file);
 
@@ -214,7 +214,7 @@ int remote_erase(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (config_getremotepath(path, BUFSIZ, remote->name))
+    if (config_get_remotepath(path, BUFSIZ, remote->name))
         return -1;
 
     if (unlink(path) < 0)
@@ -224,18 +224,18 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_initrequired(struct remote *remote, char *name, char *hostname)
+int remote_init_required(struct remote *remote, char *name, char *hostname)
 {
 
     memset(remote, 0, sizeof (struct remote));
-    remote_setvalue(remote, REMOTE_NAME, name);
-    remote_setvalue(remote, REMOTE_HOSTNAME, hostname);
+    remote_set_value(remote, REMOTE_NAME, name);
+    remote_set_value(remote, REMOTE_HOSTNAME, hostname);
 
     return 0;
 
 }
 
-int remote_initoptional(struct remote *remote)
+int remote_init_optional(struct remote *remote)
 {
 
     char buffer[BUFSIZ];
@@ -243,10 +243,10 @@ int remote_initoptional(struct remote *remote)
     struct passwd passwd, *current;
 
     if (!remote->port)
-        remote_setvalue(remote, REMOTE_PORT, "22");
+        remote_set_value(remote, REMOTE_PORT, "22");
 
     if (!remote->username)    
-        remote_setvalue(remote, REMOTE_USERNAME, getenv("USER"));
+        remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
 
     if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
         return 1;
@@ -255,7 +255,7 @@ int remote_initoptional(struct remote *remote)
     {
 
         snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-        remote_setvalue(remote, REMOTE_PRIVATEKEY, keybuffer);
+        remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
 
     }
 
@@ -263,7 +263,7 @@ int remote_initoptional(struct remote *remote)
     {
 
         snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-        remote_setvalue(remote, REMOTE_PUBLICKEY, keybuffer);
+        remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
 
     }
 
@@ -271,24 +271,24 @@ int remote_initoptional(struct remote *remote)
 
 }
 
-int remote_logprepare(char *id)
+int remote_log_prepare(char *id)
 {
 
     char path[BUFSIZ];
 
-    if (config_getpath(path, BUFSIZ, CONFIG_LOGS))
+    if (config_get_path(path, BUFSIZ, CONFIG_LOGS))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getshortrun(path, BUFSIZ, id))
+    if (config_get_shortrun(path, BUFSIZ, id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_getfullrun(path, BUFSIZ, id))
+    if (config_get_fullrun(path, BUFSIZ, id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -298,7 +298,60 @@ int remote_logprepare(char *id)
 
 }
 
-int remote_loghead(char *id, int total, int complete, int success)
+int remote_log_create(struct remote *remote, char *id)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_logdir(path, BUFSIZ, id, remote->pid))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    return 0;
+
+}
+
+int remote_log_open_stderr(struct remote *remote, char *id)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_logvstderr(path, BUFSIZ, id, remote->pid))
+        return -1;
+
+    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    return 0;
+
+}
+
+int remote_log_open_stdout(struct remote *remote, char *id)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_logvstdout(path, BUFSIZ, id, remote->pid))
+        return -1;
+
+    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    return 0;
+
+}
+
+int remote_log_close(struct remote *remote)
+{
+
+    close(remote->stderrfd);
+    close(remote->stdoutfd);
+
+    return 0;
+
+}
+
+int remote_log_write_head(char *id, int total, int complete, int success)
 {
 
     char path[BUFSIZ];
@@ -317,7 +370,7 @@ int remote_loghead(char *id, int total, int complete, int success)
 
     count = snprintf(buffer, BUFSIZ, "%s %s %04d %04d %04d\n", id, datetime, total, complete, success);
 
-    if (config_getpath(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
         return -1;
 
     fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
@@ -332,67 +385,14 @@ int remote_loghead(char *id, int total, int complete, int success)
 
 }
 
-int remote_createlog(struct remote *remote, char *id)
-{
-
-    char path[BUFSIZ];
-
-    if (config_getlogdir(path, BUFSIZ, id, remote->pid))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    return 0;
-
-}
-
-int remote_openlogstderr(struct remote *remote, char *id)
-{
-
-    char path[BUFSIZ];
-
-    if (config_getlogvstderr(path, BUFSIZ, id, remote->pid))
-        return -1;
-
-    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    return 0;
-
-}
-
-int remote_openlogstdout(struct remote *remote, char *id)
-{
-
-    char path[BUFSIZ];
-
-    if (config_getlogvstdout(path, BUFSIZ, id, remote->pid))
-        return -1;
-
-    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    return 0;
-
-}
-
-int remote_closelog(struct remote *remote)
-{
-
-    close(remote->stderrfd);
-    close(remote->stdoutfd);
-
-    return 0;
-
-}
-
-int remote_logstderr(struct remote *remote, char *buffer, unsigned int size)
+int remote_log_write_stderr(struct remote *remote, char *buffer, unsigned int size)
 {
 
     return write(remote->stderrfd, buffer, size);
 
 }
 
-int remote_logstdout(struct remote *remote, char *buffer, unsigned int size)
+int remote_log_write_stdout(struct remote *remote, char *buffer, unsigned int size)
 {
 
     return write(remote->stdoutfd, buffer, size);
