@@ -77,7 +77,7 @@ that particular run:
 
     $ berk log <id>
 
-Each remote in each run will have it's own unique index number called a pid so
+Each remote in each run will have it's own unique index number called a run so
 in our case you should see a 0 and 1 because we previously used two remotes in
 our execution. To look at the output for each remote you can do:
 

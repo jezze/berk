@@ -42,7 +42,7 @@ int event_end(unsigned int total, unsigned int complete, unsigned int success)
 int event_start(struct remote *remote)
 {
 
-    printf("event=start name=%s pid=%d\n", remote->name, remote->pid);
+    printf("event=start name=%s run=%d\n", remote->name, remote->run);
 
     return runhook("start");
 
@@ -51,7 +51,7 @@ int event_start(struct remote *remote)
 int event_stop(struct remote *remote, int status)
 {
 
-    printf("event=stop name=%s pid=%d status=%d\n", remote->name, remote->pid, status);
+    printf("event=stop name=%s run=%d status=%d\n", remote->name, remote->run, status);
 
     return runhook("stop");
 

@@ -303,7 +303,7 @@ int remote_log_create(struct remote *remote, char *id)
 
     char path[BUFSIZ];
 
-    if (config_get_logdir(path, BUFSIZ, id, remote->pid))
+    if (config_get_logdir(path, BUFSIZ, id, remote->run))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -318,7 +318,7 @@ int remote_log_open_stderr(struct remote *remote, char *id)
 
     char path[BUFSIZ];
 
-    if (config_get_logvstderr(path, BUFSIZ, id, remote->pid))
+    if (config_get_logvstderr(path, BUFSIZ, id, remote->run))
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -332,7 +332,7 @@ int remote_log_open_stdout(struct remote *remote, char *id)
 
     char path[BUFSIZ];
 
-    if (config_get_logvstdout(path, BUFSIZ, id, remote->pid))
+    if (config_get_logvstdout(path, BUFSIZ, id, remote->run))
         return -1;
 
     remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

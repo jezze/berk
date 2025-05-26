@@ -12,7 +12,7 @@ struct remote
     int sock;
     int stderrfd;
     int stdoutfd;
-    int pid;
+    int run;
     LIBSSH2_SESSION *session;
     LIBSSH2_CHANNEL *channel;
 

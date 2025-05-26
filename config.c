@@ -66,38 +66,38 @@ int config_get_fullrun(char *path, unsigned int length, char *id)
 
 }
 
-int config_get_logdir(char *path, unsigned int length, char *id, int pid)
+int config_get_logdir(char *path, unsigned int length, char *id, int run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%d", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
 
 }
 
-int config_get_logvstderr(char *path, unsigned int length, char *id, int pid)
+int config_get_logvstderr(char *path, unsigned int length, char *id, int run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%d/stderr", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d/stderr", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
 
 }
 
-int config_get_logsstderr(char *path, unsigned int length, char *id, char *pid)
+int config_get_logsstderr(char *path, unsigned int length, char *id, char *run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%s/stderr", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%s/stderr", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
 
 }
 
-int config_get_logvstdout(char *path, unsigned int length, char *id, int pid)
+int config_get_logvstdout(char *path, unsigned int length, char *id, int run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%d/stdout", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d/stdout", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
 
 }
 
-int config_get_logsstdout(char *path, unsigned int length, char *id, char *pid)
+int config_get_logsstdout(char *path, unsigned int length, char *id, char *run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%s/stdout", root, CONFIG_LOGS, id[0], id[1], id, pid) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%s/stdout", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
 
 }
 

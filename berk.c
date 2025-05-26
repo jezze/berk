@@ -176,7 +176,7 @@ static char *assert_list(char *arg)
 
 }
 
-static int run_exec(char *id, unsigned int pid, char *name, char *command)
+static int run_exec(char *id, unsigned int run, char *name, char *command)
 {
 
     struct remote remote;
@@ -188,7 +188,7 @@ static int run_exec(char *id, unsigned int pid, char *name, char *command)
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
-    remote.pid = pid;
+    remote.run = run;
 
     if (remote_log_create(&remote, id))
         return util_error("Could not create log.");
@@ -220,7 +220,7 @@ static int run_exec(char *id, unsigned int pid, char *name, char *command)
 
 }
 
-static int run_send(char *id, unsigned int pid, char *name, char *localpath, char *remotepath)
+static int run_send(char *id, unsigned int run, char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
@@ -232,7 +232,7 @@ static int run_send(char *id, unsigned int pid, char *name, char *localpath, cha
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
-    remote.pid = pid;
+    remote.run = run;
 
     if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
@@ -931,15 +931,12 @@ static int log_printentry(struct log_entry *entry)
     if (config_get_fullrun(path, BUFSIZ, entry->id))
         return -1;
 
-    printf("id             %s\n", entry->id);
-    printf("total          %04u\n", entry->total);
-    printf("complete       %04u/%04u (%04u)\n", entry->complete, entry->total, entry->total - entry->complete);
-    printf("successful     %04u/%04u (%04u)\n", entry->success, entry->total, entry->total - entry->success);
-    printf("datetime       %s\n", entry->datetime);
+    printf("id=%s datetime=%s\n", entry->id, entry->datetime);
+    printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
     printf("\n");
 
     for (i = 0; i < entry->total; i++)
-        printf("    run #%04u (host): success\n", i);
+        printf("    run=%u remote=xxx status=successful\n", i);
 
     printf("\n");
 
@@ -951,7 +948,7 @@ static int parse_log(int argc, char **argv)
 {
 
     unsigned int descriptor = 1;
-    char *pid = NULL;
+    char *run = NULL;
     char *id = NULL;
     unsigned int argp = 0;
     unsigned int argi;
@@ -991,7 +988,7 @@ static int parse_log(int argc, char **argv)
                 break;
 
             case 1:
-                pid = assert_digit(arg);
+                run = assert_digit(arg);
 
                 break;
 
@@ -1004,7 +1001,7 @@ static int parse_log(int argc, char **argv)
 
     }
 
-    if (id && pid)
+    if (id && run)
     {
 
         struct log_state state;
@@ -1027,13 +1024,13 @@ static int parse_log(int argc, char **argv)
             {
 
             case 1:
-                if (config_get_logsstdout(path, BUFSIZ, entry.id, pid))
+                if (config_get_logsstdout(path, BUFSIZ, entry.id, run))
                     return error_path();
 
                 break;
 
             case 2:
-                if (config_get_logsstderr(path, BUFSIZ, entry.id, pid))
+                if (config_get_logsstderr(path, BUFSIZ, entry.id, run))
                     return error_path();
 
                 break;
@@ -1359,7 +1356,7 @@ int main(int argc, char **argv)
         {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
         {"init", parse_init, "", 0},
         {"list", parse_list, " [<label>]", 0},
-        {"log", parse_log, " [-e] [<id>] [<pid>]", "Args:\n    -e  Show stderr\n"},
+        {"log", parse_log, " [-e] [<id>] [<run>]", "Args:\n    -e  Show stderr\n"},
         {"remove", parse_remove, " <namelist>", 0},
         {"send", parse_send, " <namelist> <localpath> <remotepath>", 0},
         {"shell", parse_shell, " <name>", 0},
