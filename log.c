@@ -128,13 +128,6 @@ int log_printentry(struct log_entry *entry)
 
 }
 
-int log_write(int fd, char *buffer, unsigned int size)
-{
-
-    return write(fd, buffer, size);
-
-}
-
 int log_write_head(char *id, int total, int complete, int success)
 {
 

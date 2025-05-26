@@ -117,7 +117,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                log_write(remote->stdoutfd, buffer, count);
+                write(remote->stdoutfd, buffer, count);
 
             count = libssh2_channel_read_stderr(remote->channel, buffer, BUFSIZ);
 
@@ -125,7 +125,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                log_write(remote->stderrfd, buffer, count);
+                write(remote->stderrfd, buffer, count);
 
         }
 
