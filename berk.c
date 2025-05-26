@@ -138,18 +138,6 @@ static char *assert_digit(char *arg)
 
 }
 
-static char *assert_xdigit(char *arg)
-{
-
-    util_trim(arg);
-
-    if (util_assert_xdigit(arg))
-        exit(util_error("Could not parse hex value '%s'.", arg));
-
-    return arg;
-
-}
-
 static char *assert_print(char *arg)
 {
 
@@ -873,7 +861,7 @@ static int parse_log(int argc, char **argv)
             {
 
             case 0:
-                id = assert_xdigit(arg);
+                id = assert_print(arg);
 
                 break;
 

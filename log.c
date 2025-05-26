@@ -94,6 +94,9 @@ int log_readentryprev(struct log_state *state, struct log_entry *entry)
 int log_find(struct log_state *state, struct log_entry *entry, char *id)
 {
 
+    if (strcmp("HEAD", id) == 0)
+        return log_readentryprev(state, entry);
+
     while (log_readentryprev(state, entry))
     {
 
