@@ -22,8 +22,8 @@ struct log_state
 int log_prepare(char *id);
 int log_open_head(struct log_state *state);
 void log_close_head(struct log_state *state);
-long log_previous(struct log_state *state);
 int log_readentry(struct log_state *state, struct log_entry *entry);
+int log_readentryprev(struct log_state *state, struct log_entry *entry);
 int log_find(struct log_state *state, struct log_entry *entry, char *id);
 int log_printentry(struct log_entry *entry);
 int log_write(int fd, char *buffer, unsigned int size);

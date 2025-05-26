@@ -969,22 +969,15 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_state state;
+        struct log_entry entry;
 
         if (config_init())
             return error_init();
 
         log_open_head(&state);
 
-        while (log_previous(&state) >= 0)
-        {
-
-            struct log_entry entry;
-            int result = log_readentry(&state, &entry);
-
-            if (result == 5)
-                log_printentry(&entry);
-
-        }
+        while (log_readentryprev(&state, &entry))
+            log_printentry(&entry);
 
         log_close_head(&state);
 

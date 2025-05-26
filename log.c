@@ -70,13 +70,6 @@ void log_close_head(struct log_state *state)
 
 }
 
-long log_previous(struct log_state *state)
-{
-
-    return state->position -= LOG_ENTRYSIZE;
-
-}
-
 int log_readentry(struct log_state *state, struct log_entry *entry)
 {
 
@@ -86,15 +79,25 @@ int log_readentry(struct log_state *state, struct log_entry *entry)
 
 }
 
+int log_readentryprev(struct log_state *state, struct log_entry *entry)
+{
+
+    if (state->position < LOG_ENTRYSIZE)
+        return 0;
+
+    state->position -= LOG_ENTRYSIZE;
+
+    return log_readentry(state, entry);
+
+}
+
 int log_find(struct log_state *state, struct log_entry *entry, char *id)
 {
 
-    while (log_previous(state) >= 0)
+    while (log_readentryprev(state, entry))
     {
 
-        int result = log_readentry(state, entry);
-
-        if (result == 5 && memcmp(entry->id, id, strlen(id)) == 0)
+        if (memcmp(entry->id, id, strlen(id)) == 0)
             return 1;
 
     }
