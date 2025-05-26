@@ -937,44 +937,11 @@ static int parse_log(int argc, char **argv)
     else if (id)
     {
 
-        struct dirent *entry;
         char path[BUFSIZ];
-        DIR *dir;
-
-        if (config_init())
-            return error_init();
-
-        if (config_get_fullrun(path, BUFSIZ, id))
-            return error_path();
-
-        dir = opendir(path);
-
-        if (dir == NULL)
-            return util_error("Could not open '%s'.", path);
-
-        while ((entry = readdir(dir)) != NULL)
-        {
-
-            if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
-                continue;
-
-            printf("%s\n", entry->d_name);
-
-        }
-
-        closedir(dir);
-
-        return EXIT_SUCCESS;
-
-    }
-
-    else
-    {
-
-        char path[BUFSIZ];
-        FILE *file;
         long size;
+        FILE *file;
         long position;
+        char *runid = id;
 
         if (config_init())
             return error_init();
@@ -991,8 +958,81 @@ static int parse_log(int argc, char **argv)
 
         size = ftell(file);
 
-        if (size < LOG_ENTRYSIZE)
-            return util_error("Size is 0.");
+        if (size % LOG_ENTRYSIZE != 0)
+            return util_error("Log is corrupt.");
+
+        for (position = size - LOG_ENTRYSIZE; position >= 0; position -= LOG_ENTRYSIZE)
+        {
+
+            char id[33];
+            char datetime[25];
+            unsigned int total;
+            unsigned int complete;
+            unsigned int success;
+            int result;
+
+            fseek(file, position, SEEK_SET);
+
+            result = fscanf(file, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
+
+            if (result == 5 && memcmp(id, runid, strlen(runid)) == 0)
+            {
+
+                struct dirent *entry;
+                DIR *dir;
+
+                if (config_get_fullrun(path, BUFSIZ, id))
+                    return error_path();
+
+                dir = opendir(path);
+
+                if (dir == NULL)
+                    return util_error("Could not open '%s'.", path);
+
+                while ((entry = readdir(dir)) != NULL)
+                {
+
+                    if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+                        continue;
+
+                    printf("%s\n", entry->d_name);
+
+                }
+
+                closedir(dir);
+
+            }
+
+        }
+
+        fclose(file);
+
+        return EXIT_SUCCESS;
+
+    }
+
+    else
+    {
+
+        char path[BUFSIZ];
+        long size;
+        FILE *file;
+        long position;
+
+        if (config_init())
+            return error_init();
+
+        if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+            return error_path();
+
+        file = fopen(path, "r");
+
+        if (file == NULL)
+            return EXIT_SUCCESS;
+
+        fseek(file, 0, SEEK_END);
+
+        size = ftell(file);
 
         if (size % LOG_ENTRYSIZE != 0)
             return util_error("Log is corrupt.");
