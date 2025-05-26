@@ -271,33 +271,6 @@ int remote_init_optional(struct remote *remote)
 
 }
 
-int remote_log_prepare(char *id)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    if (config_get_shortrun(path, BUFSIZ, id))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    if (config_get_fullrun(path, BUFSIZ, id))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    return 0;
-
-}
-
 int remote_log_create(struct remote *remote, char *id)
 {
 

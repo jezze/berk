@@ -12,6 +12,7 @@
 #include "util.h"
 #include "ini.h"
 #include "remote.h"
+#include "log.h"
 #include "event.h"
 #include "ssh.h"
 
@@ -573,7 +574,7 @@ static int parse_exec(int argc, char **argv)
         if (event_begin(id))
             return util_error("Could not run event.");
 
-        if (remote_log_prepare(id))
+        if (log_prepare(id))
             return util_error("Could not prepare log.");
 
         if (parallel)
@@ -832,115 +833,6 @@ static int parse_list(int argc, char **argv)
     }
 
     return error_missing();
-
-}
-
-struct log_entry
-{
-
-    char id[33];
-    char datetime[25];
-    unsigned int total;
-    unsigned int complete;
-    unsigned int success;
-    int result;
-
-};
-
-struct log_state
-{
-
-    FILE *file;
-    long size;
-    long position;
-
-};
-
-static int log_open_head(struct log_state *state)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
-        return error_path();
-
-    state->file = fopen(path, "r");
-
-    if (state->file == NULL)
-        return 0;
-
-    fseek(state->file, 0, SEEK_END);
-
-    state->size = ftell(state->file);
-
-    if (state->size % LOG_ENTRYSIZE != 0)
-        return -1;
-
-    state->position = state->size;
-
-    return 0;
-
-}
-
-static void log_close_head(struct log_state *state)
-{
-
-    fclose(state->file);
-
-}
-
-static long log_previous(struct log_state *state)
-{
-
-    return state->position -= LOG_ENTRYSIZE;
-
-}
-
-static int log_readentry(struct log_state *state, struct log_entry *entry)
-{
-
-    fseek(state->file, state->position, SEEK_SET);
-
-    return fscanf(state->file, "%s %s %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->success);
-
-}
-
-static int log_find(struct log_state *state, struct log_entry *entry, char *id)
-{
-
-    while (log_previous(state) >= 0)
-    {
-
-        int result = log_readentry(state, entry);
-
-        if (result == 5 && memcmp(entry->id, id, strlen(id)) == 0)
-            return 1;
-
-    }
-
-    return 0;
-
-}
-
-static int log_printentry(struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
-    unsigned int i;
-
-    if (config_get_fullrun(path, BUFSIZ, entry->id))
-        return -1;
-
-    printf("id=%s datetime=%s\n", entry->id, entry->datetime);
-    printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
-    printf("\n");
-
-    for (i = 0; i < entry->total; i++)
-        printf("    run=%u remote=xxx status=successful\n", i);
-
-    printf("\n");
-
-    return 0;
 
 }
 
