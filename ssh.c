@@ -10,7 +10,6 @@
 #include <netdb.h>
 #include "util.h"
 #include "remote.h"
-#include "log.h"
 #include "ssh.h"
 
 int ssh_connect(struct remote *remote)
