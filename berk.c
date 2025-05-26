@@ -905,6 +905,48 @@ static int log_readentry(struct log_state *state, struct log_entry *entry)
 
 }
 
+static int log_find(struct log_state *state, struct log_entry *entry, char *id)
+{
+
+    while (log_previous(state) >= 0)
+    {
+
+        int result = log_readentry(state, entry);
+
+        if (result == 5 && memcmp(entry->id, id, strlen(id)) == 0)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static int log_printentry(struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+    unsigned int i;
+
+    if (config_get_fullrun(path, BUFSIZ, entry->id))
+        return -1;
+
+    printf("id             %s\n", entry->id);
+    printf("total          %04u\n", entry->total);
+    printf("complete       %04u/%04u (%04u)\n", entry->complete, entry->total, entry->total - entry->complete);
+    printf("successful     %04u/%04u (%04u)\n", entry->success, entry->total, entry->total - entry->success);
+    printf("datetime       %s\n", entry->datetime);
+    printf("\n");
+
+    for (i = 0; i < entry->total; i++)
+        printf("    run #%04u (host): success\n", i);
+
+    printf("\n");
+
+    return 0;
+
+}
+
 static int parse_log(int argc, char **argv)
 {
 
@@ -966,56 +1008,47 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_state state;
+        struct log_entry entry;
 
         if (config_init())
             return error_init();
 
         log_open_head(&state);
 
-        while (log_previous(&state) >= 0)
+        if (log_find(&state, &entry, id))
         {
 
-            struct log_entry entry;
-            int result = log_readentry(&state, &entry);
+            char buffer[BUFSIZ];
+            unsigned int count;
+            char path[BUFSIZ];
+            int fd;
 
-            if (result == 5 && memcmp(entry.id, id, strlen(id)) == 0)
+            switch (descriptor)
             {
 
-                char buffer[BUFSIZ];
-                unsigned int count;
-                char path[BUFSIZ];
-                int fd;
+            case 1:
+                if (config_get_logsstdout(path, BUFSIZ, entry.id, pid))
+                    return error_path();
 
-                switch (descriptor)
-                {
+                break;
 
-                case 1:
-                    if (config_get_logsstdout(path, BUFSIZ, entry.id, pid))
-                        return error_path();
-
-                    break;
-
-                case 2:
-                    if (config_get_logsstderr(path, BUFSIZ, entry.id, pid))
-                        return error_path();
-
-                    break;
-
-                }
-
-                fd = open(path, O_RDONLY, 0644);
-
-                if (fd < 0)
-                    return util_error("Could not open '%s'.", path);
-
-                while ((count = read(fd, buffer, BUFSIZ)))
-                    write(STDOUT_FILENO, buffer, count);
-
-                close(fd);
+            case 2:
+                if (config_get_logsstderr(path, BUFSIZ, entry.id, pid))
+                    return error_path();
 
                 break;
 
             }
+
+            fd = open(path, O_RDONLY, 0644);
+
+            if (fd < 0)
+                return util_error("Could not open '%s'.", path);
+
+            while ((count = read(fd, buffer, BUFSIZ)))
+                write(STDOUT_FILENO, buffer, count);
+
+            close(fd);
 
         }
 
@@ -1027,50 +1060,15 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_state state;
+        struct log_entry entry;
 
         if (config_init())
             return error_init();
 
         log_open_head(&state);
 
-        while (log_previous(&state) >= 0)
-        {
-
-            struct log_entry entry;
-            int result = log_readentry(&state, &entry);
-
-            if (result == 5 && memcmp(entry.id, id, strlen(id)) == 0)
-            {
-
-                struct dirent *direntry;
-                DIR *dir;
-                char path[BUFSIZ];
-
-                if (config_get_fullrun(path, BUFSIZ, entry.id))
-                    return error_path();
-
-                dir = opendir(path);
-
-                if (dir == NULL)
-                    return util_error("Could not open '%s'.", path);
-
-                while ((direntry = readdir(dir)) != NULL)
-                {
-
-                    if (!strcmp(direntry->d_name, ".") || !strcmp(direntry->d_name, ".."))
-                        continue;
-
-                    printf("%s\n", direntry->d_name);
-
-                }
-
-                closedir(dir);
-
-                break;
-
-            }
-
-        }
+        if (log_find(&state, &entry, id))
+            log_printentry(&entry);
 
         log_close_head(&state);
 
@@ -1095,15 +1093,7 @@ static int parse_log(int argc, char **argv)
             int result = log_readentry(&state, &entry);
 
             if (result == 5)
-            {
-
-                printf("id             %s\n", entry.id);
-                printf("total          %04u\n", entry.total);
-                printf("complete       %04u/%04u (%04u)\n", entry.complete, entry.total, entry.total - entry.complete);
-                printf("successful     %04u/%04u (%04u)\n", entry.success, entry.total, entry.total - entry.success);
-                printf("datetime       %s\n\n", entry.datetime);
-
-            }
+                log_printentry(&entry);
 
         }
 
