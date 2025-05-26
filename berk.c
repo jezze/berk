@@ -15,6 +15,8 @@
 #include "event.h"
 #include "ssh.h"
 
+#define LOG_ENTRYSIZE 72
+
 struct command
 {
 
@@ -970,8 +972,9 @@ static int parse_log(int argc, char **argv)
     {
 
         char path[BUFSIZ];
-        char buffer[73];
         FILE *file;
+        long size;
+        long position;
 
         if (config_init())
             return error_init();
@@ -984,9 +987,17 @@ static int parse_log(int argc, char **argv)
         if (file == NULL)
             return EXIT_SUCCESS;
 
-        buffer[72] = '\0';
+        fseek(file, 0, SEEK_END);
 
-        while (fgets(buffer, 72, file) != NULL)
+        size = ftell(file);
+
+        if (size < LOG_ENTRYSIZE)
+            return util_error("Size is 0.");
+
+        if (size % LOG_ENTRYSIZE != 0)
+            return util_error("Log is corrupt.");
+
+        for (position = size - LOG_ENTRYSIZE; position >= 0; position -= LOG_ENTRYSIZE)
         {
 
             char id[33];
@@ -994,7 +1005,11 @@ static int parse_log(int argc, char **argv)
             unsigned int total;
             unsigned int complete;
             unsigned int success;
-            int result = sscanf(buffer, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
+            int result;
+
+            fseek(file, position, SEEK_SET);
+
+            result = fscanf(file, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
 
             if (result == 5)
             {
