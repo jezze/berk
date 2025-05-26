@@ -16,8 +16,6 @@
 #include "event.h"
 #include "ssh.h"
 
-#define LOG_ENTRYSIZE 72
-
 struct command
 {
 
