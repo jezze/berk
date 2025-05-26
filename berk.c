@@ -835,6 +835,76 @@ static int parse_list(int argc, char **argv)
 
 }
 
+struct log_entry
+{
+
+    char id[33];
+    char datetime[25];
+    unsigned int total;
+    unsigned int complete;
+    unsigned int success;
+    int result;
+
+};
+
+struct log_state
+{
+
+    FILE *file;
+    long size;
+    long position;
+
+};
+
+static int log_open_head(struct log_state *state)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+        return error_path();
+
+    state->file = fopen(path, "r");
+
+    if (state->file == NULL)
+        return 0;
+
+    fseek(state->file, 0, SEEK_END);
+
+    state->size = ftell(state->file);
+
+    if (state->size % LOG_ENTRYSIZE != 0)
+        return -1;
+
+    state->position = state->size;
+
+    return 0;
+
+}
+
+static void log_close_head(struct log_state *state)
+{
+
+    fclose(state->file);
+
+}
+
+static long log_previous(struct log_state *state)
+{
+
+    return state->position -= LOG_ENTRYSIZE;
+
+}
+
+static int log_readentry(struct log_state *state, struct log_entry *entry)
+{
+
+    fseek(state->file, state->position, SEEK_SET);
+
+    return fscanf(state->file, "%s %s %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->success);
+
+}
+
 static int parse_log(int argc, char **argv)
 {
 
@@ -895,40 +965,59 @@ static int parse_log(int argc, char **argv)
     if (id && pid)
     {
 
-        char buffer[BUFSIZ];
-        unsigned int count;
-        char path[BUFSIZ];
-        int fd;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        switch (descriptor)
+        log_open_head(&state);
+
+        while (log_previous(&state) >= 0)
         {
 
-        case 1:
-            if (config_get_logsstdout(path, BUFSIZ, id, pid))
-                return error_path();
+            struct log_entry entry;
+            int result = log_readentry(&state, &entry);
 
-            break;
+            if (result == 5 && memcmp(entry.id, id, strlen(id)) == 0)
+            {
 
-        case 2:
-            if (config_get_logsstderr(path, BUFSIZ, id, pid))
-                return error_path();
+                char buffer[BUFSIZ];
+                unsigned int count;
+                char path[BUFSIZ];
+                int fd;
 
-            break;
+                switch (descriptor)
+                {
+
+                case 1:
+                    if (config_get_logsstdout(path, BUFSIZ, entry.id, pid))
+                        return error_path();
+
+                    break;
+
+                case 2:
+                    if (config_get_logsstderr(path, BUFSIZ, entry.id, pid))
+                        return error_path();
+
+                    break;
+
+                }
+
+                fd = open(path, O_RDONLY, 0644);
+
+                if (fd < 0)
+                    return util_error("Could not open '%s'.", path);
+
+                while ((count = read(fd, buffer, BUFSIZ)))
+                    write(STDOUT_FILENO, buffer, count);
+
+                close(fd);
+
+                break;
+
+            }
 
         }
-
-        fd = open(path, O_RDONLY, 0644);
-
-        if (fd < 0)
-            return util_error("Could not open '%s'.", path);
-
-        while ((count = read(fd, buffer, BUFSIZ)))
-            write(STDOUT_FILENO, buffer, count);
-
-        close(fd);
 
         return EXIT_SUCCESS;
 
@@ -937,51 +1026,27 @@ static int parse_log(int argc, char **argv)
     else if (id)
     {
 
-        char path[BUFSIZ];
-        long size;
-        FILE *file;
-        long position;
-        char *runid = id;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
-            return error_path();
+        log_open_head(&state);
 
-        file = fopen(path, "r");
-
-        if (file == NULL)
-            return EXIT_SUCCESS;
-
-        fseek(file, 0, SEEK_END);
-
-        size = ftell(file);
-
-        if (size % LOG_ENTRYSIZE != 0)
-            return util_error("Log is corrupt.");
-
-        for (position = size - LOG_ENTRYSIZE; position >= 0; position -= LOG_ENTRYSIZE)
+        while (log_previous(&state) >= 0)
         {
 
-            char id[33];
-            char datetime[25];
-            unsigned int total;
-            unsigned int complete;
-            unsigned int success;
-            int result;
+            struct log_entry entry;
+            int result = log_readentry(&state, &entry);
 
-            fseek(file, position, SEEK_SET);
-
-            result = fscanf(file, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
-
-            if (result == 5 && memcmp(id, runid, strlen(runid)) == 0)
+            if (result == 5 && memcmp(entry.id, id, strlen(id)) == 0)
             {
 
-                struct dirent *entry;
+                struct dirent *direntry;
                 DIR *dir;
+                char path[BUFSIZ];
 
-                if (config_get_fullrun(path, BUFSIZ, id))
+                if (config_get_fullrun(path, BUFSIZ, entry.id))
                     return error_path();
 
                 dir = opendir(path);
@@ -989,23 +1054,25 @@ static int parse_log(int argc, char **argv)
                 if (dir == NULL)
                     return util_error("Could not open '%s'.", path);
 
-                while ((entry = readdir(dir)) != NULL)
+                while ((direntry = readdir(dir)) != NULL)
                 {
 
-                    if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+                    if (!strcmp(direntry->d_name, ".") || !strcmp(direntry->d_name, ".."))
                         continue;
 
-                    printf("%s\n", entry->d_name);
+                    printf("%s\n", direntry->d_name);
 
                 }
 
                 closedir(dir);
 
+                break;
+
             }
 
         }
 
-        fclose(file);
+        log_close_head(&state);
 
         return EXIT_SUCCESS;
 
@@ -1014,57 +1081,33 @@ static int parse_log(int argc, char **argv)
     else
     {
 
-        char path[BUFSIZ];
-        long size;
-        FILE *file;
-        long position;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
-            return error_path();
+        log_open_head(&state);
 
-        file = fopen(path, "r");
-
-        if (file == NULL)
-            return EXIT_SUCCESS;
-
-        fseek(file, 0, SEEK_END);
-
-        size = ftell(file);
-
-        if (size % LOG_ENTRYSIZE != 0)
-            return util_error("Log is corrupt.");
-
-        for (position = size - LOG_ENTRYSIZE; position >= 0; position -= LOG_ENTRYSIZE)
+        while (log_previous(&state) >= 0)
         {
 
-            char id[33];
-            char datetime[25];
-            unsigned int total;
-            unsigned int complete;
-            unsigned int success;
-            int result;
-
-            fseek(file, position, SEEK_SET);
-
-            result = fscanf(file, "%s %s %u %u %u\n", id, datetime, &total, &complete, &success);
+            struct log_entry entry;
+            int result = log_readentry(&state, &entry);
 
             if (result == 5)
             {
 
-                printf("id             %s\n", id);
-                printf("total          %04u\n", total);
-                printf("complete       %04u/%04u (%04u)\n", complete, total, total - complete);
-                printf("successful     %04u/%04u (%04u)\n", success, total, total - success);
-                printf("datetime       %s\n\n", datetime);
+                printf("id             %s\n", entry.id);
+                printf("total          %04u\n", entry.total);
+                printf("complete       %04u/%04u (%04u)\n", entry.complete, entry.total, entry.total - entry.complete);
+                printf("successful     %04u/%04u (%04u)\n", entry.success, entry.total, entry.total - entry.success);
+                printf("datetime       %s\n\n", entry.datetime);
 
             }
 
         }
 
-        fclose(file);
+        log_close_head(&state);
 
         return EXIT_SUCCESS;
 
