@@ -15,5 +15,5 @@ Multi-Arch: foreign
 Depends:
  ${shlibs:Depends},
  ${misc:Depends},
- libssh2-1t64,
+ libssh2-1 | libssh2-1t64,
 Description: Berk is a versatile job dispatcher
