@@ -875,13 +875,13 @@ static int parse_log(int argc, char **argv)
             {
 
             case 1:
-                if (config_get_logsstdout(path, BUFSIZ, entry.id, run))
+                if (config_get_logs(path, BUFSIZ, entry.id, run, "stdout"))
                     return error_path();
 
                 break;
 
             case 2:
-                if (config_get_logsstderr(path, BUFSIZ, entry.id, run))
+                if (config_get_logs(path, BUFSIZ, entry.id, run, "stderr"))
                     return error_path();
 
                 break;

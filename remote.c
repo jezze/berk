@@ -292,12 +292,12 @@ int remote_log_open(struct remote *remote, struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_logvstderr(path, BUFSIZ, entry->id, remote->run))
+    if (config_get_logv(path, BUFSIZ, entry->id, remote->run, "stderr"))
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (config_get_logvstdout(path, BUFSIZ, entry->id, remote->run))
+    if (config_get_logv(path, BUFSIZ, entry->id, remote->run, "stdout"))
         return -1;
 
     remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
