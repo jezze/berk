@@ -207,7 +207,7 @@ static int run_exec(char *id, unsigned int run, char *name, char *command)
 
 }
 
-static int run_send(char *id, unsigned int run, char *name, char *localpath, char *remotepath)
+static int run_send(unsigned int run, char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
@@ -546,21 +546,22 @@ static int parse_exec(int argc, char **argv)
     if (name && command)
     {
 
+        struct log_entry logentry;
         unsigned int names = util_split(name);
-        unsigned int total = 0;
-        unsigned int complete = 0;
-        unsigned int success = 0;
-        char id[32];
 
-        createid(id, 32);
+        createid(logentry.id, 32);
+
+        logentry.total = 0;
+        logentry.complete = 0;
+        logentry.success = 0;
 
         if (config_init())
             return error_init();
 
-        if (event_begin(id))
+        if (event_begin(logentry.id))
             return util_error("Could not run event.");
 
-        if (log_prepare(id))
+        if (log_prepare(&logentry))
             return util_error("Could not prepare log.");
 
         if (parallel)
@@ -575,22 +576,22 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(id, i, name, command);
+                    return run_exec(logentry.id, i, name, command);
 
             }
 
             while (wait(&status) > 0)
             {
 
-                total++;
+                logentry.total++;
 
                 if (WIFEXITED(status))
                 {
 
-                    complete++;
+                    logentry.complete++;
 
                     if (WEXITSTATUS(status) == 0)
-                        success++;
+                        logentry.success++;
 
                 }
 
@@ -606,21 +607,21 @@ static int parse_exec(int argc, char **argv)
             for (i = 0; (name = util_nextword(name, i, names)); i++)
             {
 
-                total++;
+                logentry.total++;
 
-                if (run_exec(id, i, name, command) == 0)
-                    success++;
+                if (run_exec(logentry.id, i, name, command) == 0)
+                    logentry.success++;
 
-                complete++;
+                logentry.complete++;
 
             }
 
         }
 
-        if (event_end(total, complete, success))
+        if (event_end(logentry.total, logentry.complete, logentry.success))
             return util_error("Could not run event.");
 
-        if (log_write_head(id, total, complete, success))
+        if (log_writeentry(&logentry))
             return util_error("Could not log HEAD.");
 
         return EXIT_SUCCESS;
@@ -1101,15 +1102,12 @@ static int parse_send(int argc, char **argv)
 
         unsigned int names = util_split(name);
         unsigned int i;
-        char id[32];
-
-        createid(id, 32);
 
         if (config_init())
             return error_init();
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
-            run_send(id, i, name, localpath, remotepath);
+            run_send(i, name, localpath, remotepath);
 
         return EXIT_SUCCESS;
 

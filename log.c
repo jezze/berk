@@ -10,7 +10,7 @@
 
 #define LOG_ENTRYSIZE 72
 
-int log_prepare(char *id)
+int log_prepare(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -21,13 +21,13 @@ int log_prepare(char *id)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_shortrun(path, BUFSIZ, id))
+    if (config_get_shortrun(path, BUFSIZ, entry->id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_fullrun(path, BUFSIZ, id))
+    if (config_get_fullrun(path, BUFSIZ, entry->id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -131,12 +131,11 @@ int log_printentry(struct log_entry *entry)
 
 }
 
-int log_write_head(char *id, int total, int complete, int success)
+int log_writeentry(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
     char buffer[BUFSIZ];
-    char datetime[64];
     unsigned int count;
     int fd;
     time_t timeraw;
@@ -146,9 +145,9 @@ int log_write_head(char *id, int total, int complete, int success)
 
     timeinfo = localtime(&timeraw);
 
-    strftime(datetime, 64, "%FT%T%z", timeinfo);
+    strftime(entry->datetime, 25, "%FT%T%z", timeinfo);
 
-    count = snprintf(buffer, BUFSIZ, "%s %s %04d %04d %04d\n", id, datetime, total, complete, success);
+    count = snprintf(buffer, BUFSIZ, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success);
 
     if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
         return -1;
