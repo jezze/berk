@@ -135,19 +135,11 @@ int log_writeentry(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
-    char buffer[BUFSIZ];
-    unsigned int count;
-    int fd;
     time_t timeraw;
-    struct tm *timeinfo;
+    int fd;
 
     time(&timeraw);
-
-    timeinfo = localtime(&timeraw);
-
-    strftime(entry->datetime, 25, "%FT%T%z", timeinfo);
-
-    count = snprintf(buffer, BUFSIZ, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success);
+    strftime(entry->datetime, 25, "%FT%T%z", localtime(&timeraw));
 
     if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
         return -1;
@@ -157,7 +149,7 @@ int log_writeentry(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    write(fd, buffer, count);
+    dprintf(fd, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success);
     close(fd);
 
     return 0;
