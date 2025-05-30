@@ -287,7 +287,7 @@ int remote_log_create(struct remote *remote, struct log_entry *entry)
 
 }
 
-int remote_log_open_stderr(struct remote *remote, struct log_entry *entry)
+int remote_log_open(struct remote *remote, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -296,15 +296,6 @@ int remote_log_open_stderr(struct remote *remote, struct log_entry *entry)
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    return 0;
-
-}
-
-int remote_log_open_stdout(struct remote *remote, struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
 
     if (config_get_logvstdout(path, BUFSIZ, entry->id, remote->run))
         return -1;

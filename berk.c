@@ -180,11 +180,8 @@ static int run_exec(struct log_entry *entry, unsigned int run, char *name, char 
     if (remote_log_create(&remote, entry))
         return util_error("Could not create log.");
 
-    if (remote_log_open_stderr(&remote, entry))
+    if (remote_log_open(&remote, entry))
         return util_error("Could not open stderr log.");
-
-    if (remote_log_open_stdout(&remote, entry))
-        return util_error("Could not open stdout log.");
 
     if (event_start(&remote))
         return util_error("Could not run event.");

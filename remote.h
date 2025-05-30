@@ -27,6 +27,5 @@ int remote_erase(struct remote *remote);
 int remote_init_required(struct remote *remote, char *name, char *hostname);
 int remote_init_optional(struct remote *remote);
 int remote_log_create(struct remote *remote, struct log_entry *entry);
-int remote_log_open_stderr(struct remote *remote, struct log_entry *entry);
-int remote_log_open_stdout(struct remote *remote, struct log_entry *entry);
+int remote_log_open(struct remote *remote, struct log_entry *entry);
 int remote_log_close(struct remote *remote);
