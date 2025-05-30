@@ -233,27 +233,6 @@ static int run_send(unsigned int run, char *name, char *localpath, char *remotep
 
 }
 
-static void createid(char *dest, unsigned int length)
-{
-
-    char charset[] = "0123456789abcdef";
-    unsigned int i;
-
-    srand(time(NULL));
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned int index = (double)rand() / RAND_MAX * 16;
-
-        dest[i] = charset[index];
-
-    }
-
-    dest[length - 1] = '\0';
-
-}
-
 static int parse_add(int argc, char **argv)
 {
 
@@ -549,16 +528,12 @@ static int parse_exec(int argc, char **argv)
         struct log_entry logentry;
         unsigned int names = util_split(name);
 
-        createid(logentry.id, 32);
-
-        logentry.total = 0;
-        logentry.complete = 0;
-        logentry.success = 0;
+        log_init(&logentry);
 
         if (config_init())
             return error_init();
 
-        if (event_begin(logentry.id))
+        if (event_begin(&logentry))
             return util_error("Could not run event.");
 
         if (log_prepare(&logentry))
@@ -618,7 +593,7 @@ static int parse_exec(int argc, char **argv)
 
         }
 
-        if (event_end(logentry.total, logentry.complete, logentry.success))
+        if (event_end(&logentry))
             return util_error("Could not run event.");
 
         if (log_writeentry(&logentry))

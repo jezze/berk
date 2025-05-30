@@ -27,3 +27,4 @@ int log_readentryprev(struct log_state *state, struct log_entry *entry);
 int log_find(struct log_state *state, struct log_entry *entry, char *id);
 int log_printentry(struct log_entry *entry);
 int log_writeentry(struct log_entry *entry);
+void log_init(struct log_entry *entry);

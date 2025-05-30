@@ -164,3 +164,35 @@ int log_writeentry(struct log_entry *entry)
 
 }
 
+static void createid(char *dest, unsigned int length)
+{
+
+    char charset[] = "0123456789abcdef";
+    unsigned int i;
+
+    srand(time(NULL));
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned int index = (double)rand() / RAND_MAX * 16;
+
+        dest[i] = charset[index];
+
+    }
+
+    dest[length - 1] = '\0';
+
+}
+
+void log_init(struct log_entry *entry)
+{
+
+    createid(entry->id, 32);
+
+    entry->total = 0;
+    entry->complete = 0;
+    entry->success = 0;
+
+}
+

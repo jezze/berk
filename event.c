@@ -22,19 +22,19 @@ static int runhook(char *name)
 
 }
 
-int event_begin(char *id)
+int event_begin(struct log_entry *entry)
 {
 
-    printf("event=begin id=%s\n", id);
+    printf("event=begin id=%s\n", entry->id);
 
     return runhook("begin");
 
 }
 
-int event_end(unsigned int total, unsigned int complete, unsigned int success)
+int event_end(struct log_entry *entry)
 {
 
-    printf("event=end total=%d complete=%d success=%d\n", total, complete, success);
+    printf("event=end total=%d complete=%d success=%d\n", entry->total, entry->complete, entry->success);
 
     return runhook("end");
 
