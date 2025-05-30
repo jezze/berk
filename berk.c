@@ -11,8 +11,8 @@
 #include "config.h"
 #include "util.h"
 #include "ini.h"
-#include "remote.h"
 #include "log.h"
+#include "remote.h"
 #include "event.h"
 #include "ssh.h"
 
@@ -163,7 +163,7 @@ static char *assert_list(char *arg)
 
 }
 
-static int run_exec(char *id, unsigned int run, char *name, char *command)
+static int run_exec(struct log_entry *entry, unsigned int run, char *name, char *command)
 {
 
     struct remote remote;
@@ -177,13 +177,13 @@ static int run_exec(char *id, unsigned int run, char *name, char *command)
 
     remote.run = run;
 
-    if (remote_log_create(&remote, id))
+    if (remote_log_create(&remote, entry))
         return util_error("Could not create log.");
 
-    if (remote_log_open_stderr(&remote, id))
+    if (remote_log_open_stderr(&remote, entry))
         return util_error("Could not open stderr log.");
 
-    if (remote_log_open_stdout(&remote, id))
+    if (remote_log_open_stdout(&remote, entry))
         return util_error("Could not open stdout log.");
 
     if (event_start(&remote))
@@ -576,7 +576,7 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(logentry.id, i, name, command);
+                    return run_exec(&logentry, i, name, command);
 
             }
 
@@ -609,7 +609,7 @@ static int parse_exec(int argc, char **argv)
 
                 logentry.total++;
 
-                if (run_exec(logentry.id, i, name, command) == 0)
+                if (run_exec(&logentry, i, name, command) == 0)
                     logentry.success++;
 
                 logentry.complete++;

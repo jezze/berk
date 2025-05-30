@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include "config.h"
 #include "ini.h"
+#include "log.h"
 #include "remote.h"
 
 enum
@@ -271,12 +272,12 @@ int remote_init_optional(struct remote *remote)
 
 }
 
-int remote_log_create(struct remote *remote, char *id)
+int remote_log_create(struct remote *remote, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
 
-    if (config_get_logdir(path, BUFSIZ, id, remote->run))
+    if (config_get_logdir(path, BUFSIZ, entry->id, remote->run))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -286,12 +287,12 @@ int remote_log_create(struct remote *remote, char *id)
 
 }
 
-int remote_log_open_stderr(struct remote *remote, char *id)
+int remote_log_open_stderr(struct remote *remote, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
 
-    if (config_get_logvstderr(path, BUFSIZ, id, remote->run))
+    if (config_get_logvstderr(path, BUFSIZ, entry->id, remote->run))
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -300,12 +301,12 @@ int remote_log_open_stderr(struct remote *remote, char *id)
 
 }
 
-int remote_log_open_stdout(struct remote *remote, char *id)
+int remote_log_open_stdout(struct remote *remote, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
 
-    if (config_get_logvstdout(path, BUFSIZ, id, remote->run))
+    if (config_get_logvstdout(path, BUFSIZ, entry->id, remote->run))
         return -1;
 
     remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

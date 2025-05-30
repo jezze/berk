@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <libssh2.h>
 #include "config.h"
+#include "log.h"
 #include "remote.h"
 
 static int runhook(char *name)
