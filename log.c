@@ -149,7 +149,9 @@ int log_writeentry(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    dprintf(fd, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success);
+    if (dprintf(fd, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success) != LOG_ENTRYSIZE)
+        return -1;
+
     close(fd);
 
     return 0;
