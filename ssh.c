@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include "util.h"
 #include "log.h"
+#include "run.h"
 #include "remote.h"
 #include "ssh.h"
 
@@ -77,7 +78,7 @@ int ssh_disconnect(struct remote *remote)
 
 }
 
-int ssh_exec(struct remote *remote, char *command)
+int ssh_exec(struct remote *remote, struct run *run, char *command)
 {
 
     struct pollfd pfds[1];
@@ -117,7 +118,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                write(remote->run.stdoutfd, buffer, count);
+                write(run->stdoutfd, buffer, count);
 
             count = libssh2_channel_read_stderr(remote->channel, buffer, BUFSIZ);
 
@@ -125,7 +126,7 @@ int ssh_exec(struct remote *remote, char *command)
                 continue;
 
             if (count > 0)
-                write(remote->run.stderrfd, buffer, count);
+                write(run->stderrfd, buffer, count);
 
         }
 

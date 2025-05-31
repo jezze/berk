@@ -12,6 +12,7 @@
 #include "util.h"
 #include "ini.h"
 #include "log.h"
+#include "run.h"
 #include "remote.h"
 #include "event.h"
 #include "ssh.h"
@@ -163,10 +164,11 @@ static char *assert_list(char *arg)
 
 }
 
-static int run_exec(struct log_entry *entry, unsigned int run, char *name, char *command)
+static int run_exec(struct log_entry *entry, unsigned int index, char *name, char *command)
 {
 
     struct remote remote;
+    struct run run;
     int rc;
 
     if (remote_load(&remote, name))
@@ -175,27 +177,27 @@ static int run_exec(struct log_entry *entry, unsigned int run, char *name, char 
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
-    remote.run.index = run;
+    run_init(&run, index);
 
-    if (remote_open(&remote, entry))
-        return util_error("Could not open stderr log.");
+    if (run_open(&run, entry))
+        return util_error("Could not open run.");
 
-    if (event_start(&remote))
+    if (event_start(&remote, &run))
         return util_error("Could not run event.");
 
     if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
 
-    rc = ssh_exec(&remote, command);
+    rc = ssh_exec(&remote, &run, command);
 
     if (ssh_disconnect(&remote))
         return util_error("Could not disconnect from remote '%s'.", remote.name);
 
-    if (event_stop(&remote, rc))
+    if (event_stop(&remote, &run, rc))
         return util_error("Could not run event.");
 
-    if (remote_close(&remote))
-        return util_error("Could not close log.");
+    if (run_close(&run))
+        return util_error("Could not close run.");
 
     return rc;
 
@@ -278,8 +280,7 @@ static int parse_add(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        if (remote_init(&remote, name, hostname))
-            return error_remote_init(name);
+        remote_init(&remote, name, hostname);
 
         if (remote_save(&remote))
             return error_remote_save(name);

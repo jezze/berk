@@ -1,12 +1,3 @@
-struct log_run
-{
-
-    unsigned int index;
-    int stderrfd;
-    int stdoutfd;
-
-};
-
 struct log_entry
 {
 

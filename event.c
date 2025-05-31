@@ -5,6 +5,7 @@
 #include <libssh2.h>
 #include "config.h"
 #include "log.h"
+#include "run.h"
 #include "remote.h"
 
 static int runhook(char *name)
@@ -40,19 +41,19 @@ int event_end(struct log_entry *entry)
 
 }
 
-int event_start(struct remote *remote)
+int event_start(struct remote *remote, struct run *run)
 {
 
-    printf("event=start name=%s run=%d\n", remote->name, remote->run.index);
+    printf("event=start name=%s run=%d\n", remote->name, run->index);
 
     return runhook("start");
 
 }
 
-int event_stop(struct remote *remote, int status)
+int event_stop(struct remote *remote, struct run *run, int status)
 {
 
-    printf("event=stop name=%s run=%d status=%d\n", remote->name, remote->run.index, status);
+    printf("event=stop name=%s run=%d status=%d\n", remote->name, run->index, status);
 
     return runhook("stop");
 

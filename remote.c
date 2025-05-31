@@ -11,6 +11,7 @@
 #include "config.h"
 #include "ini.h"
 #include "log.h"
+#include "run.h"
 #include "remote.h"
 
 enum
@@ -225,52 +226,6 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_open(struct remote *remote, struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run.index))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    if (config_get_runpath(path, BUFSIZ, entry->id, remote->run.index, "stderr"))
-        return -1;
-
-    remote->run.stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    if (config_get_runpath(path, BUFSIZ, entry->id, remote->run.index, "stdout"))
-        return -1;
-
-    remote->run.stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    return 0;
-
-}
-
-int remote_close(struct remote *remote)
-{
-
-    close(remote->run.stderrfd);
-    close(remote->run.stdoutfd);
-
-    return 0;
-
-}
-
-int remote_init(struct remote *remote, char *name, char *hostname)
-{
-
-    memset(remote, 0, sizeof (struct remote));
-    remote_set_value(remote, REMOTE_NAME, name);
-    remote_set_value(remote, REMOTE_HOSTNAME, hostname);
-
-    return 0;
-
-}
-
 int remote_init_optional(struct remote *remote)
 {
 
@@ -304,6 +259,15 @@ int remote_init_optional(struct remote *remote)
     }
 
     return 0;
+
+}
+
+void remote_init(struct remote *remote, char *name, char *hostname)
+{
+
+    memset(remote, 0, sizeof (struct remote));
+    remote_set_value(remote, REMOTE_NAME, name);
+    remote_set_value(remote, REMOTE_HOSTNAME, hostname);
 
 }
 
