@@ -7,10 +7,9 @@
 
 int config_init();
 int config_get_path(char *path, unsigned int length, char *name);
-int config_get_remotepath(char *path, unsigned int length, char *filename);
-int config_get_shortrun(char *path, unsigned int length, char *id);
-int config_get_fullrun(char *path, unsigned int length, char *id);
-int config_get_logdir(char *path, unsigned int length, char *id, int run);
-int config_get_logv(char *path, unsigned int length, char *id, int run, char *name);
-int config_get_logs(char *path, unsigned int length, char *id, char *run, char *name);
-int config_get_hookpath(char *path, unsigned int length, char *filename);
+int config_get_subpath(char *path, unsigned int length, char *dir, char *name);
+int config_get_rundirshort(char *path, unsigned int length, char *id);
+int config_get_rundirfull(char *path, unsigned int length, char *id);
+int config_get_rundir(char *path, unsigned int length, char *id, int run);
+int config_get_runpathv(char *path, unsigned int length, char *id, int run, char *name);
+int config_get_runpaths(char *path, unsigned int length, char *id, char *run, char *name);

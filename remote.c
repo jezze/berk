@@ -153,7 +153,7 @@ int remote_load(struct remote *remote, char *name)
 
     char path[BUFSIZ];
 
-    if (config_get_remotepath(path, BUFSIZ, name))
+    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, name))
         return -1;
 
     memset(remote, 0, sizeof (struct remote));
@@ -174,7 +174,7 @@ int remote_save(struct remote *remote)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_remotepath(path, BUFSIZ, remote->name))
+    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name))
         return -1;
 
     file = fopen(path, "w");
@@ -215,7 +215,7 @@ int remote_erase(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (config_get_remotepath(path, BUFSIZ, remote->name))
+    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name))
         return -1;
 
     if (unlink(path) < 0)
@@ -277,7 +277,7 @@ int remote_log_create(struct remote *remote, struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_logdir(path, BUFSIZ, entry->id, remote->run))
+    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -292,12 +292,12 @@ int remote_log_open(struct remote *remote, struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_logv(path, BUFSIZ, entry->id, remote->run, "stderr"))
+    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stderr"))
         return -1;
 
     remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (config_get_logv(path, BUFSIZ, entry->id, remote->run, "stdout"))
+    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stdout"))
         return -1;
 
     remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);

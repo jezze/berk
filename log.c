@@ -15,7 +15,7 @@ int log_state_open(struct log_state *state)
 
     char path[BUFSIZ];
 
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+    if (config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD"))
         return -1;
 
     state->file = fopen(path, "r");
@@ -56,13 +56,13 @@ int log_entry_prepare(struct log_entry *entry)
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_shortrun(path, BUFSIZ, entry->id))
+    if (config_get_rundirshort(path, BUFSIZ, entry->id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_fullrun(path, BUFSIZ, entry->id))
+    if (config_get_rundirfull(path, BUFSIZ, entry->id))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
@@ -117,7 +117,7 @@ int log_entry_print(struct log_entry *entry)
     char path[BUFSIZ];
     unsigned int i;
 
-    if (config_get_fullrun(path, BUFSIZ, entry->id))
+    if (config_get_rundirfull(path, BUFSIZ, entry->id))
         return -1;
 
     printf("id=%s datetime=%s\n", entry->id, entry->datetime);
@@ -143,7 +143,7 @@ int log_entry_write(struct log_entry *entry)
     time(&timeraw);
     strftime(entry->datetime, 25, "%FT%T%z", localtime(&timeraw));
 
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+    if (config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD"))
         return -1;
 
     fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
