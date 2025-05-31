@@ -225,7 +225,51 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_init_required(struct remote *remote, char *name, char *hostname)
+int remote_log_create(struct remote *remote, struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run))
+        return -1;
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    return 0;
+
+}
+
+int remote_log_open(struct remote *remote, struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stderr"))
+        return -1;
+
+    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stdout"))
+        return -1;
+
+    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    return 0;
+
+}
+
+int remote_log_close(struct remote *remote)
+{
+
+    close(remote->stderrfd);
+    close(remote->stdoutfd);
+
+    return 0;
+
+}
+
+int remote_init(struct remote *remote, char *name, char *hostname)
 {
 
     memset(remote, 0, sizeof (struct remote));
@@ -267,50 +311,6 @@ int remote_init_optional(struct remote *remote)
         remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
 
     }
-
-    return 0;
-
-}
-
-int remote_log_create(struct remote *remote, struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run))
-        return -1;
-
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
-        return -1;
-
-    return 0;
-
-}
-
-int remote_log_open(struct remote *remote, struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stderr"))
-        return -1;
-
-    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stdout"))
-        return -1;
-
-    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-    return 0;
-
-}
-
-int remote_log_close(struct remote *remote)
-{
-
-    close(remote->stderrfd);
-    close(remote->stdoutfd);
 
     return 0;
 

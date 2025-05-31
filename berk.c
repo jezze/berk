@@ -283,7 +283,7 @@ static int parse_add(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        if (remote_init_required(&remote, name, hostname))
+        if (remote_init(&remote, name, hostname))
             return error_remote_init(name);
 
         if (remote_save(&remote))

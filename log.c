@@ -184,6 +184,7 @@ static void createid(char *dest, unsigned int length)
 void log_entry_init(struct log_entry *entry)
 {
 
+    memset(entry, 0, sizeof (struct log_entry));
     createid(entry->id, 32);
 
     entry->total = 0;
