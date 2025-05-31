@@ -686,7 +686,6 @@ static int parse_list(int argc, char **argv)
 {
 
     char *label = NULL;
-    unsigned int argp = 0;
     unsigned int argi;
 
     for (argi = 0; argi < argc; argi++)
@@ -697,25 +696,25 @@ static int parse_list(int argc, char **argv)
         if (arg[0] == '-')
         {
 
-            return error_flag_unrecognized(arg);
+            switch (arg[1])
+            {
+
+            case 'l':
+                label = assert_print(argv[++argi]);
+
+                break;
+
+            default:
+                return error_flag_unrecognized(arg);
+
+            }
 
         }
 
         else
         {
 
-            switch (argp++)
-            {
-
-            case 0:
-                label = assert_print(arg);
-
-                break;
-
-            default:
-                return error_toomany();
-
-            }
+            return error_toomany();
 
         }
 
@@ -1158,7 +1157,7 @@ int main(int argc, char **argv)
         {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey label\n"},
         {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
         {"init", parse_init, "", 0},
-        {"list", parse_list, " [<label>]", 0},
+        {"list", parse_list, " [-l <label>]", 0},
         {"log", parse_log, " [-e] [<id>] [<run>]", "Args:\n    -e  Show stderr\n"},
         {"remove", parse_remove, " <namelist>", 0},
         {"send", parse_send, " <namelist> <localpath> <remotepath>", 0},

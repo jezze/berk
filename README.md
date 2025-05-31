@@ -94,11 +94,11 @@ and "donut" using:
 Using berk list with a label we can now filter out only the remotes that match
 the label we are interested in like "donut":
 
-    $ berk list donut
+    $ berk list -l donut
 
 We can use the results to run our uptime command again but only on the remotes
 we previously filtered out:
 
-    $ berk exec "$(berk list donut)" "uptime"
+    $ berk exec "$(berk list -l donut)" "uptime"
 
 This way, and with some bash magic, we can make very complex setups.
