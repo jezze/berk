@@ -654,11 +654,10 @@ static int parse_init(int argc, char **argv)
         {
 
             char buffer[BUFSIZ];
-            unsigned int count;
 
-            snprintf(buffer, BUFSIZ, "%s/%s.sample", CONFIG_HOOKS, hooks[i]);
+            snprintf(buffer, BUFSIZ, "%s.sample", hooks[i]);
 
-            if (config_get_path(path, BUFSIZ, buffer))
+            if (config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, buffer))
                 return error_path();
 
             fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
@@ -666,9 +665,7 @@ static int parse_init(int argc, char **argv)
             if (fd < 0)
                 return util_error("Could not create hook file '%s'.", hooks[i]);
 
-            count = snprintf(buffer, BUFSIZ, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
-
-            write(fd, buffer, count);
+            dprintf(fd, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
             close(fd);
 
         }
