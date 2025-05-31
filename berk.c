@@ -452,8 +452,9 @@ static int parse_config(int argc, char **argv)
             if (remote.label)
                 printf("label=%s\n", remote.label);
 
-
         }
+
+        return EXIT_SUCCESS;
 
     }
 
