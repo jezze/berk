@@ -84,21 +84,21 @@ our execution. To look at the output for each remote you can do:
     $ berk log <id> 0
     $ berk log <id> 1
 
-To do more advanced setups you can, using berk config, set labels seperated by
+To do more advanced setups you can, using berk config, set tags seperated by
 space, on each remote. This way you can tell berk to only execute commands on
-remotes with a certain label. On our remote we can add two labels called "beer"
+remotes with a certain tag. On our remote we can add two tags called "beer"
 and "donut" using:
 
-    $ berk config myhost label "beer donut"
+    $ berk config myhost tags "beer donut"
 
-Using berk list with a label we can now filter out only the remotes that match
-the label we are interested in like "donut":
+Using berk list with a tag we can now filter out only the remotes that match
+the tag we are interested in like "donut":
 
-    $ berk list -l donut
+    $ berk list -t donut
 
 We can use the results to run our uptime command again but only on the remotes
 we previously filtered out:
 
-    $ berk exec "$(berk list -l donut)" "uptime"
+    $ berk exec "$(berk list -t donut)" "uptime"
 
 This way, and with some bash magic, we can make very complex setups.

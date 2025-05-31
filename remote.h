@@ -8,7 +8,7 @@ struct remote
     char *password;
     char *publickey;
     char *privatekey;
-    char *label;
+    char *tags;
     int sock;
     LIBSSH2_SESSION *session;
     LIBSSH2_CHANNEL *channel;

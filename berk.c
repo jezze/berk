@@ -449,8 +449,8 @@ static int parse_config(int argc, char **argv)
             if (remote.publickey)
                 printf("publickey=%s\n", remote.publickey);
 
-            if (remote.label)
-                printf("label=%s\n", remote.label);
+            if (remote.tags)
+                printf("tags=%s\n", remote.tags);
 
         }
 
@@ -686,7 +686,7 @@ static int parse_init(int argc, char **argv)
 static int parse_list(int argc, char **argv)
 {
 
-    char *label = NULL;
+    char *tags = NULL;
     unsigned int argi;
 
     for (argi = 0; argi < argc; argi++)
@@ -700,8 +700,8 @@ static int parse_list(int argc, char **argv)
             switch (arg[1])
             {
 
-            case 'l':
-                label = assert_print(argv[++argi]);
+            case 't':
+                tags = assert_print(argv[++argi]);
 
                 break;
 
@@ -751,7 +751,7 @@ static int parse_list(int argc, char **argv)
             if (remote_load(&remote, entry->d_name))
                 continue;
 
-            if (!label)
+            if (!tags)
             {
 
                 printf("%s\n", remote.name);
@@ -760,15 +760,15 @@ static int parse_list(int argc, char **argv)
 
             }
 
-            if (!remote.label)
+            if (!remote.tags)
                 continue;
 
-            words = util_split(remote.label);
+            words = util_split(remote.tags);
 
-            for (i = 0; (remote.label = util_nextword(remote.label, i, words)); i++)
+            for (i = 0; (remote.tags = util_nextword(remote.tags, i, words)); i++)
             {
 
-                if (!strcmp(remote.label, label))
+                if (!strcmp(remote.tags, tags))
                 {
 
                     printf("%s\n", remote.name);
@@ -1155,10 +1155,10 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parse_add, " <name> <hostname>", 0},
-        {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey label\n"},
+        {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey tags\n"},
         {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
         {"init", parse_init, "", 0},
-        {"list", parse_list, " [-l <label>]", 0},
+        {"list", parse_list, " [-t <tags>]", 0},
         {"log", parse_log, " [-e] [<id>] [<run>]", "Args:\n    -e  Show stderr\n"},
         {"remove", parse_remove, " <namelist>", 0},
         {"send", parse_send, " <namelist> <localpath> <remotepath>", 0},

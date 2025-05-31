@@ -24,7 +24,7 @@ enum
     REMOTE_PASSWORD,
     REMOTE_PRIVATEKEY,
     REMOTE_PUBLICKEY,
-    REMOTE_LABEL
+    REMOTE_TAGS
 
 };
 
@@ -45,7 +45,7 @@ int remote_get_type(char *key)
         {"password", REMOTE_PASSWORD},
         {"privatekey", REMOTE_PRIVATEKEY},
         {"publickey", REMOTE_PUBLICKEY},
-        {"label", REMOTE_LABEL},
+        {"tags", REMOTE_TAGS},
         {0}
     };
     unsigned int i;
@@ -89,8 +89,8 @@ void *remote_get_value(struct remote *remote, int key)
     case REMOTE_PUBLICKEY:
         return remote->publickey;
 
-    case REMOTE_LABEL:
-        return remote->label;
+    case REMOTE_TAGS:
+        return remote->tags;
 
     }
 
@@ -125,8 +125,8 @@ void *remote_set_value(struct remote *remote, int key, char *value)
     case REMOTE_PUBLICKEY:
         return remote->publickey = strdup(value);
 
-    case REMOTE_LABEL:
-        return remote->label = strdup(value);
+    case REMOTE_TAGS:
+        return remote->tags = strdup(value);
 
     }
 
@@ -202,8 +202,8 @@ int remote_save(struct remote *remote)
     if (remote->publickey && strlen(remote->publickey))
         ini_write_string(file, "publickey", remote->publickey);
 
-    if (remote->label && strlen(remote->label))
-        ini_write_string(file, "label", remote->label);
+    if (remote->tags && strlen(remote->tags))
+        ini_write_string(file, "tags", remote->tags);
 
     fclose(file);
 
