@@ -225,7 +225,7 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_log_create(struct remote *remote, struct log_entry *entry)
+int remote_open(struct remote *remote, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -235,15 +235,6 @@ int remote_log_create(struct remote *remote, struct log_entry *entry)
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
-
-    return 0;
-
-}
-
-int remote_log_open(struct remote *remote, struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
 
     if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stderr"))
         return -1;
@@ -259,7 +250,7 @@ int remote_log_open(struct remote *remote, struct log_entry *entry)
 
 }
 
-int remote_log_close(struct remote *remote)
+int remote_close(struct remote *remote)
 {
 
     close(remote->stderrfd);
