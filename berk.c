@@ -525,7 +525,7 @@ static int parse_exec(int argc, char **argv)
         struct log_entry logentry;
         unsigned int names = util_split(name);
 
-        log_init(&logentry);
+        log_entry_init(&logentry);
 
         if (config_init())
             return error_init();
@@ -533,7 +533,7 @@ static int parse_exec(int argc, char **argv)
         if (event_begin(&logentry))
             return util_error("Could not run event.");
 
-        if (log_prepare(&logentry))
+        if (log_entry_prepare(&logentry))
             return util_error("Could not prepare log.");
 
         if (parallel)
@@ -593,7 +593,7 @@ static int parse_exec(int argc, char **argv)
         if (event_end(&logentry))
             return util_error("Could not run event.");
 
-        if (log_writeentry(&logentry))
+        if (log_entry_write(&logentry))
             return util_error("Could not log HEAD.");
 
         return EXIT_SUCCESS;
@@ -855,15 +855,15 @@ static int parse_log(int argc, char **argv)
     if (id && run)
     {
 
-        struct log_state state;
         struct log_entry entry;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        log_open_head(&state);
+        log_state_open(&state);
 
-        if (log_find(&state, &entry, id))
+        if (log_entry_find(&entry, &state, id))
         {
 
             char buffer[BUFSIZ];
@@ -907,18 +907,18 @@ static int parse_log(int argc, char **argv)
     else if (id)
     {
 
-        struct log_state state;
         struct log_entry entry;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        log_open_head(&state);
+        log_state_open(&state);
 
-        if (log_find(&state, &entry, id))
-            log_printentry(&entry);
+        if (log_entry_find(&entry, &state, id))
+            log_entry_print(&entry);
 
-        log_close_head(&state);
+        log_state_close(&state);
 
         return EXIT_SUCCESS;
 
@@ -927,18 +927,18 @@ static int parse_log(int argc, char **argv)
     else
     {
 
-        struct log_state state;
         struct log_entry entry;
+        struct log_state state;
 
         if (config_init())
             return error_init();
 
-        log_open_head(&state);
+        log_state_open(&state);
 
-        while (log_readentryprev(&state, &entry))
-            log_printentry(&entry);
+        while (log_entry_readprev(&entry, &state))
+            log_entry_print(&entry);
 
-        log_close_head(&state);
+        log_state_close(&state);
 
         return EXIT_SUCCESS;
 

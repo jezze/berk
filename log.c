@@ -10,7 +10,42 @@
 
 #define LOG_ENTRYSIZE 72
 
-int log_prepare(struct log_entry *entry)
+int log_state_open(struct log_state *state)
+{
+
+    char path[BUFSIZ];
+
+    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
+        return -1;
+
+    state->file = fopen(path, "r");
+
+    if (state->file == NULL)
+        return 0;
+
+    fseek(state->file, 0, SEEK_END);
+
+    state->size = ftell(state->file);
+
+    if (state->size % LOG_ENTRYSIZE != 0)
+        return -1;
+
+    state->position = state->size;
+
+    return 0;
+
+}
+
+int log_state_close(struct log_state *state)
+{
+
+    fclose(state->file);
+
+    return 0;
+
+}
+
+int log_entry_prepare(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -37,40 +72,7 @@ int log_prepare(struct log_entry *entry)
 
 }
 
-int log_open_head(struct log_state *state)
-{
-
-    char path[BUFSIZ];
-
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS "/HEAD"))
-        return -1;
-
-    state->file = fopen(path, "r");
-
-    if (state->file == NULL)
-        return 0;
-
-    fseek(state->file, 0, SEEK_END);
-
-    state->size = ftell(state->file);
-
-    if (state->size % LOG_ENTRYSIZE != 0)
-        return -1;
-
-    state->position = state->size;
-
-    return 0;
-
-}
-
-void log_close_head(struct log_state *state)
-{
-
-    fclose(state->file);
-
-}
-
-int log_readentry(struct log_state *state, struct log_entry *entry)
+int log_entry_read(struct log_entry *entry, struct log_state *state)
 {
 
     fseek(state->file, state->position, SEEK_SET);
@@ -79,7 +81,7 @@ int log_readentry(struct log_state *state, struct log_entry *entry)
 
 }
 
-int log_readentryprev(struct log_state *state, struct log_entry *entry)
+int log_entry_readprev(struct log_entry *entry, struct log_state *state)
 {
 
     if (state->position < LOG_ENTRYSIZE)
@@ -87,17 +89,17 @@ int log_readentryprev(struct log_state *state, struct log_entry *entry)
 
     state->position -= LOG_ENTRYSIZE;
 
-    return log_readentry(state, entry);
+    return log_entry_read(entry, state);
 
 }
 
-int log_find(struct log_state *state, struct log_entry *entry, char *id)
+int log_entry_find(struct log_entry *entry, struct log_state *state, char *id)
 {
 
     if (strcmp("HEAD", id) == 0)
-        return log_readentryprev(state, entry);
+        return log_entry_readprev(entry, state);
 
-    while (log_readentryprev(state, entry))
+    while (log_entry_readprev(entry, state))
     {
 
         if (memcmp(entry->id, id, strlen(id)) == 0)
@@ -109,7 +111,7 @@ int log_find(struct log_state *state, struct log_entry *entry, char *id)
 
 }
 
-int log_printentry(struct log_entry *entry)
+int log_entry_print(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -131,7 +133,7 @@ int log_printentry(struct log_entry *entry)
 
 }
 
-int log_writeentry(struct log_entry *entry)
+int log_entry_write(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -179,7 +181,7 @@ static void createid(char *dest, unsigned int length)
 
 }
 
-void log_init(struct log_entry *entry)
+void log_entry_init(struct log_entry *entry)
 {
 
     createid(entry->id, 32);
