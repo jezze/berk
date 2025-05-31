@@ -43,7 +43,7 @@ int event_end(struct log_entry *entry)
 int event_start(struct remote *remote)
 {
 
-    printf("event=start name=%s run=%d\n", remote->name, remote->run);
+    printf("event=start name=%s run=%d\n", remote->name, remote->run.index);
 
     return runhook("start");
 
@@ -52,7 +52,7 @@ int event_start(struct remote *remote)
 int event_stop(struct remote *remote, int status)
 {
 
-    printf("event=stop name=%s run=%d status=%d\n", remote->name, remote->run, status);
+    printf("event=stop name=%s run=%d status=%d\n", remote->name, remote->run.index, status);
 
     return runhook("stop");
 

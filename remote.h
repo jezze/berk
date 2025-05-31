@@ -10,9 +10,7 @@ struct remote
     char *privatekey;
     char *label;
     int sock;
-    int stderrfd;
-    int stdoutfd;
-    int run;
+    struct log_run run;
     LIBSSH2_SESSION *session;
     LIBSSH2_CHANNEL *channel;
 

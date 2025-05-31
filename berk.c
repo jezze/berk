@@ -175,7 +175,7 @@ static int run_exec(struct log_entry *entry, unsigned int run, char *name, char 
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
-    remote.run = run;
+    remote.run.index = run;
 
     if (remote_open(&remote, entry))
         return util_error("Could not open stderr log.");
@@ -201,7 +201,7 @@ static int run_exec(struct log_entry *entry, unsigned int run, char *name, char 
 
 }
 
-static int run_send(unsigned int run, char *name, char *localpath, char *remotepath)
+static int run_send(char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
@@ -212,8 +212,6 @@ static int run_send(unsigned int run, char *name, char *localpath, char *remotep
 
     if (remote_init_optional(&remote))
         return error_remote_init(name);
-
-    remote.run = run;
 
     if (ssh_connect(&remote))
         return util_error("Could not connect to remote '%s'.", remote.name);
@@ -347,109 +345,112 @@ static int parse_config(int argc, char **argv)
 
     }
 
-    if (name)
+    if (name && key && value)
     {
 
         unsigned int names = util_split(name);
+        int keytype = remote_get_type(key);
+        unsigned int i;
+
+        if (keytype == -1)
+            return util_error("Invalid key '%s'.", key);
 
         if (config_init())
             return error_init();
 
-        if (key && value)
+        for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
-            int keytype = remote_get_type(key);
-            unsigned int i;
+            struct remote remote;
 
-            if (keytype == -1)
-                return util_error("Invalid key '%s'.", key);
+            if (remote_load(&remote, name))
+                return error_remote_load(name);
 
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
-            {
+            if (remote_set_value(&remote, keytype, value) == NULL)
+                return util_error("Could not run configure remote '%s'.", remote.name);
 
-                struct remote remote;
-
-                if (remote_load(&remote, name))
-                    return error_remote_load(name);
-
-                if (remote_set_value(&remote, keytype, value) == NULL)
-                    return util_error("Could not run configure remote '%s'.", remote.name);
-
-                if (remote_save(&remote))
-                    return error_remote_save(name);
-
-            }
-
-            return EXIT_SUCCESS;
+            if (remote_save(&remote))
+                return error_remote_save(name);
 
         }
 
-        else if (key)
+        return EXIT_SUCCESS;
+
+    }
+
+    else if (name && key)
+    {
+
+        unsigned int names = util_split(name);
+        int keytype = remote_get_type(key);
+        unsigned int i;
+
+        if (keytype == -1)
+            return util_error("Invalid key '%s'.", key);
+
+        if (config_init())
+            return error_init();
+
+        for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
-            int keytype = remote_get_type(key);
-            unsigned int i;
+            struct remote remote;
+            char *value;
 
-            if (keytype == -1)
-                return util_error("Invalid key '%s'.", key);
+            if (remote_load(&remote, name))
+                return error_remote_load(name);
 
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
-            {
+            value = remote_get_value(&remote, keytype);
 
-                struct remote remote;
-                char *value;
-
-                if (remote_load(&remote, name))
-                    return error_remote_load(name);
-
-                value = remote_get_value(&remote, keytype);
-
-                printf("%s: %s\n", remote.name, value);
-
-            }
-
-            return EXIT_SUCCESS;
+            printf("%s: %s\n", remote.name, value);
 
         }
 
-        else
+        return EXIT_SUCCESS;
+
+    }
+
+    else if (name)
+    {
+
+        unsigned int names = util_split(name);
+        unsigned int i;
+
+        if (config_init())
+            return error_init();
+
+        for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
-            unsigned int i;
+            struct remote remote;
 
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
-            {
+            if (remote_load(&remote, name))
+                return error_remote_load(name);
 
-                struct remote remote;
-
-                if (remote_load(&remote, name))
-                    return error_remote_load(name);
-
+            if (remote.name)
                 printf("name=%s\n", remote.name);
+
+            if (remote.hostname)
                 printf("hostname=%s\n", remote.hostname);
 
-                if (remote.port)
-                    printf("port=%s\n", remote.port);
+            if (remote.port)
+                printf("port=%s\n", remote.port);
 
-                if (remote.username)                
-                    printf("username=%s\n", remote.username);
+            if (remote.username)                
+                printf("username=%s\n", remote.username);
 
-                if (remote.password)                
-                    printf("password=%s\n", remote.password);
+            if (remote.password)                
+                printf("password=%s\n", remote.password);
 
-                if (remote.privatekey)
-                    printf("privatekey=%s\n", remote.privatekey);
+            if (remote.privatekey)
+                printf("privatekey=%s\n", remote.privatekey);
 
-                if (remote.publickey)
-                    printf("publickey=%s\n", remote.publickey);
+            if (remote.publickey)
+                printf("publickey=%s\n", remote.publickey);
 
-                if (remote.label)
-                    printf("label=%s\n", remote.label);
+            if (remote.label)
+                printf("label=%s\n", remote.label);
 
-
-            }
-
-            return EXIT_SUCCESS;
 
         }
 
@@ -858,41 +859,7 @@ static int parse_log(int argc, char **argv)
         log_state_open(&state);
 
         if (log_entry_find(&entry, &state, id))
-        {
-
-            char buffer[BUFSIZ];
-            unsigned int count;
-            char path[BUFSIZ];
-            int fd;
-
-            switch (descriptor)
-            {
-
-            case 1:
-                if (config_get_runpaths(path, BUFSIZ, entry.id, run, "stdout"))
-                    return error_path();
-
-                break;
-
-            case 2:
-                if (config_get_runpaths(path, BUFSIZ, entry.id, run, "stderr"))
-                    return error_path();
-
-                break;
-
-            }
-
-            fd = open(path, O_RDONLY, 0644);
-
-            if (fd < 0)
-                return util_error("Could not open '%s'.", path);
-
-            while ((count = read(fd, buffer, BUFSIZ)))
-                write(STDOUT_FILENO, buffer, count);
-
-            close(fd);
-
-        }
+            log_entry_printstd(&entry, strtoul(run, NULL, 10), descriptor);
 
         return EXIT_SUCCESS;
 
@@ -1073,7 +1040,7 @@ static int parse_send(int argc, char **argv)
             return error_init();
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
-            run_send(i, name, localpath, remotepath);
+            run_send(name, localpath, remotepath);
 
         return EXIT_SUCCESS;
 

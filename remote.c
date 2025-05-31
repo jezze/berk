@@ -230,21 +230,21 @@ int remote_open(struct remote *remote, struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run))
+    if (config_get_rundir(path, BUFSIZ, entry->id, remote->run.index))
         return -1;
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stderr"))
+    if (config_get_runpath(path, BUFSIZ, entry->id, remote->run.index, "stderr"))
         return -1;
 
-    remote->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    remote->run.stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (config_get_runpathv(path, BUFSIZ, entry->id, remote->run, "stdout"))
+    if (config_get_runpath(path, BUFSIZ, entry->id, remote->run.index, "stdout"))
         return -1;
 
-    remote->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    remote->run.stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
     return 0;
 
@@ -253,8 +253,8 @@ int remote_open(struct remote *remote, struct log_entry *entry)
 int remote_close(struct remote *remote)
 {
 
-    close(remote->stderrfd);
-    close(remote->stdoutfd);
+    close(remote->run.stderrfd);
+    close(remote->run.stdoutfd);
 
     return 0;
 

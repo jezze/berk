@@ -1,3 +1,12 @@
+struct log_run
+{
+
+    unsigned int index;
+    int stderrfd;
+    int stdoutfd;
+
+};
+
 struct log_entry
 {
 
@@ -26,5 +35,6 @@ int log_entry_read(struct log_entry *entry, struct log_state *state);
 int log_entry_readprev(struct log_entry *entry, struct log_state *state);
 int log_entry_find(struct log_entry *entry, struct log_state *state, char *id);
 int log_entry_print(struct log_entry *entry);
+int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int descriptor);
 int log_entry_write(struct log_entry *entry);
 void log_entry_init(struct log_entry *entry);

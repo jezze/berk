@@ -133,6 +133,45 @@ int log_entry_print(struct log_entry *entry)
 
 }
 
+int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int descriptor)
+{
+
+    char buffer[BUFSIZ];
+    unsigned int count;
+    char path[BUFSIZ];
+    int fd;
+
+    switch (descriptor)
+    {
+
+    case 1:
+        if (config_get_runpath(path, BUFSIZ, entry->id, run, "stdout"))
+            return -1;
+
+        break;
+
+    case 2:
+        if (config_get_runpath(path, BUFSIZ, entry->id, run, "stderr"))
+            return -1;
+
+        break;
+
+    }
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    while ((count = read(fd, buffer, BUFSIZ)))
+        write(STDOUT_FILENO, buffer, count);
+
+    close(fd);
+
+    return 0;
+
+}
+
 int log_entry_write(struct log_entry *entry)
 {
 
