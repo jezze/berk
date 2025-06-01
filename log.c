@@ -111,28 +111,6 @@ int log_entry_find(struct log_entry *entry, struct log_state *state, char *id)
 
 }
 
-int log_entry_print(struct log_entry *entry)
-{
-
-    char path[BUFSIZ];
-    unsigned int i;
-
-    if (config_get_rundirfull(path, BUFSIZ, entry->id))
-        return -1;
-
-    printf("id=%s datetime=%s\n", entry->id, entry->datetime);
-    printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
-    printf("\n");
-
-    for (i = 0; i < entry->total; i++)
-        printf("    run=%u remote=xxx status=successful\n", i);
-
-    printf("\n");
-
-    return 0;
-
-}
-
 int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int descriptor)
 {
 
@@ -167,6 +145,74 @@ int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int d
         write(STDOUT_FILENO, buffer, count);
 
     close(fd);
+
+    return 0;
+
+}
+
+int log_entry_printrun(struct log_entry *entry, unsigned int run)
+{
+
+    char status[BUFSIZ];
+    char remote[BUFSIZ];
+    unsigned int count;
+    char path[BUFSIZ];
+    int fd;
+
+    if (config_get_runpath(path, BUFSIZ, entry->id, run, "remote"))
+        return -1;
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    count = read(fd, remote, BUFSIZ);
+    remote[count - 1] = '\0';
+
+    close(fd);
+
+    if (config_get_runpath(path, BUFSIZ, entry->id, run, "status"))
+        return -1;
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    count = read(fd, status, BUFSIZ);
+    status[count - 1] = '\0';
+
+    close(fd);
+
+    printf("run=%u remote=%s status=%s\n", run, remote, status);
+
+    return 0;
+
+}
+
+int log_entry_print(struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+    unsigned int i;
+
+    if (config_get_rundirfull(path, BUFSIZ, entry->id))
+        return -1;
+
+    printf("id=%s datetime=%s\n", entry->id, entry->datetime);
+    printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
+    printf("\n");
+
+    for (i = 0; i < entry->total; i++)
+    {
+
+        printf("    ");
+        log_entry_printrun(entry, i);
+
+    }
+
+    printf("\n");
 
     return 0;
 

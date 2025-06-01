@@ -12,8 +12,8 @@
 #include "util.h"
 #include "ini.h"
 #include "log.h"
-#include "run.h"
 #include "remote.h"
+#include "run.h"
 #include "event.h"
 #include "ssh.h"
 
@@ -179,6 +179,12 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
 
     run_init(&run, index);
 
+    if (run_update_remote(&run, entry, name))
+        return util_error("Could not update run remote.");
+
+    if (run_update_status(&run, entry, RUN_STATUS_PENDING))
+        return util_error("Could not update run status.");
+
     if (run_open(&run, entry))
         return util_error("Could not open run.");
 
@@ -189,6 +195,22 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
         return util_error("Could not connect to remote '%s'.", remote.name);
 
     rc = ssh_exec(&remote, &run, command);
+
+    if (rc == 0)
+    {
+
+        if (run_update_status(&run, entry, RUN_STATUS_PASSED))
+            return util_error("Could not update run status.");
+
+    }
+
+    else
+    {
+
+        if (run_update_status(&run, entry, RUN_STATUS_FAILED))
+            return util_error("Could not update run status.");
+
+    }
 
     if (ssh_disconnect(&remote))
         return util_error("Could not disconnect from remote '%s'.", remote.name);

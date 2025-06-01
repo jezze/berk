@@ -11,7 +11,6 @@
 #include "config.h"
 #include "ini.h"
 #include "log.h"
-#include "run.h"
 #include "remote.h"
 
 enum
