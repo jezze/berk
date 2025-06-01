@@ -886,6 +886,8 @@ static int parse_log(int argc, char **argv)
         if (log_entry_find(&entry, &state, id))
             log_entry_printstd(&entry, r, descriptor);
 
+        log_state_close(&state);
+
         return EXIT_SUCCESS;
 
     }
