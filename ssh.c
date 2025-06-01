@@ -82,7 +82,7 @@ int ssh_exec(struct remote *remote, struct run *run, char *command)
 {
 
     struct pollfd pfds[1];
-    int exitcode;
+    int rc;
 
     pfds[0].fd = remote->sock;
     pfds[0].events = POLLIN;
@@ -135,11 +135,11 @@ int ssh_exec(struct remote *remote, struct run *run, char *command)
     libssh2_channel_close(remote->channel);
     libssh2_channel_wait_closed(remote->channel);
 
-    exitcode = libssh2_channel_get_exit_status(remote->channel);
+    rc = libssh2_channel_get_exit_status(remote->channel);
 
     libssh2_channel_free(remote->channel);
 
-    return exitcode;
+    return rc;
 
 }
 
@@ -203,7 +203,7 @@ int ssh_shell(struct remote *remote)
     struct pollfd pfds[2];
     struct termios old;
     struct termios new;
-    int exitcode;
+    int rc;
 
     pfds[0].fd = remote->sock;
     pfds[0].events = POLLIN;
@@ -272,11 +272,11 @@ int ssh_shell(struct remote *remote)
     libssh2_channel_close(remote->channel);
     libssh2_channel_wait_closed(remote->channel);
 
-    exitcode = libssh2_channel_get_exit_status(remote->channel);
+    rc = libssh2_channel_get_exit_status(remote->channel);
 
     libssh2_channel_free(remote->channel);
 
-    return exitcode;
+    return rc;
 
 }
 
