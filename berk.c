@@ -809,6 +809,8 @@ static int parse_log(int argc, char **argv)
 {
 
     unsigned int descriptor = 1;
+    char *count = "0";
+    char *skip = "0";
     char *run = NULL;
     char *id = NULL;
     unsigned int argp = 0;
@@ -825,8 +827,18 @@ static int parse_log(int argc, char **argv)
             switch (arg[1])
             {
 
+            case 'c':
+                count = assert_digit(argv[++argi]);
+
+                break;
+
             case 'e':
                 descriptor = 2;
+
+                break;
+
+            case 's':
+                skip = assert_digit(argv[++argi]);
 
                 break;
 
@@ -899,11 +911,24 @@ static int parse_log(int argc, char **argv)
 
         struct log_entry entry;
         struct log_state state;
+        unsigned int s = strtoul(skip, NULL, 10);
+        unsigned int c = strtoul(count, NULL, 10);
+        unsigned int n = 0;
 
         log_state_open(&state);
 
         while (log_entry_readprev(&entry, &state))
-            log_entry_print(&entry);
+        {
+
+            n++;
+
+            if (n > s)
+                log_entry_print(&entry);
+
+            if (c && n - s == c)
+                break;
+
+        }
 
         log_state_close(&state);
 
@@ -1160,7 +1185,7 @@ int main(int argc, char **argv)
         {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n", 1},
         {"init", parse_init, "", NULL, 0},
         {"list", parse_list, " [-t <tags>]", NULL, 1},
-        {"log", parse_log, " [-e] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n", 1},
+        {"log", parse_log, " [-c <count>] [-e] [-s <skip>] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n", 1},
         {"remove", parse_remove, " <namelist>", NULL, 1},
         {"send", parse_send, " <namelist> <localpath> <remotepath>", NULL, 1},
         {"shell", parse_shell, " <name>", NULL, 1},
