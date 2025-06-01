@@ -1,13 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <pwd.h>
 #include <libssh2.h>
-#include <sys/stat.h>
 #include "config.h"
 #include "util.h"
 #include "ini.h"
