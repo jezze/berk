@@ -1,3 +1,17 @@
+enum
+{
+
+    REMOTE_NAME,
+    REMOTE_HOSTNAME,
+    REMOTE_PORT,
+    REMOTE_USERNAME,
+    REMOTE_PASSWORD,
+    REMOTE_PRIVATEKEY,
+    REMOTE_PUBLICKEY,
+    REMOTE_TAGS
+
+};
+
 struct remote
 {
 
@@ -18,9 +32,9 @@ struct remote
 int remote_get_type(char *key);
 void *remote_get_value(struct remote *remote, int type);
 void *remote_set_value(struct remote *remote, int type, char *value);
-int remote_load(struct remote *remote, char *name);
+int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
 int remote_init_optional(struct remote *remote);
-void remote_init(struct remote *remote, char *name, char *hostname);
+void remote_init(struct remote *remote, char *name);
 

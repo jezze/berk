@@ -13,20 +13,6 @@
 #include "log.h"
 #include "remote.h"
 
-enum
-{
-
-    REMOTE_NAME,
-    REMOTE_HOSTNAME,
-    REMOTE_PORT,
-    REMOTE_USERNAME,
-    REMOTE_PASSWORD,
-    REMOTE_PRIVATEKEY,
-    REMOTE_PUBLICKEY,
-    REMOTE_TAGS
-
-};
-
 int remote_get_type(char *key)
 {
 
@@ -148,13 +134,12 @@ static int loadcallback(void *user, char *section, char *key, char *value)
 
 }
 
-int remote_load(struct remote *remote, char *name)
+int remote_load(struct remote *remote)
 {
 
     char path[BUFSIZ];
 
-    config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, name);
-    memset(remote, 0, sizeof (struct remote));
+    config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
     return ini_parse(path, loadcallback, remote);
 
@@ -256,12 +241,11 @@ int remote_init_optional(struct remote *remote)
 
 }
 
-void remote_init(struct remote *remote, char *name, char *hostname)
+void remote_init(struct remote *remote, char *name)
 {
 
     memset(remote, 0, sizeof (struct remote));
     remote_set_value(remote, REMOTE_NAME, name);
-    remote_set_value(remote, REMOTE_HOSTNAME, hostname);
 
 }
 

@@ -164,7 +164,9 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
     struct run run;
     int rc;
 
-    if (remote_load(&remote, name))
+    remote_init(&remote, name);
+
+    if (remote_load(&remote))
         return error_remote_load(name);
 
     if (remote_init_optional(&remote))
@@ -224,7 +226,9 @@ static int run_send(char *name, char *localpath, char *remotepath)
     struct remote remote;
     int rc;
 
-    if (remote_load(&remote, name))
+    remote_init(&remote, name);
+
+    if (remote_load(&remote))
         return error_remote_load(name);
 
     if (remote_init_optional(&remote))
@@ -295,7 +299,8 @@ static int parse_add(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        remote_init(&remote, name, hostname);
+        remote_init(&remote, name);
+        remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
 
         if (remote_save(&remote))
             return error_remote_save(name);
@@ -379,7 +384,9 @@ static int parse_config(int argc, char **argv)
 
             struct remote remote;
 
-            if (remote_load(&remote, name))
+            remote_init(&remote, name);
+
+            if (remote_load(&remote))
                 return error_remote_load(name);
 
             if (remote_set_value(&remote, keytype, value) == NULL)
@@ -413,7 +420,9 @@ static int parse_config(int argc, char **argv)
             struct remote remote;
             char *value;
 
-            if (remote_load(&remote, name))
+            remote_init(&remote, name);
+
+            if (remote_load(&remote))
                 return error_remote_load(name);
 
             value = remote_get_value(&remote, keytype);
@@ -440,7 +449,9 @@ static int parse_config(int argc, char **argv)
 
             struct remote remote;
 
-            if (remote_load(&remote, name))
+            remote_init(&remote, name);
+
+            if (remote_load(&remote))
                 return error_remote_load(name);
 
             if (remote.name)
@@ -758,7 +769,9 @@ static int parse_list(int argc, char **argv)
             if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
                 continue;
 
-            if (remote_load(&remote, entry->d_name))
+            remote_init(&remote, entry->d_name);
+
+            if (remote_load(&remote))
                 continue;
 
             if (!tags)
@@ -963,7 +976,6 @@ static int parse_remove(int argc, char **argv)
     {
 
         unsigned int names = util_split(name);
-        struct remote remote;
         unsigned int i;
 
         if (config_init())
@@ -972,7 +984,11 @@ static int parse_remove(int argc, char **argv)
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
-            if (remote_load(&remote, name))
+            struct remote remote;
+
+            remote_init(&remote, name);
+
+            if (remote_load(&remote))
                 return error_remote_load(name);
 
             if (remote_erase(&remote))
@@ -1108,7 +1124,9 @@ static int parse_shell(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        if (remote_load(&remote, name))
+        remote_init(&remote, name);
+
+        if (remote_load(&remote))
             return error_remote_load(name);
 
         if (remote_init_optional(&remote))
