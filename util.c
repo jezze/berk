@@ -230,3 +230,13 @@ int util_mkdir(char *path)
 
 }
 
+int util_unlink(char *path)
+{
+
+    if (unlink(path) < 0)
+        return -1;
+
+    return 0;
+
+}
+

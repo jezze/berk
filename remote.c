@@ -9,6 +9,7 @@
 #include <libssh2.h>
 #include <sys/stat.h>
 #include "config.h"
+#include "util.h"
 #include "ini.h"
 #include "log.h"
 #include "remote.h"
@@ -153,7 +154,7 @@ int remote_save(struct remote *remote)
 
     config_get_path(path, BUFSIZ, CONFIG_REMOTES);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
@@ -198,10 +199,7 @@ int remote_erase(struct remote *remote)
 
     config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
-    if (unlink(path) < 0)
-        return -1;
-
-    return 0;
+    return util_unlink(path);
 
 }
 

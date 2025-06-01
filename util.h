@@ -11,3 +11,4 @@ void util_strip(char *str);
 unsigned int util_split(char *str);
 char *util_nextword(char *str, unsigned int index, unsigned int total);
 int util_mkdir(char *path);
+int util_unlink(char *path);
