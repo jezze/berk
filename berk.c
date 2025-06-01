@@ -879,11 +879,12 @@ static int parse_log(int argc, char **argv)
 
         struct log_entry entry;
         struct log_state state;
+        unsigned int r = strtoul(run, NULL, 10);
 
         log_state_open(&state);
 
         if (log_entry_find(&entry, &state, id))
-            log_entry_printstd(&entry, strtoul(run, NULL, 10), descriptor);
+            log_entry_printstd(&entry, r, descriptor);
 
         return EXIT_SUCCESS;
 
@@ -913,14 +914,12 @@ static int parse_log(int argc, char **argv)
         struct log_state state;
         unsigned int s = strtoul(skip, NULL, 10);
         unsigned int c = strtoul(count, NULL, 10);
-        unsigned int n = 0;
+        unsigned int n;
 
         log_state_open(&state);
 
-        while (log_entry_readprev(&entry, &state))
+        for (n = 1; log_entry_readprev(&entry, &state); n++)
         {
-
-            n++;
 
             if (n > s)
                 log_entry_print(&entry);
