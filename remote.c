@@ -153,9 +153,7 @@ int remote_load(struct remote *remote, char *name)
 
     char path[BUFSIZ];
 
-    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, name))
-        return -1;
-
+    config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, name);
     memset(remote, 0, sizeof (struct remote));
 
     return ini_parse(path, loadcallback, remote);
@@ -168,14 +166,12 @@ int remote_save(struct remote *remote)
     FILE *file;
     char path[BUFSIZ];
 
-    if (config_get_path(path, BUFSIZ, CONFIG_REMOTES))
-        return -1;
+    config_get_path(path, BUFSIZ, CONFIG_REMOTES);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name))
-        return -1;
+    config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
     file = fopen(path, "w");
 
@@ -215,8 +211,7 @@ int remote_erase(struct remote *remote)
 
     char path[BUFSIZ];
 
-    if (config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name))
-        return -1;
+    config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
     if (unlink(path) < 0)
         return -1;

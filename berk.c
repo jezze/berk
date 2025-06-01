@@ -34,13 +34,6 @@ static int error_init(void)
 
 }
 
-static int error_path(void)
-{
-
-    return util_error("Could not get path.");
-
-}
-
 static int error_remote_init(char *name)
 {
 
@@ -657,8 +650,7 @@ static int parse_init(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        if (config_get_path(path, BUFSIZ, "config"))
-            return error_path();
+        config_get_path(path, BUFSIZ, "config");
 
         file = fopen(path, "w");
 
@@ -669,8 +661,7 @@ static int parse_init(int argc, char **argv)
         ini_write_string(file, "version", CONFIG_VERSION);
         fclose(file);
 
-        if (config_get_path(path, BUFSIZ, CONFIG_HOOKS))
-            return error_path();
+        config_get_path(path, BUFSIZ, CONFIG_HOOKS);
 
         if (mkdir(path, 0775) < 0)
             return util_error("Could not create directory '%s'.", CONFIG_HOOKS);
@@ -681,9 +672,7 @@ static int parse_init(int argc, char **argv)
             char buffer[BUFSIZ];
 
             snprintf(buffer, BUFSIZ, "%s.sample", hooks[i]);
-
-            if (config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, buffer))
-                return error_path();
+            config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, buffer);
 
             fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
@@ -752,8 +741,7 @@ static int parse_list(int argc, char **argv)
         if (config_init())
             return error_init();
 
-        if (config_get_path(path, BUFSIZ, CONFIG_REMOTES))
-            return error_path();
+        config_get_path(path, BUFSIZ, CONFIG_REMOTES);
 
         dir = opendir(path);
 

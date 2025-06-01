@@ -13,8 +13,7 @@ static int runhook(char *name)
 
     char path[BUFSIZ];
 
-    if (config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, name))
-        return -1;
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, name);
 
     if (access(path, F_OK | X_OK) == 0)
         return system(path);

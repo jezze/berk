@@ -14,14 +14,12 @@ int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
     char path[BUFSIZ];
     int fd;
 
-    if (config_get_rundir(path, BUFSIZ, entry->id, run->index))
-        return -1;
+    config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run->index, "remote"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "remote");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -42,14 +40,12 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
     char *statusname;
     int fd;
 
-    if (config_get_rundir(path, BUFSIZ, entry->id, run->index))
-        return -1;
+    config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run->index, "status"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "status");
 
     switch (status)
     {
@@ -88,19 +84,16 @@ int run_open(struct run *run, struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_rundir(path, BUFSIZ, entry->id, run->index))
-        return -1;
+    config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run->index, "stderr"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "stderr");
 
     run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run->index, "stdout"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "stdout");
 
     run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 

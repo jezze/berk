@@ -15,8 +15,7 @@ int log_state_open(struct log_state *state)
 
     char path[BUFSIZ];
 
-    if (config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD"))
-        return -1;
+    config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
     state->file = fopen(path, "r");
 
@@ -50,20 +49,17 @@ int log_entry_prepare(struct log_entry *entry)
 
     char path[BUFSIZ];
 
-    if (config_get_path(path, BUFSIZ, CONFIG_LOGS))
-        return -1;
+    config_get_path(path, BUFSIZ, CONFIG_LOGS);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_rundirshort(path, BUFSIZ, entry->id))
-        return -1;
+    config_get_rundirshort(path, BUFSIZ, entry->id);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
 
-    if (config_get_rundirfull(path, BUFSIZ, entry->id))
-        return -1;
+    config_get_rundirfull(path, BUFSIZ, entry->id);
 
     if (access(path, F_OK) && mkdir(path, 0775) < 0)
         return -1;
@@ -123,14 +119,12 @@ int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int d
     {
 
     case 1:
-        if (config_get_runpath(path, BUFSIZ, entry->id, run, "stdout"))
-            return -1;
+        config_get_runpath(path, BUFSIZ, entry->id, run, "stdout");
 
         break;
 
     case 2:
-        if (config_get_runpath(path, BUFSIZ, entry->id, run, "stderr"))
-            return -1;
+        config_get_runpath(path, BUFSIZ, entry->id, run, "stderr");
 
         break;
 
@@ -159,8 +153,7 @@ int log_entry_printrun(struct log_entry *entry, unsigned int run)
     char path[BUFSIZ];
     int fd;
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run, "remote"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run, "remote");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -172,8 +165,7 @@ int log_entry_printrun(struct log_entry *entry, unsigned int run)
 
     close(fd);
 
-    if (config_get_runpath(path, BUFSIZ, entry->id, run, "status"))
-        return -1;
+    config_get_runpath(path, BUFSIZ, entry->id, run, "status");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -197,9 +189,7 @@ int log_entry_print(struct log_entry *entry)
     char path[BUFSIZ];
     unsigned int i;
 
-    if (config_get_rundirfull(path, BUFSIZ, entry->id))
-        return -1;
-
+    config_get_rundirfull(path, BUFSIZ, entry->id);
     printf("id=%s datetime=%s\n", entry->id, entry->datetime);
     printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
     printf("\n");
@@ -227,9 +217,7 @@ int log_entry_write(struct log_entry *entry)
 
     time(&timeraw);
     strftime(entry->datetime, 25, "%FT%T%z", localtime(&timeraw));
-
-    if (config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD"))
-        return -1;
+    config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
     fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
 
