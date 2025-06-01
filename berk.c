@@ -24,6 +24,7 @@ struct command
     int (*parse)(int argc, char **argv);
     char *usage;
     char *description;
+    unsigned int needconfig;
 
 };
 
@@ -99,6 +100,14 @@ static int assert_args(struct command *commands, int argc, char **argv)
 
         if (strcmp(argv[0], commands[i].name))
             continue;
+
+        if (commands[i].needconfig)
+        {
+
+            if (config_init())
+                return error_init();
+
+        }
 
         return commands[i].parse(argc - 1, argv + 1);
 
@@ -296,9 +305,6 @@ static int parse_add(int argc, char **argv)
 
         struct remote remote;
 
-        if (config_init())
-            return error_init();
-
         remote_init(&remote, name);
         remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
 
@@ -376,9 +382,6 @@ static int parse_config(int argc, char **argv)
         if (keytype == -1)
             return util_error("Invalid key '%s'.", key);
 
-        if (config_init())
-            return error_init();
-
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
@@ -411,9 +414,6 @@ static int parse_config(int argc, char **argv)
         if (keytype == -1)
             return util_error("Invalid key '%s'.", key);
 
-        if (config_init())
-            return error_init();
-
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
 
@@ -440,9 +440,6 @@ static int parse_config(int argc, char **argv)
 
         unsigned int names = util_split(name);
         unsigned int i;
-
-        if (config_init())
-            return error_init();
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
@@ -552,9 +549,6 @@ static int parse_exec(int argc, char **argv)
         unsigned int names = util_split(name);
 
         log_entry_init(&logentry);
-
-        if (config_init())
-            return error_init();
 
         if (event_begin(&logentry))
             return util_error("Could not run event.");
@@ -749,9 +743,6 @@ static int parse_list(int argc, char **argv)
         char path[BUFSIZ];
         DIR *dir;
 
-        if (config_init())
-            return error_init();
-
         config_get_path(path, BUFSIZ, CONFIG_REMOTES);
 
         dir = opendir(path);
@@ -877,9 +868,6 @@ static int parse_log(int argc, char **argv)
         struct log_entry entry;
         struct log_state state;
 
-        if (config_init())
-            return error_init();
-
         log_state_open(&state);
 
         if (log_entry_find(&entry, &state, id))
@@ -894,9 +882,6 @@ static int parse_log(int argc, char **argv)
 
         struct log_entry entry;
         struct log_state state;
-
-        if (config_init())
-            return error_init();
 
         log_state_open(&state);
 
@@ -914,9 +899,6 @@ static int parse_log(int argc, char **argv)
 
         struct log_entry entry;
         struct log_state state;
-
-        if (config_init())
-            return error_init();
 
         log_state_open(&state);
 
@@ -977,9 +959,6 @@ static int parse_remove(int argc, char **argv)
 
         unsigned int names = util_split(name);
         unsigned int i;
-
-        if (config_init())
-            return error_init();
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
@@ -1063,9 +1042,6 @@ static int parse_send(int argc, char **argv)
         unsigned int names = util_split(name);
         unsigned int i;
 
-        if (config_init())
-            return error_init();
-
         for (i = 0; (name = util_nextword(name, i, names)); i++)
             run_send(name, localpath, remotepath);
 
@@ -1120,9 +1096,6 @@ static int parse_shell(int argc, char **argv)
     {
 
         struct remote remote;
-
-        if (config_init())
-            return error_init();
 
         remote_init(&remote, name);
 
@@ -1182,16 +1155,16 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parse_add, " <name> <hostname>", 0},
-        {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey tags\n"},
-        {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
-        {"init", parse_init, "", 0},
-        {"list", parse_list, " [-t <tags>]", 0},
-        {"log", parse_log, " [-e] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n"},
-        {"remove", parse_remove, " <namelist>", 0},
-        {"send", parse_send, " <namelist> <localpath> <remotepath>", 0},
-        {"shell", parse_shell, " <name>", 0},
-        {"version", parse_version, "", 0},
+        {"add", parse_add, " <name> <hostname>", NULL, 1},
+        {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
+        {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n", 1},
+        {"init", parse_init, "", NULL, 0},
+        {"list", parse_list, " [-t <tags>]", NULL, 1},
+        {"log", parse_log, " [-e] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n", 1},
+        {"remove", parse_remove, " <namelist>", NULL, 1},
+        {"send", parse_send, " <namelist> <localpath> <remotepath>", NULL, 1},
+        {"shell", parse_shell, " <name>", NULL, 1},
+        {"version", parse_version, "", NULL, 0},
         {0}
     };
 
