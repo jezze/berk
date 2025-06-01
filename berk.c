@@ -174,14 +174,13 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
     int rc;
 
     remote_init(&remote, name);
+    run_init(&run, index);
 
     if (remote_load(&remote))
         return error_remote_load(name);
 
     if (remote_init_optional(&remote))
         return error_remote_init(name);
-
-    run_init(&run, index);
 
     if (run_update_remote(&run, entry, name))
         return util_error("Could not update run remote.");
