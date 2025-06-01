@@ -1169,7 +1169,7 @@ int main(int argc, char **argv)
         {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n"},
         {"init", parse_init, "", 0},
         {"list", parse_list, " [-t <tags>]", 0},
-        {"log", parse_log, " [-e] [<id>] [<run>]", "Args:\n    -e  Show stderr\n"},
+        {"log", parse_log, " [-e] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n"},
         {"remove", parse_remove, " <namelist>", 0},
         {"send", parse_send, " <namelist> <localpath> <remotepath>", 0},
         {"shell", parse_shell, " <name>", 0},
