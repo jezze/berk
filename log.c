@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include "config.h"
+#include "util.h"
 #include "log.h"
 
 #define LOG_ENTRYSIZE 72
@@ -51,17 +52,17 @@ int log_entry_prepare(struct log_entry *entry)
 
     config_get_path(path, BUFSIZ, CONFIG_LOGS);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_rundirshort(path, BUFSIZ, entry->id);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_rundirfull(path, BUFSIZ, entry->id);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     return 0;

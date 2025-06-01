@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include "config.h"
 #include "util.h"
 
@@ -214,6 +217,16 @@ char *util_nextword(char *str, unsigned int index, unsigned int total)
         str++;
 
     return str + 1;
+
+}
+
+int util_mkdir(char *path)
+{
+
+    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+        return -1;
+
+    return 0;
 
 }
 

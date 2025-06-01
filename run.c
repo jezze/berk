@@ -3,8 +3,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/stat.h>
 #include "config.h"
+#include "util.h"
 #include "log.h"
 #include "run.h"
 
@@ -16,7 +16,7 @@ int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
 
     config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "remote");
@@ -42,7 +42,7 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
 
     config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "status");
@@ -86,7 +86,7 @@ int run_open(struct run *run, struct log_entry *entry)
 
     config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
-    if (access(path, F_OK) && mkdir(path, 0775) < 0)
+    if (util_mkdir(path) < 0)
         return -1;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "stderr");
