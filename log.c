@@ -21,7 +21,7 @@ int log_state_open(struct log_state *state)
     state->file = fopen(path, "r");
 
     if (state->file == NULL)
-        return 0;
+        return -1;
 
     fseek(state->file, 0, SEEK_END);
 

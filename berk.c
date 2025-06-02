@@ -880,12 +880,14 @@ static int parse_log(int argc, char **argv)
         struct log_state state;
         unsigned int r = strtoul(run, NULL, 10);
 
-        log_state_open(&state);
+        if (log_state_open(&state) < 0)
+            return util_error("Unable to open state.");
 
         if (log_entry_find(&entry, &state, id))
             log_entry_printstd(&entry, r, descriptor);
 
-        log_state_close(&state);
+        if (log_state_close(&state) < 0)
+            return util_error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
@@ -897,12 +899,14 @@ static int parse_log(int argc, char **argv)
         struct log_entry entry;
         struct log_state state;
 
-        log_state_open(&state);
+        if (log_state_open(&state) < 0)
+            return util_error("Unable to open state.");
 
         if (log_entry_find(&entry, &state, id))
             log_entry_print(&entry);
 
-        log_state_close(&state);
+        if (log_state_close(&state) < 0)
+            return util_error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
@@ -917,7 +921,8 @@ static int parse_log(int argc, char **argv)
         unsigned int c = strtoul(count, NULL, 10);
         unsigned int n;
 
-        log_state_open(&state);
+        if (log_state_open(&state) < 0)
+            return util_error("Unable to open state.");
 
         for (n = 1; log_entry_readprev(&entry, &state); n++)
         {
@@ -930,7 +935,8 @@ static int parse_log(int argc, char **argv)
 
         }
 
-        log_state_close(&state);
+        if (log_state_close(&state) < 0)
+            return util_error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
