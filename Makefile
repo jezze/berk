@@ -1,4 +1,4 @@
-.PHONY: all clean dist install
+.PHONY: all clean dist install test
 
 BIN:=berk
 SRC:=berk.c config.c event.c ini.c log.c remote.c run.c ssh.c util.c
@@ -9,8 +9,11 @@ TARNAME:=berk
 TARVER:=0.0.1
 TARDIR:=${TARNAME}-${TARVER}
 TARPKG:=${TARDIR}.tar.gz
+TESTSCRIPT:=./script/test.sh
 
 all: ${BIN}
+
+test: ${TESTSCRIPT}
 
 clean:
 	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG}
@@ -32,3 +35,6 @@ ${TARDIR}:
 
 ${TARPKG}: ${TARDIR}
 	tar czf $@ $^
+
+${TESTSCRIPT}: ${BIN}
+	${TESTSCRIPT}
