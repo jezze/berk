@@ -9,7 +9,8 @@ TARNAME:=berk
 TARVER:=0.0.1
 TARDIR:=${TARNAME}-${TARVER}
 TARPKG:=${TARDIR}.tar.gz
-TESTSCRIPT:=./script/test.sh
+SCRIPTDIR:=script
+TESTSCRIPT:=${CURDIR}/${SCRIPTDIR}/test.sh
 
 all: ${BIN}
 
@@ -31,7 +32,7 @@ ${BIN}: ${OBJ}
 
 ${TARDIR}:
 	mkdir -p $@
-	cp ${SRC} ${HEADERS} Makefile $@
+	cp -r Makefile ${SRC} ${HEADERS} ${SCRIPTDIR} $@
 
 ${TARPKG}: ${TARDIR}
 	tar czf $@ $^
