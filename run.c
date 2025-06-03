@@ -8,16 +8,25 @@
 #include "log.h"
 #include "run.h"
 
-int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
+int run_prepare(struct run *run, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
-    int fd;
 
     config_get_rundir(path, BUFSIZ, entry->id, run->index);
 
     if (util_mkdir(path) < 0)
         return -1;
+
+    return 0;
+
+}
+
+int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
+{
+
+    char path[BUFSIZ];
+    int fd;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "remote");
 
@@ -39,11 +48,6 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
     char path[BUFSIZ];
     char *statusname;
     int fd;
-
-    config_get_rundir(path, BUFSIZ, entry->id, run->index);
-
-    if (util_mkdir(path) < 0)
-        return -1;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "status");
 
@@ -85,11 +89,6 @@ int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid)
     char path[BUFSIZ];
     int fd;
 
-    config_get_rundir(path, BUFSIZ, entry->id, run->index);
-
-    if (util_mkdir(path) < 0)
-        return -1;
-
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "pid");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -108,11 +107,6 @@ int run_open(struct run *run, struct log_entry *entry)
 {
 
     char path[BUFSIZ];
-
-    config_get_rundir(path, BUFSIZ, entry->id, run->index);
-
-    if (util_mkdir(path) < 0)
-        return -1;
 
     config_get_runpath(path, BUFSIZ, entry->id, run->index, "stderr");
 

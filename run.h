@@ -16,6 +16,7 @@ struct run
 
 };
 
+int run_prepare(struct run *run, struct log_entry *entry);
 int run_update_remote(struct run *run, struct log_entry *entry, char *remote);
 int run_update_status(struct run *run, struct log_entry *entry, int status);
 int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid);

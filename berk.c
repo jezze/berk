@@ -182,6 +182,9 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
+    if (run_prepare(&run, entry))
+        return util_error("Could not prepare run.");
+
     if (run_update_remote(&run, entry, name))
         return util_error("Could not update run remote.");
 
