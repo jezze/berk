@@ -7,22 +7,22 @@
 #include <libgen.h>
 #include "config.h"
 
-static char root[BUFSIZ + 32];
+static char root[BUFSIZ];
 
 int config_init()
 {
 
-    char path[BUFSIZ];
+    char path[512];
 
-    getcwd(path, BUFSIZ);
+    getcwd(path, 512);
 
     while (1)
     {    
 
         if (strlen(path) == 1)
-            snprintf(root, BUFSIZ + 32, "/%s", CONFIG_ROOT);
+            snprintf(root, BUFSIZ, "/%s", CONFIG_ROOT);
         else
-            snprintf(root, BUFSIZ + 32, "%s/%s", path, CONFIG_ROOT);
+            snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
 
         if (access(root, F_OK) == 0)
             return 0;
