@@ -5,7 +5,7 @@
 #define CONFIG_REMOTES                  "remotes"
 #define CONFIG_HOOKS                    "hooks"
 
-int config_init();
+char *config_init();
 int config_get_path(char *path, unsigned int length, char *name);
 int config_get_subpath(char *path, unsigned int length, char *dir, char *name);
 int config_get_rundirshort(char *path, unsigned int length, char *id);

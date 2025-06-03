@@ -9,7 +9,7 @@
 
 static char root[BUFSIZ];
 
-int config_init()
+char *config_init()
 {
 
     char path[512];
@@ -25,7 +25,7 @@ int config_init()
             snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
 
         if (access(root, F_OK) == 0)
-            return 0;
+            return root;
 
         if (strlen(path) == 1)
             break;
@@ -34,49 +34,49 @@ int config_init()
 
     }
 
-    return -1;
+    return 0;
 
 }
 
 int config_get_path(char *path, unsigned int length, char *name)
 {
 
-    return snprintf(path, length, "%s/%s", root, name) < 0;
+    return snprintf(path, length, "%s/%s", root, name);
 
 }
 
 int config_get_subpath(char *path, unsigned int length, char *dir, char *name)
 {
 
-    return snprintf(path, length, "%s/%s/%s", root, dir, name) < 0;
+    return snprintf(path, length, "%s/%s/%s", root, dir, name);
 
 }
 
 int config_get_rundirshort(char *path, unsigned int length, char *id)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c", root, CONFIG_LOGS, id[0], id[1]) < 0;
+    return snprintf(path, length, "%s/%s/%c%c", root, CONFIG_LOGS, id[0], id[1]);
 
 }
 
 int config_get_rundirfull(char *path, unsigned int length, char *id)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s", root, CONFIG_LOGS, id[0], id[1], id) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s", root, CONFIG_LOGS, id[0], id[1], id);
 
 }
 
 int config_get_rundir(char *path, unsigned int length, char *id, int run)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%d", root, CONFIG_LOGS, id[0], id[1], id, run) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d", root, CONFIG_LOGS, id[0], id[1], id, run);
 
 }
 
 int config_get_runpath(char *path, unsigned int length, char *id, int run, char *name)
 {
 
-    return snprintf(path, length, "%s/%s/%c%c/%s/%d/%s", root, CONFIG_LOGS, id[0], id[1], id, run, name) < 0;
+    return snprintf(path, length, "%s/%s/%c%c/%s/%d/%s", root, CONFIG_LOGS, id[0], id[1], id, run, name);
 
 }
 

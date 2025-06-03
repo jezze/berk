@@ -104,7 +104,7 @@ static int assert_args(struct command *commands, int argc, char **argv)
         if (commands[i].needconfig)
         {
 
-            if (config_init())
+            if (!config_init())
                 return error_init();
 
         }
@@ -654,7 +654,7 @@ static int parse_init(int argc, char **argv)
         if (mkdir(CONFIG_ROOT, 0775) < 0)
             return util_error("Already initialized.");
 
-        if (config_init())
+        if (!config_init())
             return error_init();
 
         config_get_path(path, BUFSIZ, "config");
