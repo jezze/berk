@@ -25,32 +25,32 @@ int ssh_connect(struct remote *remote)
     hints.ai_socktype = SOCK_STREAM;
 
     if (getaddrinfo(remote->hostname, remote->port, &hints, &servinfo) != 0)
-        return util_error("Could not get address info.");
+        return -1;
 
     remote->sock = socket(servinfo->ai_family, servinfo->ai_socktype, 0);
 
     if (remote->sock < 0)
-        return util_error("Could not create socket.");
+        return -1;
 
     if (connect(remote->sock, servinfo->ai_addr, servinfo->ai_addrlen) < 0)
-        return util_error("Could not connect to socket.");
+        return -1;
 
     if (libssh2_init(0) < 0)
-        return util_error("Could not initialize SSH2.");
+        return -1;
 
     remote->session = libssh2_session_init();
 
     if (remote->session == NULL)
-        return util_error("Could not initialize session.");
+        return -1;
 
     if (libssh2_session_handshake(remote->session, remote->sock) < 0)
-        return util_error("Could not handshake session.");
+        return -1;
 
     if (remote->password)
     {
 
         if (libssh2_userauth_password(remote->session, remote->username, remote->password) < 0)
-            return util_error("Could not authorize user '%s' with password.", remote->username);
+            return -1;
 
     }
 
@@ -58,7 +58,7 @@ int ssh_connect(struct remote *remote)
     {
 
         if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
-            return util_error("Could not authorize user '%s' with keyfiles '%s' and '%s'.", remote->username, remote->privatekey, remote->publickey);
+            return -1;
 
     }
 
@@ -91,10 +91,10 @@ int ssh_exec(struct remote *remote, struct run *run, char *command)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return util_error("Could not open channel.");
+        return -1;
 
     if (libssh2_channel_exec(remote->channel, command) < 0)
-        return util_error("Could not execute command over channel.");
+        return -1;
 
     libssh2_channel_set_blocking(remote->channel, 0);
 
@@ -152,17 +152,17 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
     FILE *file;
 
     if (stat(localpath, &fileinfo))
-        return util_error("Could not stat file.");
+        return -1;
 
     file = fopen(localpath, "rb");
 
     if (file == NULL)
-        return util_error("Could not open file.");
+        return -1;
 
     remote->channel = libssh2_scp_send(remote->session, remotepath, fileinfo.st_mode & 0777, fileinfo.st_size);
 
     if (remote->channel == NULL)
-        return util_error("Could not open channel.");
+        return -1;
 
     while ((total = fread(buffer, 1, BUFSIZ, file)))
     {
@@ -215,13 +215,13 @@ int ssh_shell(struct remote *remote)
     remote->channel = libssh2_channel_open_session(remote->session);
 
     if (remote->channel == NULL)
-        return util_error("Could not open channel.");
+        return -1;
 
     if (libssh2_channel_request_pty(remote->channel, "vt102") < 0)
-        return util_error("Could not start pty over channel.");
+        return -1;
 
     if (libssh2_channel_shell(remote->channel) < 0)
-        return util_error("Could not start shell over channel.");
+        return -1;
 
     libssh2_channel_set_blocking(remote->channel, 0);
     cfmakeraw(&new);
