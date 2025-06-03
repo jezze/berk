@@ -89,7 +89,7 @@ static int assert_args(struct command *commands, int argc, char **argv)
         printf("List of commands:\n");
 
         for (i = 0; commands[i].name; i++)
-            printf("    %s%s\n", commands[i].name, commands[i].usage);
+            printf("    %s\n", commands[i].usage);
 
         return EXIT_SUCCESS;
 
@@ -1189,16 +1189,20 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parse_add, " <name> <hostname>", NULL, 1},
-        {"config", parse_config, " <namelist> [<key>] [<value>]", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
-        {"exec", parse_exec, " [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n", 1},
-        {"init", parse_init, "", NULL, 0},
-        {"list", parse_list, " [-t <tags>]", NULL, 1},
-        {"log", parse_log, " [-c <count>] [-e] [-s <skip>] [<id> | HEAD] [<run>]", "Args:\n    -e  Show stderr\n", 1},
-        {"remove", parse_remove, " <namelist>", NULL, 1},
-        {"send", parse_send, " <namelist> <localpath> <remotepath>", NULL, 1},
-        {"shell", parse_shell, " <name>", NULL, 1},
-        {"version", parse_version, "", NULL, 0},
+        {"add", parse_add, "add <name> <hostname>", NULL, 1},
+        {"config", parse_config, "config <namelist>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
+        {"config", parse_config, "config <namelist> <key>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
+        {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
+        {"exec", parse_exec, "exec [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n", 1},
+        {"init", parse_init, "init", NULL, 0},
+        {"list", parse_list, "list [-t <tags>]", NULL, 1},
+        {"log", parse_log, "log [-c <count>] [-s <skip>]", "Args:\n    -c  Number of entries\n    -s  Skip entries\n", 1},
+        {"log", parse_log, "log <refspec>", "Args:\n    -e  Show stderr\n", 1},
+        {"log", parse_log, "log [-e] <refspec> <run>", "Args:\n    -e  Show stderr\n", 1},
+        {"remove", parse_remove, "remove <namelist>", NULL, 1},
+        {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
+        {"shell", parse_shell, "shell <name>", NULL, 1},
+        {"version", parse_version, "version", NULL, 0},
         {0}
     };
 
