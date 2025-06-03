@@ -1,4 +1,3 @@
-int util_error(char *format, ...);
 char *util_assert_alnum(char *str);
 char *util_assert_alpha(char *str);
 char *util_assert_digit(char *str);

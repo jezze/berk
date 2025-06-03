@@ -1,28 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
-#include "config.h"
 #include "util.h"
-
-int util_error(char *format, ...)
-{
-
-    va_list args;
-
-    va_start(args, format);
-    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-
-    return EXIT_FAILURE;
-
-}
 
 char *util_assert_alnum(char *str)
 {

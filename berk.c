@@ -1,11 +1,10 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <libssh2.h>
 #include "config.h"
@@ -28,52 +27,67 @@ struct command
 
 };
 
+static int error(char *format, ...)
+{
+
+    va_list args;
+
+    va_start(args, format);
+    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+
+    return EXIT_FAILURE;
+
+}
+
 static int error_init(void)
 {
 
-    return util_error("Could not find '%s' directory.", CONFIG_ROOT);
+    return error("Could not find '%s' directory.", CONFIG_ROOT);
 
 }
 
 static int error_remote_init(char *name)
 {
 
-    return util_error("Could not init remote '%s'.", name);
+    return error("Could not init remote '%s'.", name);
 
 }
 
 static int error_remote_load(char *name)
 {
 
-    return util_error("Could not load remote '%s'.", name);
+    return error("Could not load remote '%s'.", name);
 
 }
 
 static int error_remote_save(char *name)
 {
 
-    return util_error("Could not save remote '%s'.", name);
+    return error("Could not save remote '%s'.", name);
 
 }
 
 static int error_missing(void)
 {
 
-    return util_error("Missing arguments.");
+    return error("Missing arguments.");
 
 }
 
 static int error_toomany(void)
 {
 
-    return util_error("Too many arguments.");
+    return error("Too many arguments.");
 
 }
 
 static int error_flag_unrecognized(char *arg)
 {
 
-    return util_error("Unrecognized flag '%s'.", arg);
+    return error("Unrecognized flag '%s'.", arg);
 
 }
 
@@ -113,7 +127,7 @@ static int assert_args(struct command *commands, int argc, char **argv)
 
     }
 
-    return util_error("Invalid argument '%s'.", argv[0]);
+    return error("Invalid argument '%s'.", argv[0]);
 
 }
 
@@ -123,7 +137,7 @@ static char *assert_alpha(char *arg)
     util_trim(arg);
 
     if (!util_assert_alpha(arg))
-        exit(util_error("Could not parse alpha value '%s'.", arg));
+        exit(error("Could not parse alpha value '%s'.", arg));
 
     return arg;
 
@@ -135,7 +149,7 @@ static char *assert_digit(char *arg)
     util_trim(arg);
 
     if (!util_assert_digit(arg))
-        exit(util_error("Could not parse digit value '%s'.", arg));
+        exit(error("Could not parse digit value '%s'.", arg));
 
     return arg;
 
@@ -147,7 +161,7 @@ static char *assert_print(char *arg)
     util_trim(arg);
 
     if (!util_assert_print(arg))
-        exit(util_error("Could not parse printable value '%s'.", arg));
+        exit(error("Could not parse printable value '%s'.", arg));
 
     return arg;
 
@@ -160,7 +174,7 @@ static char *assert_list(char *arg)
     util_strip(arg);
 
     if (!util_assert_printspace(arg))
-        exit(util_error("Could not parse list:\n%s.", arg));
+        exit(error("Could not parse list:\n%s.", arg));
 
     return arg;
 
@@ -183,36 +197,36 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         return error_remote_init(name);
 
     if (run_prepare(&run, entry))
-        return util_error("Could not prepare run.");
+        return error("Could not prepare run.");
 
     if (run_update_remote(&run, entry, name))
-        return util_error("Could not update run remote.");
+        return error("Could not update run remote.");
 
     if (run_update_pid(&run, entry, pid))
-        return util_error("Could not update run pid.");
+        return error("Could not update run pid.");
 
     if (run_update_status(&run, entry, RUN_STATUS_PENDING))
-        return util_error("Could not update run status.");
+        return error("Could not update run status.");
 
     if (run_open(&run, entry))
-        return util_error("Could not open run.");
+        return error("Could not open run.");
 
     if (event_start(&remote, &run))
-        return util_error("Could not run event.");
+        return error("Could not run event.");
 
     if (ssh_connect(&remote))
-        return util_error("Could not connect to remote '%s'.", remote.name);
+        return error("Could not connect to remote '%s'.", remote.name);
 
     rc = ssh_exec(&remote, &run, command);
 
     if (run_update_pid(&run, entry, 0))
-        return util_error("Could not update run pid.");
+        return error("Could not update run pid.");
 
     if (rc == 0)
     {
 
         if (run_update_status(&run, entry, RUN_STATUS_PASSED))
-            return util_error("Could not update run status.");
+            return error("Could not update run status.");
 
     }
 
@@ -220,18 +234,18 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     {
 
         if (run_update_status(&run, entry, RUN_STATUS_FAILED))
-            return util_error("Could not update run status.");
+            return error("Could not update run status.");
 
     }
 
     if (ssh_disconnect(&remote))
-        return util_error("Could not disconnect from remote '%s'.", remote.name);
+        return error("Could not disconnect from remote '%s'.", remote.name);
 
     if (event_stop(&remote, &run, rc))
-        return util_error("Could not run event.");
+        return error("Could not run event.");
 
     if (run_close(&run))
-        return util_error("Could not close run.");
+        return error("Could not close run.");
 
     return rc;
 
@@ -252,12 +266,12 @@ static int run_send(char *name, char *localpath, char *remotepath)
         return error_remote_init(name);
 
     if (ssh_connect(&remote))
-        return util_error("Could not connect to remote '%s'.", remote.name);
+        return error("Could not connect to remote '%s'.", remote.name);
 
     rc = ssh_send(&remote, localpath, remotepath);
 
     if (ssh_disconnect(&remote))
-        return util_error("Could not disconnect from remote '%s'.", remote.name);
+        return error("Could not disconnect from remote '%s'.", remote.name);
 
     return rc;
 
@@ -398,7 +412,7 @@ static int parse_config(int argc, char **argv)
                 return error_remote_load(name);
 
             if (remote_set_value(&remote, keyhash, value) == NULL)
-                return util_error("Could not run configure remote '%s'.", remote.name);
+                return error("Could not run configure remote '%s'.", remote.name);
 
             if (remote_save(&remote))
                 return error_remote_save(name);
@@ -553,10 +567,10 @@ static int parse_exec(int argc, char **argv)
         log_entry_init(&logentry);
 
         if (event_begin(&logentry))
-            return util_error("Could not run event.");
+            return error("Could not run event.");
 
         if (log_entry_prepare(&logentry))
-            return util_error("Could not prepare log.");
+            return error("Could not prepare log.");
 
         if (parallel)
         {
@@ -613,10 +627,10 @@ static int parse_exec(int argc, char **argv)
         }
 
         if (event_end(&logentry))
-            return util_error("Could not run event.");
+            return error("Could not run event.");
 
         if (log_entry_write(&logentry))
-            return util_error("Could not log HEAD.");
+            return error("Could not log HEAD.");
 
         return EXIT_SUCCESS;
 
@@ -652,7 +666,7 @@ static int parse_init(int argc, char **argv)
         int fd;
 
         if (mkdir(CONFIG_ROOT, 0775) < 0)
-            return util_error("Already initialized.");
+            return error("Already initialized.");
 
         if (!config_init())
             return error_init();
@@ -662,7 +676,7 @@ static int parse_init(int argc, char **argv)
         file = fopen(path, "w");
 
         if (file == NULL)
-            return util_error("Could not create config file.");
+            return error("Could not create config file.");
 
         ini_write_section(file, "core");
         ini_write_string(file, "version", CONFIG_VERSION);
@@ -671,7 +685,7 @@ static int parse_init(int argc, char **argv)
         config_get_path(path, BUFSIZ, CONFIG_HOOKS);
 
         if (mkdir(path, 0775) < 0)
-            return util_error("Could not create directory '%s'.", CONFIG_HOOKS);
+            return error("Could not create directory '%s'.", CONFIG_HOOKS);
 
         for (i = 0; hooks[i]; i++)
         {
@@ -684,7 +698,7 @@ static int parse_init(int argc, char **argv)
             fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
             if (fd < 0)
-                return util_error("Could not create hook file '%s'.", hooks[i]);
+                return error("Could not create hook file '%s'.", hooks[i]);
 
             dprintf(fd, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
             close(fd);
@@ -750,7 +764,7 @@ static int parse_list(int argc, char **argv)
         dir = opendir(path);
 
         if (dir == NULL)
-            return util_error("Could not open '%s'.", path);
+            return error("Could not open '%s'.", path);
 
         while ((entry = readdir(dir)) != NULL)
         {
@@ -884,13 +898,13 @@ static int parse_log(int argc, char **argv)
         unsigned int r = strtoul(run, NULL, 10);
 
         if (log_state_open(&state) < 0)
-            return util_error("Unable to open state.");
+            return error("Unable to open state.");
 
         if (log_entry_find(&entry, &state, id))
             log_entry_printstd(&entry, r, descriptor);
 
         if (log_state_close(&state) < 0)
-            return util_error("Unable to close state.");
+            return error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
@@ -903,13 +917,13 @@ static int parse_log(int argc, char **argv)
         struct log_state state;
 
         if (log_state_open(&state) < 0)
-            return util_error("Unable to open state.");
+            return error("Unable to open state.");
 
         if (log_entry_find(&entry, &state, id))
             log_entry_print(&entry);
 
         if (log_state_close(&state) < 0)
-            return util_error("Unable to close state.");
+            return error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
@@ -925,7 +939,7 @@ static int parse_log(int argc, char **argv)
         unsigned int n;
 
         if (log_state_open(&state) < 0)
-            return util_error("Unable to open state.");
+            return error("Unable to open state.");
 
         for (n = 1; log_entry_readprev(&entry, &state); n++)
         {
@@ -939,7 +953,7 @@ static int parse_log(int argc, char **argv)
         }
 
         if (log_state_close(&state) < 0)
-            return util_error("Unable to close state.");
+            return error("Unable to close state.");
 
         return EXIT_SUCCESS;
 
@@ -1005,7 +1019,7 @@ static int parse_remove(int argc, char **argv)
                 return error_remote_load(name);
 
             if (remote_erase(&remote))
-                return util_error("Could not remove remote '%s'.", remote.name);
+                return error("Could not remove remote '%s'.", remote.name);
 
             printf("Remote '%s' removed.\n", remote.name);
 
@@ -1140,13 +1154,13 @@ static int parse_shell(int argc, char **argv)
             return error_remote_init(name);
 
         if (ssh_connect(&remote))
-            return util_error("Could not connect to remote '%s'.", remote.name);
+            return error("Could not connect to remote '%s'.", remote.name);
 
         if (ssh_shell(&remote))
-            return util_error("Could not open shell on remote '%s'.", remote.name);
+            return error("Could not open shell on remote '%s'.", remote.name);
 
         if (ssh_disconnect(&remote))
-            return util_error("Could not disconnect from remote '%s'.", remote.name);
+            return error("Could not disconnect from remote '%s'.", remote.name);
 
         return EXIT_SUCCESS;
 
