@@ -24,122 +24,122 @@ int util_error(char *format, ...)
 
 }
 
-int util_assert_alnum(char *str)
+char *util_assert_alnum(char *str)
 {
 
     while (*str)
     {
 
         if (!isalnum(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_alpha(char *str)
+char *util_assert_alpha(char *str)
 {
 
     while (*str)
     {
 
         if (!isalpha(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_digit(char *str)
+char *util_assert_digit(char *str)
 {
 
     while (*str)
     {
 
         if (!isdigit(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_xdigit(char *str)
+char *util_assert_xdigit(char *str)
 {
 
     while (*str)
     {
 
         if (!isxdigit(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_print(char *str)
+char *util_assert_print(char *str)
 {
 
     while (*str)
     {
 
         if (!isprint(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_space(char *str)
+char *util_assert_space(char *str)
 {
 
     while (*str)
     {
 
         if (!isspace(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 
-int util_assert_printspace(char *str)
+char *util_assert_printspace(char *str)
 {
 
     while (*str)
     {
 
         if (!isprint(*str) && !isspace(*str))
-            return -1;
+            return 0;
 
         str++;
 
     }
 
-    return 0;
+    return str;
 
 }
 

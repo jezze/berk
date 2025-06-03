@@ -1,11 +1,11 @@
 int util_error(char *format, ...);
-int util_assert_alnum(char *str);
-int util_assert_alpha(char *str);
-int util_assert_digit(char *str);
-int util_assert_xdigit(char *str);
-int util_assert_print(char *str);
-int util_assert_space(char *str);
-int util_assert_printspace(char *str);
+char *util_assert_alnum(char *str);
+char *util_assert_alpha(char *str);
+char *util_assert_digit(char *str);
+char *util_assert_xdigit(char *str);
+char *util_assert_print(char *str);
+char *util_assert_space(char *str);
+char *util_assert_printspace(char *str);
 void util_trim(char *str);
 void util_strip(char *str);
 unsigned int util_split(char *str);

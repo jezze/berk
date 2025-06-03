@@ -122,7 +122,7 @@ static char *assert_alpha(char *arg)
 
     util_trim(arg);
 
-    if (util_assert_alpha(arg))
+    if (!util_assert_alpha(arg))
         exit(util_error("Could not parse alpha value '%s'.", arg));
 
     return arg;
@@ -134,7 +134,7 @@ static char *assert_digit(char *arg)
 
     util_trim(arg);
 
-    if (util_assert_digit(arg))
+    if (!util_assert_digit(arg))
         exit(util_error("Could not parse digit value '%s'.", arg));
 
     return arg;
@@ -146,7 +146,7 @@ static char *assert_print(char *arg)
 
     util_trim(arg);
 
-    if (util_assert_print(arg))
+    if (!util_assert_print(arg))
         exit(util_error("Could not parse printable value '%s'.", arg));
 
     return arg;
@@ -159,7 +159,7 @@ static char *assert_list(char *arg)
     util_trim(arg);
     util_strip(arg);
 
-    if (util_assert_printspace(arg))
+    if (!util_assert_printspace(arg))
         exit(util_error("Could not parse list:\n%s.", arg));
 
     return arg;
