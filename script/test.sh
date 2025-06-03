@@ -38,7 +38,7 @@ cd ${WD}/tmp
 check "${BERK}"                             0
 check "${BERK} log"                         1
 check "${BERK} init"                        0
-check "${BERK} log"                         0
+check "${BERK} log"                         1
 check "${BERK} add test test.com"           0
 check "${BERK} config test password xxx"    0
 

@@ -9,41 +9,7 @@
 #include "log.h"
 #include "remote.h"
 
-int remote_get_type(char *key)
-{
-
-    static struct keynum
-    {
-
-        char *key;
-        unsigned int value;
-
-    } rkn[] = {
-        {"name", REMOTE_NAME},
-        {"hostname", REMOTE_HOSTNAME},
-        {"port", REMOTE_PORT},
-        {"username", REMOTE_USERNAME},
-        {"password", REMOTE_PASSWORD},
-        {"privatekey", REMOTE_PRIVATEKEY},
-        {"publickey", REMOTE_PUBLICKEY},
-        {"tags", REMOTE_TAGS},
-        {0}
-    };
-    unsigned int i;
-
-    for (i = 0; rkn[i].key; i++)
-    {
-
-        if (!strcmp(key, rkn[i].key))
-            return rkn[i].value;
-
-    }
-
-    return -1;
-
-}
-
-void *remote_get_value(struct remote *remote, int key)
+void *remote_get_value(struct remote *remote, unsigned int key)
 {
 
     switch (key)
@@ -79,7 +45,7 @@ void *remote_get_value(struct remote *remote, int key)
 
 }
 
-void *remote_set_value(struct remote *remote, int key, char *value)
+void *remote_set_value(struct remote *remote, unsigned int key, char *value)
 {
 
     switch (key)
@@ -119,12 +85,13 @@ static int loadcallback(void *user, char *section, char *key, char *value)
 {
 
     struct remote *remote = user;
+    unsigned int hash = util_hash(key);
 
     if (strcmp(section, "remote"))
         return 0;
 
     if (strlen(value))
-        remote_set_value(remote, remote_get_type(key), value);
+        remote_set_value(remote, hash, value);
 
     return 0;
 

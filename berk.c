@@ -375,11 +375,8 @@ static int parse_config(int argc, char **argv)
     {
 
         unsigned int names = util_split(name);
-        int keytype = remote_get_type(key);
+        unsigned int keyhash = util_hash(key);
         unsigned int i;
-
-        if (keytype == -1)
-            return util_error("Invalid key '%s'.", key);
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
@@ -391,7 +388,7 @@ static int parse_config(int argc, char **argv)
             if (remote_load(&remote))
                 return error_remote_load(name);
 
-            if (remote_set_value(&remote, keytype, value) == NULL)
+            if (remote_set_value(&remote, keyhash, value) == NULL)
                 return util_error("Could not run configure remote '%s'.", remote.name);
 
             if (remote_save(&remote))
@@ -407,11 +404,8 @@ static int parse_config(int argc, char **argv)
     {
 
         unsigned int names = util_split(name);
-        int keytype = remote_get_type(key);
+        unsigned int keyhash = util_hash(key);
         unsigned int i;
-
-        if (keytype == -1)
-            return util_error("Invalid key '%s'.", key);
 
         for (i = 0; (name = util_nextword(name, i, names)); i++)
         {
@@ -424,7 +418,7 @@ static int parse_config(int argc, char **argv)
             if (remote_load(&remote))
                 return error_remote_load(name);
 
-            value = remote_get_value(&remote, keytype);
+            value = remote_get_value(&remote, keyhash);
 
             printf("%s: %s\n", remote.name, value);
 

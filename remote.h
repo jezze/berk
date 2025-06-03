@@ -1,16 +1,11 @@
-enum
-{
-
-    REMOTE_NAME,
-    REMOTE_HOSTNAME,
-    REMOTE_PORT,
-    REMOTE_USERNAME,
-    REMOTE_PASSWORD,
-    REMOTE_PRIVATEKEY,
-    REMOTE_PUBLICKEY,
-    REMOTE_TAGS
-
-};
+#define REMOTE_NAME 0x7c9b0c46
+#define REMOTE_HOSTNAME 0xeba474a4
+#define REMOTE_PORT 0x7c9c614a
+#define REMOTE_USERNAME 0xfe18cd45
+#define REMOTE_PASSWORD 0x17f6dc38
+#define REMOTE_PRIVATEKEY 0x26c0b7c9
+#define REMOTE_PUBLICKEY 0x5e00d6cd
+#define REMOTE_TAGS 0x7c9e55d4
 
 struct remote
 {
@@ -29,9 +24,8 @@ struct remote
 
 };
 
-int remote_get_type(char *key);
-void *remote_get_value(struct remote *remote, int type);
-void *remote_set_value(struct remote *remote, int type, char *value);
+void *remote_get_value(struct remote *remote, unsigned int hash);
+void *remote_set_value(struct remote *remote, unsigned int hash, char *value);
 int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
