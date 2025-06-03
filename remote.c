@@ -127,8 +127,12 @@ int remote_save(struct remote *remote)
         return -1;
 
     ini_write_section(file, "remote");
-    ini_write_string(file, "name", remote->name);
-    ini_write_string(file, "hostname", remote->hostname);
+
+    if (remote->name && strlen(remote->name))
+        ini_write_string(file, "name", remote->name);
+
+    if (remote->hostname && strlen(remote->hostname))
+        ini_write_string(file, "hostname", remote->hostname);
 
     if (remote->port && strlen(remote->port))
         ini_write_string(file, "port", remote->port);
