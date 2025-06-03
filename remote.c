@@ -9,10 +9,10 @@
 #include "log.h"
 #include "remote.h"
 
-void *remote_get_value(struct remote *remote, unsigned int key)
+void *remote_get_value(struct remote *remote, unsigned int hash)
 {
 
-    switch (key)
+    switch (hash)
     {
 
     case REMOTE_NAME:
@@ -45,10 +45,10 @@ void *remote_get_value(struct remote *remote, unsigned int key)
 
 }
 
-void *remote_set_value(struct remote *remote, unsigned int key, char *value)
+void *remote_set_value(struct remote *remote, unsigned int hash, char *value)
 {
 
-    switch (key)
+    switch (hash)
     {
 
     case REMOTE_NAME:
