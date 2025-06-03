@@ -166,7 +166,7 @@ static char *assert_list(char *arg)
 
 }
 
-static int run_exec(struct log_entry *entry, unsigned int index, char *name, char *command)
+static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int index, char *name, char *command)
 {
 
     struct remote remote;
@@ -185,6 +185,9 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
     if (run_update_remote(&run, entry, name))
         return util_error("Could not update run remote.");
 
+    if (run_update_pid(&run, entry, pid))
+        return util_error("Could not update run pid.");
+
     if (run_update_status(&run, entry, RUN_STATUS_PENDING))
         return util_error("Could not update run status.");
 
@@ -198,6 +201,9 @@ static int run_exec(struct log_entry *entry, unsigned int index, char *name, cha
         return util_error("Could not connect to remote '%s'.", remote.name);
 
     rc = ssh_exec(&remote, &run, command);
+
+    if (run_update_pid(&run, entry, 0))
+        return util_error("Could not update run pid.");
 
     if (rc == 0)
     {
@@ -561,7 +567,7 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(&logentry, i, name, command);
+                    return run_exec(&logentry, pid, i, name, command);
 
             }
 
@@ -594,7 +600,7 @@ static int parse_exec(int argc, char **argv)
 
                 logentry.total++;
 
-                if (run_exec(&logentry, i, name, command) == 0)
+                if (run_exec(&logentry, 0, i, name, command) == 0)
                     logentry.success++;
 
                 logentry.complete++;

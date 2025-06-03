@@ -79,6 +79,31 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
 
 }
 
+int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid)
+{
+
+    char path[BUFSIZ];
+    int fd;
+
+    config_get_rundir(path, BUFSIZ, entry->id, run->index);
+
+    if (util_mkdir(path) < 0)
+        return -1;
+
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "pid");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    dprintf(fd, "%u\n", pid);
+    close(fd);
+
+    return 0;
+
+}
+
 int run_open(struct run *run, struct log_entry *entry)
 {
 
