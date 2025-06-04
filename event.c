@@ -34,7 +34,7 @@ int event_begin(struct log_entry *entry)
 int event_end(struct log_entry *entry)
 {
 
-    printf("event=end total=%d complete=%d success=%d\n", entry->total, entry->complete, entry->success);
+    printf("event=end total=%d complete=%d passed=%d failed=%d\n", entry->total, entry->complete, entry->passed, entry->failed);
 
     return runhook("end");
 

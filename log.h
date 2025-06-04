@@ -5,7 +5,8 @@ struct log_entry
     char datetime[25];
     unsigned int total;
     unsigned int complete;
-    unsigned int success;
+    unsigned int passed;
+    unsigned int failed;
     int result;
 
 };

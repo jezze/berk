@@ -228,7 +228,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         if (run_update_status(&run, entry, RUN_STATUS_PASSED))
             return error("Could not update run status.");
 
-        entry->success++;
+        entry->passed++;
 
     }
 
@@ -237,6 +237,8 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
         if (run_update_status(&run, entry, RUN_STATUS_FAILED))
             return error("Could not update run status.");
+
+        entry->failed++;
 
     }
 
@@ -508,7 +510,9 @@ static int parse_config(int argc, char **argv)
 static int parse_exec(int argc, char **argv)
 {
 
-    unsigned int parallel = 0;
+    unsigned int doseq = 0;
+    unsigned int dowait = 0;
+    unsigned int nofork = 0;
     char *command = NULL;
     char *name = NULL;
     unsigned int argp = 0;
@@ -525,8 +529,18 @@ static int parse_exec(int argc, char **argv)
             switch (arg[1])
             {
 
-            case 'p':
-                parallel = 1;
+            case 'n':
+                nofork = 1;
+
+                break;
+
+            case 's':
+                doseq = 1;
+
+                break;
+
+            case 'w':
+                dowait = 1;
 
                 break;
 
@@ -578,10 +592,21 @@ static int parse_exec(int argc, char **argv)
 
         entry.total = names;
 
-        if (parallel)
+        if (nofork)
         {
 
             unsigned int i;
+
+            for (i = 0; (name = util_nextword(name, i, names)); i++)
+                run_exec(&entry, 0, i, name, command);
+
+        }
+
+        else
+        {
+
+            unsigned int i;
+            int status = 0;
 
             for (i = 0; (name = util_nextword(name, i, names)); i++)
             {
@@ -591,24 +616,13 @@ static int parse_exec(int argc, char **argv)
                 if (pid == 0)
                     return run_exec(&entry, pid, i, name, command);
 
-            }
-
-            /*
-            while (wait(&status) > 0)
-            {
+                if (doseq)
+                    waitpid(pid, &status, 0);
 
             }
-            */
 
-        }
-
-        else
-        {
-
-            unsigned int i;
-
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
-                run_exec(&entry, 0, i, name, command);
+            if (dowait)
+                while (wait(&status) > 0);
 
         }
 
@@ -1193,7 +1207,7 @@ int main(int argc, char **argv)
         {"config", parse_config, "config <namelist>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"config", parse_config, "config <namelist> <key>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
-        {"exec", parse_exec, "exec [-p] <namelist> <command>", "Args:\n    -p  Run in parallel\n", 1},
+        {"exec", parse_exec, "exec [-n] [-s] [-w] <namelist> <command>", "Args:\n    -n  No fork\n    -s  Sequential runs\n    -w  Wait for completion\n", 1},
         {"init", parse_init, "init", NULL, 0},
         {"list", parse_list, "list [-t <tags>]", NULL, 1},
         {"log", parse_log, "log [-c <count>] [-s <skip>]", "Args:\n    -c  Number of entries\n    -s  Skip entries\n", 1},

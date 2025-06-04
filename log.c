@@ -9,7 +9,7 @@
 #include "util.h"
 #include "log.h"
 
-#define LOG_ENTRYSIZE 72
+#define LOG_ENTRYSIZE 77
 
 int log_state_open(struct log_state *state)
 {
@@ -74,7 +74,7 @@ int log_entry_read(struct log_entry *entry, struct log_state *state)
 
     fseek(state->file, state->position, SEEK_SET);
 
-    return fscanf(state->file, "%s %s %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->success);
+    return fscanf(state->file, "%s %s %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->passed, &entry->failed);
 
 }
 
@@ -192,7 +192,7 @@ int log_entry_print(struct log_entry *entry)
 
     config_get_rundirfull(path, BUFSIZ, entry->id);
     printf("id=%s datetime=%s\n", entry->id, entry->datetime);
-    printf("total=%u complete=%u successful=%u failed=%u\n", entry->total, entry->complete, entry->success, entry->total - entry->success);
+    printf("total=%u complete=%u passed=%u failed=%u\n", entry->total, entry->complete, entry->passed, entry->failed);
     printf("\n");
 
     for (i = 0; i < entry->total; i++)
@@ -225,7 +225,7 @@ int log_entry_write(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    if (dprintf(fd, "%s %s %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->success) != LOG_ENTRYSIZE)
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
 
     close(fd);
@@ -263,7 +263,8 @@ void log_entry_init(struct log_entry *entry)
 
     entry->total = 0;
     entry->complete = 0;
-    entry->success = 0;
+    entry->passed = 0;
+    entry->failed = 0;
 
 }
 
