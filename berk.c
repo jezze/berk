@@ -228,6 +228,8 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         if (run_update_status(&run, entry, RUN_STATUS_PASSED))
             return error("Could not update run status.");
 
+        entry->success++;
+
     }
 
     else
@@ -246,6 +248,8 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
     if (run_close(&run))
         return error("Could not close run.");
+
+    entry->complete++;
 
     return rc;
 
@@ -561,22 +565,23 @@ static int parse_exec(int argc, char **argv)
     if (name && command)
     {
 
-        struct log_entry logentry;
+        struct log_entry entry;
         unsigned int names = util_split(name);
 
-        log_entry_init(&logentry);
+        log_entry_init(&entry);
 
-        if (event_begin(&logentry))
+        if (event_begin(&entry))
             return error("Could not run event.");
 
-        if (log_entry_prepare(&logentry))
+        if (log_entry_prepare(&entry))
             return error("Could not prepare log.");
+
+        entry.total = names;
 
         if (parallel)
         {
 
             unsigned int i;
-            int status;
 
             for (i = 0; (name = util_nextword(name, i, names)); i++)
             {
@@ -584,26 +589,16 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(&logentry, pid, i, name, command);
+                    return run_exec(&entry, pid, i, name, command);
 
             }
 
+            /*
             while (wait(&status) > 0)
             {
 
-                logentry.total++;
-
-                if (WIFEXITED(status))
-                {
-
-                    logentry.complete++;
-
-                    if (WEXITSTATUS(status) == 0)
-                        logentry.success++;
-
-                }
-
             }
+            */
 
         }
 
@@ -613,23 +608,14 @@ static int parse_exec(int argc, char **argv)
             unsigned int i;
 
             for (i = 0; (name = util_nextword(name, i, names)); i++)
-            {
-
-                logentry.total++;
-
-                if (run_exec(&logentry, 0, i, name, command) == 0)
-                    logentry.success++;
-
-                logentry.complete++;
-
-            }
+                run_exec(&entry, 0, i, name, command);
 
         }
 
-        if (event_end(&logentry))
+        if (event_end(&entry))
             return error("Could not run event.");
 
-        if (log_entry_write(&logentry))
+        if (log_entry_write(&entry))
             return error("Could not log HEAD.");
 
         return EXIT_SUCCESS;
