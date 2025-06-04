@@ -614,7 +614,7 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(&entry, pid, i, name, command);
+                    return run_exec(&entry, getpid(), i, name, command);
 
                 if (doseq)
                     waitpid(pid, &status, 0);
