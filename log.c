@@ -18,14 +18,12 @@ int log_state_open(struct log_state *state)
 
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    state->file = fopen(path, "r");
+    state->fd = open(path, O_RDONLY, 0644);
 
-    if (state->file == NULL)
+    if (state->fd < 0)
         return -1;
 
-    fseek(state->file, 0, SEEK_END);
-
-    state->size = ftell(state->file);
+    state->size = lseek(state->fd, 0, SEEK_END);
 
     if (state->size % LOG_ENTRYSIZE != 0)
         return -1;
@@ -39,7 +37,7 @@ int log_state_open(struct log_state *state)
 int log_state_close(struct log_state *state)
 {
 
-    fclose(state->file);
+    close(state->fd);
 
     return 0;
 
@@ -72,9 +70,19 @@ int log_entry_prepare(struct log_entry *entry)
 int log_entry_read(struct log_entry *entry, struct log_state *state)
 {
 
-    fseek(state->file, state->position, SEEK_SET);
+    char buffer[BUFSIZ];
+    int count;
 
-    return fscanf(state->file, "%s %s %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->passed, &entry->failed);
+    lseek(state->fd, state->position, SEEK_SET);
+
+    count = read(state->fd, buffer, LOG_ENTRYSIZE);
+
+    if (count != LOG_ENTRYSIZE)
+        return 0;
+
+    sscanf(buffer, "%s %s %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->passed, &entry->failed);
+
+    return count;
 
 }
 

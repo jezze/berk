@@ -14,7 +14,7 @@ struct log_entry
 struct log_state
 {
 
-    FILE *file;
+    int fd;
     long size;
     long position;
 
