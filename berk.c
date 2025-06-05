@@ -660,9 +660,9 @@ static int parse_init(int argc, char **argv)
     {
 
         char *hooks[] = {"begin", "end", "start", "stop", 0};
-        unsigned int i;
+        struct config_core core;
         char path[BUFSIZ];
-        FILE *file;
+        unsigned int i;
         int fd;
 
         if (mkdir(CONFIG_ROOT, 0775) < 0)
@@ -671,17 +671,9 @@ static int parse_init(int argc, char **argv)
         if (!config_init())
             return error_init();
 
-        config_get_path(path, BUFSIZ, "config");
+        core.version = CONFIG_VERSION;
 
-        file = fopen(path, "w");
-
-        if (file == NULL)
-            return error("Could not create config file.");
-
-        ini_write_section(file, "core");
-        ini_write_string(file, "version", CONFIG_VERSION);
-        fclose(file);
-
+        config_save(&core);
         config_get_path(path, BUFSIZ, CONFIG_HOOKS);
 
         if (mkdir(path, 0775) < 0)

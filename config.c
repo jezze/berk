@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <libgen.h>
+#include "ini.h"
 #include "config.h"
 
 static char root[BUFSIZ];
@@ -33,6 +34,61 @@ char *config_init()
         dirname(path);
 
     }
+
+    return 0;
+
+}
+
+static int loadcallback(void *user, char *section, char *key, char *value)
+{
+
+    struct config_core *core = user;
+
+    if (strcmp(section, "core"))
+        return 0;
+
+    if (strlen(value))
+    {
+
+        if (!strcmp(key, "version"))
+            core->version = strdup(value);
+
+    }
+
+    return 0;
+
+}
+
+int config_load(struct config_core *core)
+{
+
+    char path[BUFSIZ];
+
+    config_get_path(path, BUFSIZ, CONFIG_PATH);
+
+    return ini_parse(path, loadcallback, core);
+
+}
+
+int config_save(struct config_core *core)
+{
+
+    FILE *file;
+    char path[BUFSIZ];
+
+    config_get_path(path, BUFSIZ, CONFIG_PATH);
+
+    file = fopen(path, "w");
+
+    if (file == NULL)
+        return -1;
+
+    ini_write_section(file, "core");
+
+    if (core->version && strlen(core->version))
+        ini_write_string(file, "version", core->version);
+
+    fclose(file);
 
     return 0;
 
