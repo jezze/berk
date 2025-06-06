@@ -185,7 +185,6 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
     struct remote remote;
     struct run run;
-    int rc;
 
     remote_init(&remote, name);
     run_init(&run, index);
@@ -200,60 +199,78 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         return error("Could not prepare run.");
 
     if (run_update_remote(&run, entry, name))
-        return error("Could not update run remote.");
+        error("Could not update run remote.");
 
     if (run_update_pid(&run, entry, pid))
-        return error("Could not update run pid.");
+        error("Could not update run pid.");
 
     if (run_update_status(&run, entry, RUN_STATUS_PENDING))
-        return error("Could not update run status.");
+        error("Could not update run status.");
 
-    if (run_open(&run, entry))
-        return error("Could not open run.");
-
-    if (event_start(&remote, &run))
-        return error("Could not run event.");
-
-    if (ssh_connect(&remote))
-        return error("Could not connect to remote '%s'.", remote.name);
-
-    rc = ssh_exec(&remote, &run, command);
-
-    if (run_update_pid(&run, entry, 0))
-        return error("Could not update run pid.");
-
-    if (rc == 0)
+    if (!run_open(&run, entry))
     {
 
-        if (run_update_status(&run, entry, RUN_STATUS_PASSED))
-            return error("Could not update run status.");
+        if (event_start(&remote, &run))
+            error("Could not run event.");
 
-        entry->passed++;
+        if (!ssh_connect(&remote))
+        {
+
+            int rc = ssh_exec(&remote, &run, command);
+
+            if (run_update_pid(&run, entry, 0))
+                error("Could not update run pid.");
+
+            if (rc == 0)
+            {
+
+                if (run_update_status(&run, entry, RUN_STATUS_PASSED))
+                    error("Could not update run status.");
+
+                entry->passed++;
+
+            }
+
+            else
+            {
+
+                if (run_update_status(&run, entry, RUN_STATUS_FAILED))
+                    error("Could not update run status.");
+
+                entry->failed++;
+
+            }
+
+            if (ssh_disconnect(&remote))
+                error("Could not disconnect from remote '%s'.", remote.name);
+
+        }
+
+        else
+        {
+
+            error("Could not connect to remote '%s'.", remote.name);
+
+        }
+
+        if (event_stop(&remote, &run))
+            error("Could not run event.");
+
+        if (run_close(&run))
+            error("Could not close run.");
 
     }
 
     else
     {
 
-        if (run_update_status(&run, entry, RUN_STATUS_FAILED))
-            return error("Could not update run status.");
-
-        entry->failed++;
+        error("Could not open run.");
 
     }
 
-    if (ssh_disconnect(&remote))
-        return error("Could not disconnect from remote '%s'.", remote.name);
-
-    if (event_stop(&remote, &run, rc))
-        return error("Could not run event.");
-
-    if (run_close(&run))
-        return error("Could not close run.");
-
     entry->complete++;
 
-    return rc;
+    return 0;
 
 }
 
@@ -261,7 +278,6 @@ static int run_send(char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
-    int rc;
 
     remote_init(&remote, name);
 
@@ -271,15 +287,39 @@ static int run_send(char *name, char *localpath, char *remotepath)
     if (remote_init_optional(&remote))
         return error_remote_init(name);
 
-    if (ssh_connect(&remote))
-        return error("Could not connect to remote '%s'.", remote.name);
+    if (!ssh_connect(&remote))
+    {
 
-    rc = ssh_send(&remote, localpath, remotepath);
+        int rc = ssh_send(&remote, localpath, remotepath);
 
-    if (ssh_disconnect(&remote))
-        return error("Could not disconnect from remote '%s'.", remote.name);
+        if (rc == 0)
+        {
 
-    return rc;
+            if (event_send(&remote))
+                error("Could not run event.");
+
+        }
+
+        else
+        {
+
+            error("Could not send file.");
+
+        }
+
+        if (ssh_disconnect(&remote))
+            error("Could not disconnect from remote '%s'.", remote.name);
+
+    }
+
+    else
+    {
+
+        error("Could not connect to remote '%s'.", remote.name);
+
+    }
+
+    return 0;
 
 }
 
@@ -659,7 +699,7 @@ static int parse_init(int argc, char **argv)
 
     {
 
-        char *hooks[] = {"begin", "end", "start", "stop", 0};
+        char *hooks[] = {"begin", "end", "start", "stop", "send", 0};
         struct config_core core;
         char path[BUFSIZ];
         unsigned int i;

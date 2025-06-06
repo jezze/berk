@@ -49,12 +49,21 @@ int event_start(struct remote *remote, struct run *run)
 
 }
 
-int event_stop(struct remote *remote, struct run *run, int status)
+int event_stop(struct remote *remote, struct run *run)
 {
 
-    printf("event=stop remote=%s run=%d status=%d\n", remote->name, run->index, status);
+    printf("event=stop remote=%s run=%d\n", remote->name, run->index);
 
     return runhook("stop");
+
+}
+
+int event_send(struct remote *remote)
+{
+
+    printf("event=send remote=%s\n", remote->name);
+
+    return runhook("send");
 
 }
 
