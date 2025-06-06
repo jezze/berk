@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "ini.h"
 
 #define MAX_LINE 1024
@@ -57,7 +59,24 @@ static char *strncpy0(char *dest, char *src, size_t size)
 
 }
 
-static int ini_parse_file(FILE *file, int (*handler)(void *user, char *section, char *key, char *value), void *user)
+static unsigned int findnl(char *buffer, unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (buffer[i] == '\n')
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+static int ini_parse_file(int fd, int (*handler)(void *user, char *section, char *key, char *value), void *user)
 {
 
     char line[MAX_LINE];
@@ -69,9 +88,16 @@ static int ini_parse_file(FILE *file, int (*handler)(void *user, char *section, 
     char *value;
     int lineno = 0;
     int error = 0;
+    unsigned int offset = 0;
 
-    while (fgets(line, MAX_LINE, file) != NULL)
+    while (read(fd, line, MAX_LINE) > 0)
     {
+
+        unsigned int c = findnl(line, MAX_LINE);
+
+        line[c] = '\0';
+        offset += c + 1;
+        lseek(fd, offset, SEEK_SET);
 
         lineno++;
         start = line;
@@ -159,17 +185,17 @@ static int ini_parse_file(FILE *file, int (*handler)(void *user, char *section, 
 int ini_parse(char *filename, int (*handler)(void *user, char *section, char *name, char *value), void *user)
 {
 
-    FILE *file;
     int error;
+    int fd;
 
-    file = fopen(filename, "r");
+    fd = open(filename, O_RDONLY, 0644);
 
-    if (!file)
+    if (fd < 0)
         return -1;
 
-    error = ini_parse_file(file, handler, user);
+    error = ini_parse_file(fd, handler, user);
 
-    fclose(file);
+    close(fd);
 
     return error;
 
