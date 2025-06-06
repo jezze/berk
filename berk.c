@@ -1074,6 +1074,7 @@ static int parse_shell(int argc, char **argv)
 {
 
     char *name = NULL;
+    char *type = "vt102";
     unsigned int argp = 0;
     unsigned int argi;
 
@@ -1085,7 +1086,18 @@ static int parse_shell(int argc, char **argv)
         if (arg[0] == '-')
         {
 
-            return error_flag_unrecognized(arg);
+            switch (arg[1])
+            {
+
+            case 't':
+                type = assert_print(argv[++argi]);
+
+                break;
+
+            default:
+                return error_flag_unrecognized(arg);
+
+            }
 
         }
 
@@ -1125,8 +1137,8 @@ static int parse_shell(int argc, char **argv)
         if (ssh_connect(&remote))
             return error("Could not connect to remote '%s'.", remote.name);
 
-        if (ssh_shell(&remote))
-            return error("Could not open shell on remote '%s'.", remote.name);
+        if (ssh_shell(&remote, type))
+            return error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
 
         if (ssh_disconnect(&remote))
             return error("Could not disconnect from remote '%s'.", remote.name);
@@ -1184,7 +1196,7 @@ int main(int argc, char **argv)
         {"log", parse_log, "log [-e] <refspec> <run>", "Args:\n    -e  Show stderr\n", 1},
         {"remove", parse_remove, "remove <namelist>", NULL, 1},
         {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
-        {"shell", parse_shell, "shell <name>", NULL, 1},
+        {"shell", parse_shell, "shell [-t <type>] <name>", "Args:\n    -t  Terminal type (default: vt102)\n\n", 1},
         {"version", parse_version, "version", NULL, 0},
         {0}
     };

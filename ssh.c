@@ -198,7 +198,7 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
 
 }
 
-int ssh_shell(struct remote *remote)
+int ssh_shell(struct remote *remote, char *type)
 {
 
     struct pollfd pfds[2];
@@ -218,7 +218,7 @@ int ssh_shell(struct remote *remote)
     if (remote->channel == NULL)
         return -1;
 
-    if (libssh2_channel_request_pty(remote->channel, "vt102") < 0)
+    if (libssh2_channel_request_pty(remote->channel, type) < 0)
         return -1;
 
     if (libssh2_channel_shell(remote->channel) < 0)
