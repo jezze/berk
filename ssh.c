@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <termios.h>
 #include <sys/socket.h>
@@ -149,14 +150,14 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
     struct stat fileinfo;
     char buffer[BUFSIZ];
     size_t total;
-    FILE *file;
+    int fd;
 
     if (stat(localpath, &fileinfo))
         return -1;
 
-    file = fopen(localpath, "rb");
+    fd = open(localpath, O_RDONLY, 0644);
 
-    if (file == NULL)
+    if (fd < 0)
         return -1;
 
     remote->channel = libssh2_scp_send(remote->session, remotepath, fileinfo.st_mode & 0777, fileinfo.st_size);
@@ -164,7 +165,7 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
     if (remote->channel == NULL)
         return -1;
 
-    while ((total = fread(buffer, 1, BUFSIZ, file)))
+    while ((total = read(fd, buffer, BUFSIZ)))
     {
 
         char *current = buffer;
@@ -191,7 +192,7 @@ int ssh_send(struct remote *remote, char *localpath, char *remotepath)
     libssh2_channel_wait_eof(remote->channel);
     libssh2_channel_wait_closed(remote->channel);
     libssh2_channel_free(remote->channel);
-    fclose(file);
+    close(fd);
 
     return 0;
 
