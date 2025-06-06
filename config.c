@@ -73,22 +73,22 @@ int config_load(struct config_core *core)
 int config_save(struct config_core *core)
 {
 
-    FILE *file;
     char path[BUFSIZ];
+    int fd;
 
     config_get_path(path, BUFSIZ, CONFIG_PATH);
 
-    file = fopen(path, "w");
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (file == NULL)
+    if (fd < 0)
         return -1;
 
-    ini_write_section(file, "core");
+    ini_write_section(fd, "core");
 
     if (core->version && strlen(core->version))
-        ini_write_string(file, "version", core->version);
+        ini_write_string(fd, "version", core->version);
 
-    fclose(file);
+    close(fd);
 
     return 0;
 

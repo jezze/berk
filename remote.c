@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <libssh2.h>
 #include "config.h"
@@ -110,8 +112,8 @@ int remote_load(struct remote *remote)
 int remote_save(struct remote *remote)
 {
 
-    FILE *file;
     char path[BUFSIZ];
+    int fd;
 
     config_get_path(path, BUFSIZ, CONFIG_REMOTES);
 
@@ -120,38 +122,38 @@ int remote_save(struct remote *remote)
 
     config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
-    file = fopen(path, "w");
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    if (file == NULL)
+    if (fd < 0)
         return -1;
 
-    ini_write_section(file, "remote");
+    ini_write_section(fd, "remote");
 
     if (remote->name && strlen(remote->name))
-        ini_write_string(file, "name", remote->name);
+        ini_write_string(fd, "name", remote->name);
 
     if (remote->hostname && strlen(remote->hostname))
-        ini_write_string(file, "hostname", remote->hostname);
+        ini_write_string(fd, "hostname", remote->hostname);
 
     if (remote->port && strlen(remote->port))
-        ini_write_string(file, "port", remote->port);
+        ini_write_string(fd, "port", remote->port);
 
     if (remote->username && strlen(remote->username))
-        ini_write_string(file, "username", remote->username);
+        ini_write_string(fd, "username", remote->username);
 
     if (remote->password && strlen(remote->password))
-        ini_write_string(file, "password", remote->password);
+        ini_write_string(fd, "password", remote->password);
 
     if (remote->privatekey && strlen(remote->privatekey))
-        ini_write_string(file, "privatekey", remote->privatekey);
+        ini_write_string(fd, "privatekey", remote->privatekey);
 
     if (remote->publickey && strlen(remote->publickey))
-        ini_write_string(file, "publickey", remote->publickey);
+        ini_write_string(fd, "publickey", remote->publickey);
 
     if (remote->tags && strlen(remote->tags))
-        ini_write_string(file, "tags", remote->tags);
+        ini_write_string(fd, "tags", remote->tags);
 
-    fclose(file);
+    close(fd);
 
     return 0;
 

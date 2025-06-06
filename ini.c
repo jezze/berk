@@ -175,24 +175,24 @@ int ini_parse(char *filename, int (*handler)(void *user, char *section, char *na
 
 }
 
-int ini_write_section(FILE *file, char *name)
+int ini_write_section(int fd, char *name)
 {
 
-    return fprintf(file, "[%s]\n", name);
+    return dprintf(fd, "[%s]\n", name);
 
 }
 
-int ini_write_int(FILE *file, char *key, int value)
+int ini_write_int(int fd, char *key, int value)
 {
 
-    return fprintf(file, "        %s = %d\n", key, value);
+    return dprintf(fd, "        %s = %d\n", key, value);
 
 }
 
-int ini_write_string(FILE *file, char *key, char *value)
+int ini_write_string(int fd, char *key, char *value)
 {
 
-    return fprintf(file, "        %s = %s\n", key, value);
+    return dprintf(fd, "        %s = %s\n", key, value);
 
 }
 
