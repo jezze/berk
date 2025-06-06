@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <libssh2.h>
 #include "config.h"
+#include "error.h"
 #include "util.h"
 #include "ini.h"
 #include "log.h"
@@ -26,70 +27,6 @@ struct command
     unsigned int needconfig;
 
 };
-
-static int error(char *format, ...)
-{
-
-    va_list args;
-
-    va_start(args, format);
-    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-
-    return EXIT_FAILURE;
-
-}
-
-static int error_init(void)
-{
-
-    return error("Could not find '%s' directory.", CONFIG_ROOT);
-
-}
-
-static int error_remote_init(char *name)
-{
-
-    return error("Could not init remote '%s'.", name);
-
-}
-
-static int error_remote_load(char *name)
-{
-
-    return error("Could not load remote '%s'.", name);
-
-}
-
-static int error_remote_save(char *name)
-{
-
-    return error("Could not save remote '%s'.", name);
-
-}
-
-static int error_missing(void)
-{
-
-    return error("Missing arguments.");
-
-}
-
-static int error_toomany(void)
-{
-
-    return error("Too many arguments.");
-
-}
-
-static int error_flag_unrecognized(char *arg)
-{
-
-    return error("Unrecognized flag '%s'.", arg);
-
-}
 
 static int assert_args(struct command *commands, int argc, char **argv)
 {
