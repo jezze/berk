@@ -178,14 +178,14 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
             }
 
             if (ssh_disconnect(&remote))
-                error("Could not disconnect from remote '%s'.", remote.name);
+                error_remote_disconnect(remote.name);
 
         }
 
         else
         {
 
-            error("Could not connect to remote '%s'.", remote.name);
+            error_remote_connect(remote.name);
 
         }
 
@@ -233,14 +233,14 @@ static int run_send(char *name, char *localpath, char *remotepath)
             error("Could not send file.");
 
         if (ssh_disconnect(&remote))
-            error("Could not disconnect from remote '%s'.", remote.name);
+            error_remote_disconnect(remote.name);
 
     }
 
     else
     {
 
-        error("Could not connect to remote '%s'.", remote.name);
+        error_remote_connect(remote.name);
 
     }
 

@@ -46,6 +46,20 @@ int error_remote_save(char *name)
 
 }
 
+int error_remote_connect(char *name)
+{
+
+    return error("Could not connect to remote '%s'.", name);
+
+}
+
+int error_remote_disconnect(char *name)
+{
+
+    return error("Could not disconnect from remote '%s'.", name);
+
+}
+
 int error_run_prepare(unsigned int index)
 {
 

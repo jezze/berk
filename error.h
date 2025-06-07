@@ -3,6 +3,8 @@ int error_init(void);
 int error_remote_init(char *name);
 int error_remote_load(char *name);
 int error_remote_save(char *name);
+int error_remote_connect(char *name);
+int error_remote_disconnect(char *name);
 int error_run_prepare(unsigned int index);
 int error_run_update(unsigned int index, char *type);
 int error_missing(void);
