@@ -46,6 +46,13 @@ int error_remote_save(char *name)
 
 }
 
+int error_remote_run_update(char *name, unsigned int index, char *type)
+{
+
+    return error("Could not update remote '%s', run '%u' with type '%s'.", name, index, type);
+
+}
+
 int error_missing(void)
 {
 
