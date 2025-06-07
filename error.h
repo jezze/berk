@@ -6,3 +6,5 @@ int error_remote_save(char *name);
 int error_missing(void);
 int error_toomany(void);
 int error_flag_unrecognized(char *arg);
+int error_arg_invalid(char *arg);
+int error_arg_parse(char *arg, char *type);

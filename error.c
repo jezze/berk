@@ -67,3 +67,17 @@ int error_flag_unrecognized(char *arg)
 
 }
 
+int error_arg_invalid(char *arg)
+{
+
+    return error("Invalid argument '%s'.", arg);
+
+}
+
+int error_arg_parse(char *arg, char *type)
+{
+
+    return error("Could not parse '%s' as '%s'.", arg, type);
+
+}
+
