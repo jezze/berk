@@ -192,14 +192,14 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         event_stop(&remote, &run);
 
         if (run_close(&run))
-            error("Could not close run.");
+            error_run_close(run.index);
 
     }
 
     else
     {
 
-        error("Could not open run.");
+        error_run_open(run.index);
 
     }
 
@@ -1147,14 +1147,23 @@ static int parse_shell(int argc, char **argv)
         if (remote_init_optional(&remote))
             return error_remote_init(name);
 
-        if (ssh_connect(&remote))
-            return error("Could not connect to remote '%s'.", remote.name);
+        if (!ssh_connect(&remote))
+        {
 
-        if (ssh_shell(&remote, type))
-            return error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
+            if (ssh_shell(&remote, type))
+                error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
 
-        if (ssh_disconnect(&remote))
-            return error("Could not disconnect from remote '%s'.", remote.name);
+            if (ssh_disconnect(&remote))
+                error_remote_disconnect(remote.name);
+
+        }
+
+        else
+        {
+
+            return error_remote_connect(remote.name);
+
+        }
 
         return EXIT_SUCCESS;
 

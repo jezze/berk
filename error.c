@@ -74,6 +74,20 @@ int error_run_update(unsigned int index, char *type)
 
 }
 
+int error_run_open(unsigned int index)
+{
+
+    return error("Could not open run '%u'.", index);
+
+}
+
+int error_run_close(unsigned int index)
+{
+
+    return error("Could not close run '%u'.", index);
+
+}
+
 int error_missing(void)
 {
 
