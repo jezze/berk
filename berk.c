@@ -127,22 +127,22 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     run_init(&run, index);
 
     if (remote_load(&remote))
-        return error_remote_load(name);
+        return error_remote_load(remote.name);
 
     if (remote_init_optional(&remote))
-        return error_remote_init(name);
+        return error_remote_init(remote.name);
 
     if (run_prepare(&run, entry))
         return error("Could not prepare run.");
 
-    if (run_update_remote(&run, entry, name))
-        error_remote_run_update(name, run.index, "remote");
+    if (run_update_remote(&run, entry, remote.name))
+        error_remote_run_update(remote.name, run.index, "remote");
 
     if (run_update_pid(&run, entry, pid))
-        error_remote_run_update(name, run.index, "pid");
+        error_remote_run_update(remote.name, run.index, "pid");
 
     if (run_update_status(&run, entry, RUN_STATUS_PENDING))
-        error_remote_run_update(name, run.index, "status");
+        error_remote_run_update(remote.name, run.index, "status");
 
     if (!run_open(&run, entry))
     {
@@ -155,13 +155,13 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
             int rc = ssh_exec(&remote, &run, command);
 
             if (run_update_pid(&run, entry, 0))
-                error_remote_run_update(name, run.index, "pid");
+                error_remote_run_update(remote.name, run.index, "pid");
 
             if (rc == 0)
             {
 
                 if (run_update_status(&run, entry, RUN_STATUS_PASSED))
-                    error_remote_run_update(name, run.index, "status");
+                    error_remote_run_update(remote.name, run.index, "status");
 
                 entry->passed++;
 
@@ -171,7 +171,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
             {
 
                 if (run_update_status(&run, entry, RUN_STATUS_FAILED))
-                    error_remote_run_update(name, run.index, "status");
+                    error_remote_run_update(remote.name, run.index, "status");
 
                 entry->failed++;
 
@@ -217,10 +217,10 @@ static int run_send(char *name, char *localpath, char *remotepath)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        return error_remote_load(name);
+        return error_remote_load(remote.name);
 
     if (remote_init_optional(&remote))
-        return error_remote_init(name);
+        return error_remote_init(remote.name);
 
     if (!ssh_connect(&remote))
     {
