@@ -46,10 +46,17 @@ int error_remote_save(char *name)
 
 }
 
-int error_remote_run_update(char *name, unsigned int index, char *type)
+int error_run_prepare(unsigned int index)
 {
 
-    return error("Could not update remote '%s', run '%u' with type '%s'.", name, index, type);
+    return error("Could not prepare run '%u'.", index);
+
+}
+
+int error_run_update(unsigned int index, char *type)
+{
+
+    return error("Could not update run '%u' with type '%s'.", index, type);
 
 }
 

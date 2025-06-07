@@ -133,16 +133,16 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         return error_remote_init(remote.name);
 
     if (run_prepare(&run, entry))
-        return error("Could not prepare run.");
+        return error_run_prepare(run.index);
 
     if (run_update_remote(&run, entry, remote.name))
-        error_remote_run_update(remote.name, run.index, "remote");
+        error_run_update(run.index, "remote");
 
     if (run_update_pid(&run, entry, pid))
-        error_remote_run_update(remote.name, run.index, "pid");
+        error_run_update(run.index, "pid");
 
     if (run_update_status(&run, entry, RUN_STATUS_PENDING))
-        error_remote_run_update(remote.name, run.index, "status");
+        error_run_update(run.index, "status");
 
     if (!run_open(&run, entry))
     {
@@ -155,13 +155,13 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
             int rc = ssh_exec(&remote, &run, command);
 
             if (run_update_pid(&run, entry, 0))
-                error_remote_run_update(remote.name, run.index, "pid");
+                error_run_update(run.index, "pid");
 
             if (rc == 0)
             {
 
                 if (run_update_status(&run, entry, RUN_STATUS_PASSED))
-                    error_remote_run_update(remote.name, run.index, "status");
+                    error_run_update(run.index, "status");
 
                 entry->passed++;
 
@@ -171,7 +171,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
             {
 
                 if (run_update_status(&run, entry, RUN_STATUS_FAILED))
-                    error_remote_run_update(remote.name, run.index, "status");
+                    error_run_update(run.index, "status");
 
                 entry->failed++;
 
