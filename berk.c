@@ -147,8 +147,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     if (!run_open(&run, entry))
     {
 
-        if (event_start(&remote, &run))
-            error("Could not run event.");
+        event_start(&remote, &run);
 
         if (!ssh_connect(&remote))
         {
@@ -190,8 +189,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
         }
 
-        if (event_stop(&remote, &run))
-            error("Could not run event.");
+        event_stop(&remote, &run);
 
         if (run_close(&run))
             error("Could not close run.");
@@ -230,19 +228,9 @@ static int run_send(char *name, char *localpath, char *remotepath)
         int rc = ssh_send(&remote, localpath, remotepath);
 
         if (rc == 0)
-        {
-
-            if (event_send(&remote))
-                error("Could not run event.");
-
-        }
-
+            event_send(&remote);
         else
-        {
-
             error("Could not send file.");
-
-        }
 
         if (ssh_disconnect(&remote))
             error("Could not disconnect from remote '%s'.", remote.name);
@@ -588,9 +576,7 @@ static int parse_exec(int argc, char **argv)
         unsigned int names = util_split(name);
 
         log_entry_init(&entry);
-
-        if (event_begin(&entry))
-            return error("Could not run event.");
+        event_begin(&entry);
 
         if (log_entry_prepare(&entry))
             return error("Could not prepare log.");
@@ -631,8 +617,7 @@ static int parse_exec(int argc, char **argv)
 
         }
 
-        if (event_end(&entry))
-            return error("Could not run event.");
+        event_end(&entry);
 
         if (log_entry_write(&entry))
             return error("Could not log HEAD.");
