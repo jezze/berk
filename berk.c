@@ -329,6 +329,7 @@ static int parse_add(int argc, char **argv)
 static int parse_config(int argc, char **argv)
 {
 
+    unsigned int delete = 0;
     char *value = NULL;
     char *name = NULL;
     char *key = NULL;
@@ -343,7 +344,18 @@ static int parse_config(int argc, char **argv)
         if (arg[0] == '-')
         {
 
-            return error_flag_unrecognized(arg);
+            switch (arg[1])
+            {
+
+            case 'd':
+                delete = 1;
+
+                break;
+
+            default:
+                return error_flag_unrecognized(arg);
+
+            }
 
         }
 
@@ -394,8 +406,8 @@ static int parse_config(int argc, char **argv)
             if (remote_load(&remote))
                 return error_remote_load(name);
 
-            if (remote_set_value(&remote, keyhash, value) == NULL)
-                return error("Could not run configure remote '%s'.", remote.name);
+            if (remote_set_value(&remote, keyhash, value) != keyhash)
+                return error("Could not configure remote '%s' to set '%s' to '%s'.", remote.name, key, value);
 
             if (remote_save(&remote))
                 return error_remote_save(name);
@@ -424,9 +436,25 @@ static int parse_config(int argc, char **argv)
             if (remote_load(&remote))
                 return error_remote_load(name);
 
-            value = remote_get_value(&remote, keyhash);
+            if (delete)
+            {
 
-            printf("%s: %s\n", remote.name, value);
+                if (remote_set_value(&remote, keyhash, NULL) != keyhash)
+                    return error("Could not configure remote '%s' to remove '%s'.", remote.name, key);
+
+                if (remote_save(&remote))
+                    return error_remote_save(name);
+
+            }
+
+            else
+            {
+
+                value = remote_get_value(&remote, keyhash);
+
+                printf("%s: %s\n", remote.name, value);
+
+            }
 
         }
 
@@ -1185,8 +1213,8 @@ int main(int argc, char **argv)
 
     static struct command commands[] = {
         {"add", parse_add, "add <name> <hostname>", NULL, 1},
-        {"config", parse_config, "config <namelist>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
-        {"config", parse_config, "config <namelist> <key>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
+        {"config", parse_config, "config <namelist>", NULL, 1},
+        {"config", parse_config, "config [-d] <namelist> <key>", "Args:\n    -d  Delete key\nList of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"exec", parse_exec, "exec [-n] [-s] [-w] <namelist> <command>", "Args:\n    -n  No fork\n    -s  Sequential runs\n    -w  Wait for completion\n", 1},
         {"init", parse_init, "init", NULL, 0},

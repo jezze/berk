@@ -25,7 +25,7 @@ struct remote
 };
 
 void *remote_get_value(struct remote *remote, unsigned int hash);
-void *remote_set_value(struct remote *remote, unsigned int hash, char *value);
+unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *value);
 int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);

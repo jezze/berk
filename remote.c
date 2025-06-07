@@ -46,39 +46,62 @@ void *remote_get_value(struct remote *remote, unsigned int hash)
 
 }
 
-void *remote_set_value(struct remote *remote, unsigned int hash, char *value)
+unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *value)
 {
+
+    char *v = (value != NULL) ? strdup(value) : NULL;
 
     switch (hash)
     {
 
     case REMOTE_NAME:
-        return remote->name = strdup(value);
+        remote->name = v;
+
+        break;
 
     case REMOTE_HOSTNAME:
-        return remote->hostname = strdup(value);
+        remote->hostname = v;
+
+        break;
 
     case REMOTE_PORT:
-        return remote->port = strdup(value);
+        remote->port = v;
+
+        break;
 
     case REMOTE_USERNAME:
-        return remote->username = strdup(value);
+        remote->username = v;
+
+        break;
 
     case REMOTE_PASSWORD:
-        return remote->password = strdup(value);
+        remote->password = v;
+
+        break;
 
     case REMOTE_PRIVATEKEY:
-        return remote->privatekey = strdup(value);
+        remote->privatekey = v;
+
+        break;
 
     case REMOTE_PUBLICKEY:
-        return remote->publickey = strdup(value);
+        remote->publickey = v;
+
+        break;
 
     case REMOTE_TAGS:
-        return remote->tags = strdup(value);
+        remote->tags = v;
+
+        break;
+
+    default:
+        hash = 0;
+
+        break;
 
     }
 
-    return NULL;
+    return hash;
 
 }
 
