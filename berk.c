@@ -583,6 +583,9 @@ static int parse_exec(int argc, char **argv)
 
         entry.total = names;
 
+        if (log_entry_write(&entry))
+            return error("Could not log HEAD.");
+
         if (nofork)
         {
 
@@ -618,9 +621,6 @@ static int parse_exec(int argc, char **argv)
         }
 
         event_end(&entry);
-
-        if (log_entry_write(&entry))
-            return error("Could not log HEAD.");
 
         return EXIT_SUCCESS;
 
