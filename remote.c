@@ -223,6 +223,9 @@ int remote_prepare(struct remote *remote)
         char keybuffer[BUFSIZ];
         struct passwd passwd, *current;
 
+        if (!remote->hostname)    
+            remote_set_value(remote, REMOTE_HOSTNAME, "localhost");
+
         if (!remote->port)
             remote_set_value(remote, REMOTE_PORT, "22");
 
