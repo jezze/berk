@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <pwd.h>
@@ -8,7 +9,9 @@
 #include "util.h"
 #include "ini.h"
 #include "log.h"
+#include "run.h"
 #include "remote.h"
+#include "ssh.h"
 
 void *remote_get_value(struct remote *remote, unsigned int hash)
 {
@@ -207,36 +210,141 @@ int remote_erase(struct remote *remote)
 int remote_prepare(struct remote *remote)
 {
 
-    char buffer[BUFSIZ];
-    char keybuffer[BUFSIZ];
-    struct passwd passwd, *current;
-
-    if (!remote->port)
-        remote_set_value(remote, REMOTE_PORT, "22");
-
-    if (!remote->username)    
-        remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
-
-    if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
-        return 1;
-
-    if (!remote->privatekey)
+    if (!strcmp(remote->type, "local"))
     {
 
-        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-        remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
 
     }
 
-    if (!remote->publickey)
+    else
     {
 
-        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-        remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
+        char buffer[BUFSIZ];
+        char keybuffer[BUFSIZ];
+        struct passwd passwd, *current;
+
+        if (!remote->port)
+            remote_set_value(remote, REMOTE_PORT, "22");
+
+        if (!remote->username)    
+            remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
+
+        if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
+            return 1;
+
+        if (!remote->privatekey)
+        {
+
+            snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
+            remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
+
+        }
+
+        if (!remote->publickey)
+        {
+
+            snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
+            remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
+
+        }
 
     }
 
     return 0;
+
+}
+
+int remote_connect(struct remote *remote)
+{
+
+    if (!strcmp(remote->type, "local"))
+        return 0;
+    else
+        return ssh_connect(remote);
+
+}
+
+int remote_disconnect(struct remote *remote)
+{
+
+    if (!strcmp(remote->type, "local"))
+        return 0;
+    else
+        return ssh_disconnect(remote);
+
+}
+
+int remote_exec(struct remote *remote, struct run *run, char *command)
+{
+
+    if (!strcmp(remote->type, "local"))
+        return system(command);
+    else
+        return ssh_exec(remote, run, command);
+
+}
+
+int remote_send(struct remote *remote, char *localpath, char *remotepath)
+{
+
+    if (!strcmp(remote->type, "local"))
+    {
+
+        struct stat fileinfo;
+        char buffer[BUFSIZ];
+        size_t total;
+        int fdlocal;
+        int fdremote;
+
+        if (stat(localpath, &fileinfo))
+            return -1;
+
+        fdlocal = open(localpath, O_RDONLY, 0644);
+
+        if (fdlocal < 0)
+            return -1;
+
+        fdremote = open(remotepath, O_WRONLY | O_CREAT, fileinfo.st_mode | 0777);
+
+        if (fdremote < 0)
+            return -1;
+
+        while ((total = read(fdlocal, buffer, BUFSIZ)))
+        {
+
+            char *current = buffer;
+
+            if (total < 0)
+                break;
+
+            do
+            {
+
+                int count = write(fdremote, current, total);
+
+                if (count < 0)
+                    break;
+
+                current += count;
+                total -= count;
+
+            } while (total);
+     
+        };
+
+        close(fdlocal);
+        close(fdremote);
+
+        return 0;
+
+    }
+
+    else
+    {
+
+        return ssh_send(remote, localpath, remotepath);
+
+    }
 
 }
 

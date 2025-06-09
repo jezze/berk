@@ -32,5 +32,9 @@ int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
 int remote_prepare(struct remote *remote);
+int remote_connect(struct remote *remote);
+int remote_disconnect(struct remote *remote);
+int remote_exec(struct remote *remote, struct run *run, char *command);
+int remote_send(struct remote *remote, char *localpath, char *remotepath);
 void remote_init(struct remote *remote, char *name);
 

@@ -12,8 +12,8 @@
 #include "util.h"
 #include "ini.h"
 #include "log.h"
-#include "remote.h"
 #include "run.h"
+#include "remote.h"
 #include "event.h"
 #include "ssh.h"
 
@@ -149,10 +149,10 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
         event_start(&remote, &run);
 
-        if (!ssh_connect(&remote))
+        if (!remote_connect(&remote))
         {
 
-            int rc = ssh_exec(&remote, &run, command);
+            int rc = remote_exec(&remote, &run, command);
 
             if (run_update_pid(&run, entry, 0))
                 error_run_update(run.index, "pid");
@@ -177,7 +177,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
             }
 
-            if (ssh_disconnect(&remote))
+            if (remote_disconnect(&remote))
                 error_remote_disconnect(remote.name);
 
         }
@@ -222,17 +222,17 @@ static int run_send(char *name, char *localpath, char *remotepath)
     if (remote_prepare(&remote))
         return error_remote_prepare(remote.name);
 
-    if (!ssh_connect(&remote))
+    if (!remote_connect(&remote))
     {
 
-        int rc = ssh_send(&remote, localpath, remotepath);
+        int rc = remote_send(&remote, localpath, remotepath);
 
         if (rc == 0)
             event_send(&remote);
         else
             error("Could not send file.");
 
-        if (ssh_disconnect(&remote))
+        if (remote_disconnect(&remote))
             error_remote_disconnect(remote.name);
 
     }
@@ -1167,13 +1167,13 @@ static int parse_shell(int argc, char **argv)
         if (remote_prepare(&remote))
             return error_remote_prepare(name);
 
-        if (!ssh_connect(&remote))
+        if (!remote_connect(&remote))
         {
 
             if (ssh_shell(&remote, type))
                 error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
 
-            if (ssh_disconnect(&remote))
+            if (remote_disconnect(&remote))
                 error_remote_disconnect(remote.name);
 
         }
