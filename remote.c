@@ -19,6 +19,9 @@ void *remote_get_value(struct remote *remote, unsigned int hash)
     case REMOTE_NAME:
         return remote->name;
 
+    case REMOTE_TYPE:
+        return remote->type;
+
     case REMOTE_HOSTNAME:
         return remote->hostname;
 
@@ -56,6 +59,11 @@ unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *va
 
     case REMOTE_NAME:
         remote->name = v;
+
+        break;
+
+    case REMOTE_TYPE:
+        remote->type = v;
 
         break;
 
@@ -155,6 +163,9 @@ int remote_save(struct remote *remote)
     if (remote->name && strlen(remote->name))
         ini_write_string(fd, "name", remote->name);
 
+    if (remote->type && strlen(remote->type))
+        ini_write_string(fd, "type", remote->type);
+
     if (remote->hostname && strlen(remote->hostname))
         ini_write_string(fd, "hostname", remote->hostname);
 
@@ -193,7 +204,7 @@ int remote_erase(struct remote *remote)
 
 }
 
-int remote_init_optional(struct remote *remote)
+int remote_prepare(struct remote *remote)
 {
 
     char buffer[BUFSIZ];

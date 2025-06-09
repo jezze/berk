@@ -1,4 +1,5 @@
 #define REMOTE_NAME 0x7c9b0c46
+#define REMOTE_TYPE 0x7c9ebd07
 #define REMOTE_HOSTNAME 0xeba474a4
 #define REMOTE_PORT 0x7c9c614a
 #define REMOTE_USERNAME 0xfe18cd45
@@ -11,6 +12,7 @@ struct remote
 {
 
     char *name;
+    char *type;
     char *hostname;
     char *port;
     char *username;
@@ -29,6 +31,6 @@ unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *va
 int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
 int remote_erase(struct remote *remote);
-int remote_init_optional(struct remote *remote);
+int remote_prepare(struct remote *remote);
 void remote_init(struct remote *remote, char *name);
 

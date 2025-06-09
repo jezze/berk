@@ -129,8 +129,8 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     if (remote_load(&remote))
         return error_remote_load(remote.name);
 
-    if (remote_init_optional(&remote))
-        return error_remote_init(remote.name);
+    if (remote_prepare(&remote))
+        return error_remote_prepare(remote.name);
 
     if (run_prepare(&run, entry))
         return error_run_prepare(run.index);
@@ -219,8 +219,8 @@ static int run_send(char *name, char *localpath, char *remotepath)
     if (remote_load(&remote))
         return error_remote_load(remote.name);
 
-    if (remote_init_optional(&remote))
-        return error_remote_init(remote.name);
+    if (remote_prepare(&remote))
+        return error_remote_prepare(remote.name);
 
     if (!ssh_connect(&remote))
     {
@@ -253,6 +253,7 @@ static int parse_add(int argc, char **argv)
 
     char *hostname = NULL;
     char *name = NULL;
+    char *type = "ssh";
     unsigned int argp = 0;
     unsigned int argi;
 
@@ -264,7 +265,23 @@ static int parse_add(int argc, char **argv)
         if (arg[0] == '-')
         {
 
-            return error_flag_unrecognized(arg);
+            switch (arg[1])
+            {
+
+            case 'h':
+                hostname = assert_print(argv[++argi]);
+
+                break;
+
+            case 't':
+                type = assert_print(argv[++argi]);
+
+                break;
+
+            default:
+                return error_flag_unrecognized(arg);
+
+            }
 
         }
 
@@ -279,11 +296,6 @@ static int parse_add(int argc, char **argv)
 
                 break;
 
-            case 1:
-                hostname = assert_print(arg);
-
-                break;
-
             default:
                 return error_toomany();
 
@@ -293,13 +305,18 @@ static int parse_add(int argc, char **argv)
 
     }
 
-    if (name && hostname)
+    if (name)
     {
 
         struct remote remote;
 
         remote_init(&remote, name);
-        remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
+
+        if (type)
+            remote_set_value(&remote, REMOTE_TYPE, type);
+
+        if (hostname)
+            remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
 
         if (remote_save(&remote))
             return error_remote_save(name);
@@ -468,6 +485,9 @@ static int parse_config(int argc, char **argv)
 
             if (remote.name)
                 printf("name=%s\n", remote.name);
+
+            if (remote.type)
+                printf("type=%s\n", remote.type);
 
             if (remote.hostname)
                 printf("hostname=%s\n", remote.hostname);
@@ -1144,8 +1164,8 @@ static int parse_shell(int argc, char **argv)
         if (remote_load(&remote))
             return error_remote_load(name);
 
-        if (remote_init_optional(&remote))
-            return error_remote_init(name);
+        if (remote_prepare(&remote))
+            return error_remote_prepare(name);
 
         if (!ssh_connect(&remote))
         {
@@ -1206,7 +1226,7 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parse_add, "add <name> <hostname>", NULL, 1},
+        {"add", parse_add, "add [-h hostname] [-t <type>] <name>", "Args:\n    -h  Hostname\n    -t  Type\n", 1},
         {"config", parse_config, "config <namelist>", NULL, 1},
         {"config", parse_config, "config [-d] <namelist> <key>", "Args:\n    -d  Delete key\nList of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},

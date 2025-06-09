@@ -25,7 +25,7 @@ int error_init(void)
 
 }
 
-int error_remote_init(char *name)
+int error_remote_prepare(char *name)
 {
 
     return error("Could not init remote '%s'.", name);
