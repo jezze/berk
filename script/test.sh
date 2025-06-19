@@ -1,58 +1,29 @@
 #!/bin/bash
 
+set -e
+
 WD="$(pwd)"
 BERK="${WD}/berk"
-
-pass() {
-    echo "PASSED: ${1}"
-}
-
-fail() {
-    echo "FAILED: ${1}"
-}
-
-check() {
-    cmd="${1}"
-    expected_rc="${2}"
-    expected_result="${3}"
-    result="$($cmd)"
-    rc="${?}"
-
-    if test "${rc}" == "${expected_rc}"
-    then
-        if test -n "${expected_result}"
-        then
-            echo "${result}" | grep "${expected_result}"
-
-            rc="${?}"
-        fi
-    fi
-
-    test "${rc}" == "${expected_rc}" && pass "${cmd}" || fail "${cmd}"
-}
 
 rm -rf ${WD}/tmp
 mkdir ${WD}/tmp
 cd ${WD}/tmp
 
-echo "Basic"
-check "${BERK}"                             0
-check "${BERK} log"                         1
-check "${BERK} init"                        0
-check "${BERK} log"                         1
-echo "Add"
-check "${BERK} add -t local test"           0
-check "${BERK} config test"                 0
-echo "Synchronous execution"
-check "${BERK} exec -n test 'uptime'"       0
-check "${BERK} log"                         0
-check "${BERK} log HEAD"                    0
-check "${BERK} log HEAD 0"                  0
-echo "Aynchronous execution"
-check "${BERK} exec test 'uptime'"          0
+berk | grep -q "Usage: berk"
+berk log 2>&1 | grep -q "berk: Could not find '.berk' directory."
+berk init | grep -q "Initialized berk in '.berk'."
+berk log 2>&1 | grep -q "berk: Unable to open state."
+berk add -t local test | grep -q "Remote 'test' added."
+berk exec -n test "uptime" > /dev/null
+berk log | grep -q "id="
+berk log | wc | tr -s ' ' | grep -q " 5 9 144"
+berk log HEAD | grep -q "total=1"
+berk log HEAD 0 | grep -q "days"
+berk exec test "uptime" > /dev/null
 sleep 1
-check "${BERK} log HEAD"                    0
-check "${BERK} log HEAD 0"                  0
+berk log | grep -q "id="
+berk log HEAD | grep -q "run="
+berk log HEAD 0 | grep -q "days"
 
 cd ${WD}
 rm -rf ${WD}/tmp
