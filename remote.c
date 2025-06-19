@@ -281,9 +281,30 @@ int remote_exec(struct remote *remote, struct run *run, char *command)
 {
 
     if (!strcmp(remote->type, "local"))
-        return execl("/bin/sh", "sh", "-c", command, NULL);
+    {
+
+        int oldstderrfd = dup(STDERR_FILENO);
+        int oldstdoutfd = dup(STDOUT_FILENO);
+        int rc;
+
+        dup2(run->stderrfd, STDERR_FILENO);
+        dup2(run->stdoutfd, STDOUT_FILENO);
+
+        rc = system(command);
+
+        dup2(oldstderrfd, STDERR_FILENO);
+        dup2(oldstdoutfd, STDOUT_FILENO);
+
+        return rc;
+
+    }
+
     else
+    {
+
         return ssh_exec(remote, run, command);
+
+    }
 
 }
 
