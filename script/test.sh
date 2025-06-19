@@ -35,12 +35,24 @@ rm -rf ${WD}/tmp
 mkdir ${WD}/tmp
 cd ${WD}/tmp
 
+echo "Basic"
 check "${BERK}"                             0
 check "${BERK} log"                         1
 check "${BERK} init"                        0
 check "${BERK} log"                         1
-check "${BERK} add test test.com"           0
-check "${BERK} config test password xxx"    0
+echo "Add"
+check "${BERK} add -t local test"           0
+check "${BERK} config test"                 0
+echo "Synchronous execution"
+check "${BERK} exec -n test 'uptime'"       0
+check "${BERK} log"                         0
+check "${BERK} log HEAD"                    0
+check "${BERK} log HEAD 0"                  0
+echo "Aynchronous execution"
+check "${BERK} exec test 'uptime'"          0
+sleep 1
+check "${BERK} log HEAD"                    0
+check "${BERK} log HEAD 0"                  0
 
 cd ${WD}
 rm -rf ${WD}/tmp
