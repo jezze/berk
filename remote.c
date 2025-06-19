@@ -281,7 +281,7 @@ int remote_exec(struct remote *remote, struct run *run, char *command)
 {
 
     if (!strcmp(remote->type, "local"))
-        return system(command);
+        return execl("/bin/sh", "sh", "-c", command, NULL);
     else
         return ssh_exec(remote, run, command);
 
