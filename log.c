@@ -4,6 +4,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "util.h"
@@ -247,8 +248,10 @@ static void createid(char *dest, unsigned int length)
 
     char charset[] = "0123456789abcdef";
     unsigned int i;
+    struct timeval t1;
 
-    srand(time(NULL));
+    gettimeofday(&t1, NULL);
+    srand(t1.tv_usec * t1.tv_sec);
 
     for (i = 0; i < length; i++)
     {
