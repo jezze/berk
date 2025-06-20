@@ -595,13 +595,11 @@ static int parse_exec(int argc, char **argv)
         struct log_entry entry;
         unsigned int names = util_split(name);
 
-        log_entry_init(&entry);
+        log_entry_init(&entry, names);
         event_begin(&entry);
 
         if (log_entry_prepare(&entry))
             return error("Could not prepare log.");
-
-        entry.total = names;
 
         if (log_entry_write(&entry))
             return error("Could not log HEAD.");

@@ -266,13 +266,13 @@ static void createid(char *dest, unsigned int length)
 
 }
 
-void log_entry_init(struct log_entry *entry)
+void log_entry_init(struct log_entry *entry, unsigned int total)
 {
 
     memset(entry, 0, sizeof (struct log_entry));
     createid(entry->id, 32);
 
-    entry->total = 0;
+    entry->total = total;
     entry->complete = 0;
     entry->passed = 0;
     entry->failed = 0;
