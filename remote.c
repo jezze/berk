@@ -67,6 +67,7 @@ unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *va
 
     case REMOTE_TYPE:
         remote->type = v;
+        remote->typehash = util_hash(v);
 
         break;
 
@@ -210,13 +211,10 @@ int remote_erase(struct remote *remote)
 int remote_prepare(struct remote *remote)
 {
 
-    if (!strcmp(remote->type, "local"))
+    switch (remote->typehash)
     {
 
-
-    }
-
-    else
+    case REMOTE_TYPE_SSH:
     {
 
         char buffer[BUFSIZ];
@@ -251,6 +249,10 @@ int remote_prepare(struct remote *remote)
 
         }
 
+        break;
+
+    }
+
     }
 
     return 0;
@@ -260,27 +262,40 @@ int remote_prepare(struct remote *remote)
 int remote_connect(struct remote *remote)
 {
 
-    if (!strcmp(remote->type, "local"))
-        return 0;
-    else
+    switch (remote->typehash)
+    {
+
+    case REMOTE_TYPE_SSH:
         return ssh_connect(remote);
+
+    }
+
+    return 0;
 
 }
 
 int remote_disconnect(struct remote *remote)
 {
 
-    if (!strcmp(remote->type, "local"))
-        return 0;
-    else
+    switch (remote->typehash)
+    {
+
+    case REMOTE_TYPE_SSH:
         return ssh_disconnect(remote);
+
+    }
+
+    return 0;
 
 }
 
 int remote_exec(struct remote *remote, struct run *run, char *command)
 {
 
-    if (!strcmp(remote->type, "local"))
+    switch (remote->typehash)
+    {
+
+    case REMOTE_TYPE_LOCAL:
     {
 
         int oldstderrfd = dup(STDERR_FILENO);
@@ -299,21 +314,23 @@ int remote_exec(struct remote *remote, struct run *run, char *command)
 
     }
 
-    else
-    {
-
+    case REMOTE_TYPE_SSH:
         return ssh_exec(remote, run, command);
 
     }
+
+    return -1;
 
 }
 
 int remote_send(struct remote *remote, char *localpath, char *remotepath)
 {
 
-    if (!strcmp(remote->type, "local"))
+    switch (remote->typehash)
     {
 
+    case REMOTE_TYPE_LOCAL:
+    {
         struct stat fileinfo;
         char buffer[BUFSIZ];
         size_t total;
@@ -363,12 +380,12 @@ int remote_send(struct remote *remote, char *localpath, char *remotepath)
 
     }
 
-    else
-    {
-
+    case REMOTE_TYPE_SSH:
         return ssh_send(remote, localpath, remotepath);
 
     }
+
+    return -1;
 
 }
 
@@ -377,6 +394,7 @@ void remote_init(struct remote *remote, char *name)
 
     memset(remote, 0, sizeof (struct remote));
     remote_set_value(remote, REMOTE_NAME, name);
+    remote_set_value(remote, REMOTE_TYPE, "ssh");
 
 }
 

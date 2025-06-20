@@ -1,5 +1,7 @@
 #define REMOTE_NAME 0x7c9b0c46
 #define REMOTE_TYPE 0x7c9ebd07
+#define REMOTE_TYPE_LOCAL 0x0fdfe6b0
+#define REMOTE_TYPE_SSH 0x0b88ab53
 #define REMOTE_HOSTNAME 0xeba474a4
 #define REMOTE_PORT 0x7c9c614a
 #define REMOTE_USERNAME 0xfe18cd45
@@ -13,6 +15,7 @@ struct remote
 
     char *name;
     char *type;
+    unsigned int typehash;
     char *hostname;
     char *port;
     char *username;
