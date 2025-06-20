@@ -212,52 +212,72 @@ int remote_erase(struct remote *remote)
 
 }
 
+static int remote_prepare_local(struct remote *remote)
+{
+
+    return 0;
+
+}
+
+static int remote_prepare_ssh(struct remote *remote)
+{
+
+    char buffer[BUFSIZ];
+    char keybuffer[BUFSIZ];
+    struct passwd passwd, *current;
+
+    if (!remote->hostname)    
+        remote_set_value(remote, REMOTE_HOSTNAME, "localhost");
+
+    if (!remote->port)
+        remote_set_value(remote, REMOTE_PORT, "22");
+
+    if (!remote->username)    
+        remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
+
+    if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
+        return -1;
+
+    if (!remote->privatekey)
+    {
+
+        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
+        remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
+
+    }
+
+    if (!remote->publickey)
+    {
+
+        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
+        remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
+
+    }
+
+    return 0;
+
+}
+
 int remote_prepare(struct remote *remote)
 {
 
     switch (remote->typehash)
     {
 
+    case REMOTE_TYPE_LOCAL:
+        return remote_prepare_local(remote);
+
     case REMOTE_TYPE_SSH:
-    {
-
-        char buffer[BUFSIZ];
-        char keybuffer[BUFSIZ];
-        struct passwd passwd, *current;
-
-        if (!remote->hostname)    
-            remote_set_value(remote, REMOTE_HOSTNAME, "localhost");
-
-        if (!remote->port)
-            remote_set_value(remote, REMOTE_PORT, "22");
-
-        if (!remote->username)    
-            remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
-
-        if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
-            return 1;
-
-        if (!remote->privatekey)
-        {
-
-            snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-            remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
-
-        }
-
-        if (!remote->publickey)
-        {
-
-            snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-            remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
-
-        }
-
-        break;
+        return remote_prepare_ssh(remote);
 
     }
 
-    }
+    return -1;
+
+}
+
+static int remote_connect_local(struct remote *remote)
+{
 
     return 0;
 
@@ -321,10 +341,20 @@ int remote_connect(struct remote *remote)
     switch (remote->typehash)
     {
 
+    case REMOTE_TYPE_LOCAL:
+        return remote_connect_local(remote);
+
     case REMOTE_TYPE_SSH:
         return remote_connect_ssh(remote);
 
     }
+
+    return -1;
+
+}
+
+static int remote_disconnect_local(struct remote *remote)
+{
 
     return 0;
 
@@ -348,12 +378,15 @@ int remote_disconnect(struct remote *remote)
     switch (remote->typehash)
     {
 
+    case REMOTE_TYPE_LOCAL:
+        return remote_disconnect_local(remote);
+
     case REMOTE_TYPE_SSH:
         return remote_disconnect_ssh(remote);
 
     }
 
-    return 0;
+    return -1;
 
 }
 
