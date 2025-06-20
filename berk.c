@@ -15,7 +15,6 @@
 #include "run.h"
 #include "remote.h"
 #include "event.h"
-#include "ssh.h"
 
 struct command
 {
@@ -1168,7 +1167,7 @@ static int parse_shell(int argc, char **argv)
         if (!remote_connect(&remote))
         {
 
-            if (ssh_shell(&remote, type))
+            if (remote_shell(&remote, type))
                 error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
 
             if (remote_disconnect(&remote))
