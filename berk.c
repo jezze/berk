@@ -1225,6 +1225,73 @@ static int parse_version(int argc, char **argv)
 
 }
 
+static int parse_wait(int argc, char **argv)
+{
+
+    char *id = NULL;
+    unsigned int argp = 0;
+    unsigned int argi;
+
+    for (argi = 0; argi < argc; argi++)
+    {
+
+        char *arg = argv[argi];
+
+        if (arg[0] == '-')
+        {
+
+            return error_flag_unrecognized(arg);
+
+        }
+
+        else
+        {
+
+            switch (argp++)
+            {
+
+            case 0:
+                id = assert_print(arg);
+
+                break;
+
+            default:
+                return error_toomany();
+
+            }
+
+        }
+
+    }
+
+    if (id)
+    {
+
+        struct log_entry entry;
+        struct log_state state;
+
+        if (log_state_open(&state) < 0)
+            return error("Unable to open state.");
+
+        if (log_entry_find(&entry, &state, id))
+        {
+
+            /* Implement this later */
+
+        }
+
+        if (log_state_close(&state) < 0)
+            return error("Unable to close state.");
+
+        return EXIT_SUCCESS;
+
+    }
+
+    return error_missing();
+
+}
+
+
 int main(int argc, char **argv)
 {
 
@@ -1243,6 +1310,7 @@ int main(int argc, char **argv)
         {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
         {"shell", parse_shell, "shell [-t <type>] <name>", "Args:\n    -t  Terminal type (default: vt102)\n\n", 1},
         {"version", parse_version, "version", NULL, 0},
+        {"wait", parse_wait, "wait <refspec>", NULL, 0},
         {0}
     };
 
