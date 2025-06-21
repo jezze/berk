@@ -1276,7 +1276,13 @@ static int parse_wait(int argc, char **argv)
         if (log_entry_find(&entry, &state, id))
         {
 
-            /* Implement this later */
+            while (entry.complete < entry.total)
+            {
+
+                sleep(1);
+                log_entry_read(&entry, &state);
+
+            }
 
         }
 
