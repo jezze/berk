@@ -163,6 +163,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
                     error_run_update(run.index, "status");
 
                 entry->passed++;
+                entry->complete++;
 
                 if (log_entry_update(entry))
                     error("Could not update log entry.");
@@ -176,6 +177,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
                     error_run_update(run.index, "status");
 
                 entry->failed++;
+                entry->complete++;
 
                 if (log_entry_update(entry))
                     error("Could not update log entry.");
@@ -207,8 +209,6 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
         error_run_open(run.index);
 
     }
-
-    entry->complete++;
 
     return 0;
 
