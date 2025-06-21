@@ -1310,7 +1310,7 @@ int main(int argc, char **argv)
         {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
         {"shell", parse_shell, "shell [-t <type>] <name>", "Args:\n    -t  Terminal type (default: vt102)\n\n", 1},
         {"version", parse_version, "version", NULL, 0},
-        {"wait", parse_wait, "wait <refspec>", NULL, 0},
+        {"wait", parse_wait, "wait <refspec>", NULL, 1},
         {0}
     };
 
