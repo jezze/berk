@@ -7,7 +7,7 @@ struct log_entry
     unsigned int complete;
     unsigned int passed;
     unsigned int failed;
-    int result;
+    unsigned int offset;
 
 };
 
@@ -28,5 +28,6 @@ int log_entry_readprev(struct log_entry *entry, struct log_state *state);
 int log_entry_find(struct log_entry *entry, struct log_state *state, char *id);
 int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int descriptor);
 int log_entry_print(struct log_entry *entry);
-int log_entry_write(struct log_entry *entry);
+int log_entry_add(struct log_entry *entry);
+int log_entry_update(struct log_entry *entry);
 void log_entry_init(struct log_entry *entry, unsigned int total);

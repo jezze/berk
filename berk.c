@@ -164,6 +164,9 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
                 entry->passed++;
 
+                if (log_entry_update(entry))
+                    error("Could not update log entry.");
+
             }
 
             else
@@ -173,6 +176,9 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
                     error_run_update(run.index, "status");
 
                 entry->failed++;
+
+                if (log_entry_update(entry))
+                    error("Could not update log entry.");
 
             }
 
@@ -600,8 +606,8 @@ static int parse_exec(int argc, char **argv)
         if (log_entry_prepare(&entry))
             return error("Could not prepare log.");
 
-        if (log_entry_write(&entry))
-            return error("Could not log HEAD.");
+        if (log_entry_add(&entry))
+            return error("Could not add log entry.");
 
         if (nofork)
         {

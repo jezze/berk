@@ -218,7 +218,7 @@ int log_entry_print(struct log_entry *entry)
 
 }
 
-int log_entry_write(struct log_entry *entry)
+int log_entry_add(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
@@ -233,6 +233,32 @@ int log_entry_write(struct log_entry *entry)
 
     if (fd < 0)
         return -1;
+
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->passed, entry->failed) != LOG_ENTRYSIZE)
+        return -1;
+
+    entry->offset = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
+
+    close(fd);
+
+    return 0;
+
+}
+
+int log_entry_update(struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+    int fd;
+
+    config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
+
+    fd = open(path, O_WRONLY, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    lseek(fd, entry->offset, SEEK_SET);
 
     if (dprintf(fd, "%s %s %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
@@ -276,6 +302,7 @@ void log_entry_init(struct log_entry *entry, unsigned int total)
     entry->complete = 0;
     entry->passed = 0;
     entry->failed = 0;
+    entry->offset = 0;
 
 }
 
