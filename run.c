@@ -59,6 +59,11 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
 
         break;
 
+    case RUN_STATUS_ABORTED:
+        statusname = "aborted";
+
+        break;
+
     case RUN_STATUS_PASSED:
         statusname = "passed";
 

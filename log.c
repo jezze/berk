@@ -10,7 +10,7 @@
 #include "util.h"
 #include "log.h"
 
-#define LOG_ENTRYSIZE 77
+#define LOG_ENTRYSIZE 82
 
 int log_state_open(struct log_state *state)
 {
@@ -81,7 +81,7 @@ int log_entry_read(struct log_entry *entry, struct log_state *state)
     if (count != LOG_ENTRYSIZE)
         return 0;
 
-    sscanf(buffer, "%s %s %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->passed, &entry->failed);
+    sscanf(buffer, "%s %s %u %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->aborted, &entry->passed, &entry->failed);
 
     return count;
 
@@ -201,7 +201,7 @@ int log_entry_print(struct log_entry *entry)
 
     config_get_rundirfull(path, BUFSIZ, entry->id);
     printf("id=%s datetime=%s\n", entry->id, entry->datetime);
-    printf("total=%u complete=%u passed=%u failed=%u\n", entry->total, entry->complete, entry->passed, entry->failed);
+    printf("total=%u complete=%u aborted=%u passed=%u failed=%u\n", entry->total, entry->complete, entry->aborted, entry->passed, entry->failed);
     printf("\n");
 
     for (i = 0; i < entry->total; i++)
@@ -234,7 +234,7 @@ int log_entry_add(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->passed, entry->failed) != LOG_ENTRYSIZE)
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
 
     entry->offset = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
@@ -260,7 +260,7 @@ int log_entry_update(struct log_entry *entry)
 
     lseek(fd, entry->offset, SEEK_SET);
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->passed, entry->failed) != LOG_ENTRYSIZE)
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
 
     close(fd);
@@ -300,6 +300,7 @@ void log_entry_init(struct log_entry *entry, unsigned int total)
 
     entry->total = total;
     entry->complete = 0;
+    entry->aborted = 0;
     entry->passed = 0;
     entry->failed = 0;
     entry->offset = 0;

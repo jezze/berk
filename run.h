@@ -2,6 +2,7 @@ enum run_status
 {
 
     RUN_STATUS_PENDING,
+    RUN_STATUS_ABORTED,
     RUN_STATUS_PASSED,
     RUN_STATUS_FAILED
 
