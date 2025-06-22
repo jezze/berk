@@ -13,8 +13,6 @@
 #include "config.h"
 #include "util.h"
 #include "ini.h"
-#include "log.h"
-#include "run.h"
 #include "remote.h"
 
 void *remote_get_value(struct remote *remote, unsigned int hash)
@@ -390,15 +388,15 @@ int remote_disconnect(struct remote *remote)
 
 }
 
-static int remote_exec_local(struct remote *remote, struct run *run, char *command)
+static int remote_exec_local(struct remote *remote, char *command, int stdoutfd, int stderrfd)
 {
 
     int oldstderrfd = dup(STDERR_FILENO);
     int oldstdoutfd = dup(STDOUT_FILENO);
     int rc;
 
-    dup2(run->stderrfd, STDERR_FILENO);
-    dup2(run->stdoutfd, STDOUT_FILENO);
+    dup2(stderrfd, STDERR_FILENO);
+    dup2(stdoutfd, STDOUT_FILENO);
 
     rc = system(command);
 
@@ -409,7 +407,7 @@ static int remote_exec_local(struct remote *remote, struct run *run, char *comma
 
 }
 
-static int remote_exec_ssh(struct remote *remote, struct run *run, char *command)
+static int remote_exec_ssh(struct remote *remote, char *command, int stdoutfd, int stderrfd)
 {
 
     struct pollfd pfds[1];
@@ -449,7 +447,7 @@ static int remote_exec_ssh(struct remote *remote, struct run *run, char *command
                 continue;
 
             if (count > 0)
-                write(run->stdoutfd, buffer, count);
+                write(stdoutfd, buffer, count);
 
             count = libssh2_channel_read_stderr(remote->channel, buffer, BUFSIZ);
 
@@ -457,7 +455,7 @@ static int remote_exec_ssh(struct remote *remote, struct run *run, char *command
                 continue;
 
             if (count > 0)
-                write(run->stderrfd, buffer, count);
+                write(stderrfd, buffer, count);
 
         }
 
@@ -474,17 +472,17 @@ static int remote_exec_ssh(struct remote *remote, struct run *run, char *command
 
 }
 
-int remote_exec(struct remote *remote, struct run *run, char *command)
+int remote_exec(struct remote *remote, char *command, int stdoutfd, int stderrfd)
 {
 
     switch (remote->typehash)
     {
 
     case REMOTE_TYPE_LOCAL:
-        return remote_exec_local(remote, run, command);
+        return remote_exec_local(remote, command, stdoutfd, stderrfd);
 
     case REMOTE_TYPE_SSH:
-        return remote_exec_ssh(remote, run, command);
+        return remote_exec_ssh(remote, command, stdoutfd, stderrfd);
 
     }
 

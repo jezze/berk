@@ -151,7 +151,7 @@ static int run_exec(struct log *log, unsigned int pid, unsigned int index, char 
         if (!remote_connect(&remote))
         {
 
-            int rc = remote_exec(&remote, &run, command);
+            int rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
 
             if (run_update_pid(&run, log, 0))
                 error_run_update(run.index, "pid");

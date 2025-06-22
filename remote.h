@@ -37,7 +37,7 @@ int remote_erase(struct remote *remote);
 int remote_prepare(struct remote *remote);
 int remote_connect(struct remote *remote);
 int remote_disconnect(struct remote *remote);
-int remote_exec(struct remote *remote, struct run *run, char *command);
+int remote_exec(struct remote *remote, char *command, int stdoutfd, int stderrfd);
 int remote_send(struct remote *remote, char *localpath, char *remotepath);
 int remote_shell(struct remote *remote, char *type);
 void remote_init(struct remote *remote, char *name);
