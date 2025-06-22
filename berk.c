@@ -899,17 +899,16 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_entry entry;
-        struct log_state state;
         unsigned int r = strtoul(run, NULL, 10);
 
-        if (log_state_open(&state) < 0)
-            return error("Unable to open state.");
+        if (log_entry_open(&entry) < 0)
+            return error("Unable to open entry.");
 
-        if (log_entry_find(&entry, &state, id))
+        if (log_entry_find(&entry, id))
             log_entry_printstd(&entry, r, descriptor);
 
-        if (log_state_close(&state) < 0)
-            return error("Unable to close state.");
+        if (log_entry_close(&entry) < 0)
+            return error("Unable to close entry.");
 
         return EXIT_SUCCESS;
 
@@ -919,16 +918,15 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_entry entry;
-        struct log_state state;
 
-        if (log_state_open(&state) < 0)
-            return error("Unable to open state.");
+        if (log_entry_open(&entry) < 0)
+            return error("Unable to open entry.");
 
-        if (log_entry_find(&entry, &state, id))
+        if (log_entry_find(&entry, id))
             log_entry_print(&entry);
 
-        if (log_state_close(&state) < 0)
-            return error("Unable to close state.");
+        if (log_entry_close(&entry) < 0)
+            return error("Unable to close entry.");
 
         return EXIT_SUCCESS;
 
@@ -938,15 +936,14 @@ static int parse_log(int argc, char **argv)
     {
 
         struct log_entry entry;
-        struct log_state state;
         unsigned int s = strtoul(skip, NULL, 10);
         unsigned int c = strtoul(count, NULL, 10);
         unsigned int n;
 
-        if (log_state_open(&state) < 0)
-            return error("Unable to open state.");
+        if (log_entry_open(&entry) < 0)
+            return error("Unable to open entry.");
 
-        for (n = 1; log_entry_readprev(&entry, &state); n++)
+        for (n = 1; log_entry_readprev(&entry); n++)
         {
 
             if (n > s)
@@ -957,8 +954,8 @@ static int parse_log(int argc, char **argv)
 
         }
 
-        if (log_state_close(&state) < 0)
-            return error("Unable to close state.");
+        if (log_entry_close(&entry) < 0)
+            return error("Unable to close entry.");
 
         return EXIT_SUCCESS;
 
@@ -1239,17 +1236,16 @@ static int parse_stop(int argc, char **argv)
     {
 
         struct log_entry entry;
-        struct log_state state;
         unsigned int i;
 
-        if (log_state_open(&state) < 0)
-            return error("Unable to open state.");
+        if (log_entry_open(&entry) < 0)
+            return error("Unable to open entry.");
 
-        if (!log_entry_find(&entry, &state, id))
+        if (!log_entry_find(&entry, id))
             return error("Unable to find entry.");
 
-        if (log_state_close(&state) < 0)
-            return error("Unable to close state.");
+        if (log_entry_close(&entry) < 0)
+            return error("Unable to close entry.");
 
         for (i = 0; i < entry.total; i++)
         {
@@ -1362,26 +1358,25 @@ static int parse_wait(int argc, char **argv)
     {
 
         struct log_entry entry;
-        struct log_state state;
 
-        if (log_state_open(&state) < 0)
-            return error("Unable to open state.");
+        if (log_entry_open(&entry) < 0)
+            return error("Unable to open entry.");
 
-        if (log_entry_find(&entry, &state, id))
+        if (log_entry_find(&entry, id))
         {
 
             while (entry.complete < entry.total)
             {
 
                 sleep(1);
-                log_entry_read(&entry, &state);
+                log_entry_read(&entry);
 
             }
 
         }
 
-        if (log_state_close(&state) < 0)
-            return error("Unable to close state.");
+        if (log_entry_close(&entry) < 0)
+            return error("Unable to close entry.");
 
         return EXIT_SUCCESS;
 

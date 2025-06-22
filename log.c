@@ -12,33 +12,33 @@
 
 #define LOG_ENTRYSIZE 82
 
-int log_state_open(struct log_state *state)
+int log_entry_open(struct log_entry *entry)
 {
 
     char path[BUFSIZ];
 
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    state->fd = open(path, O_RDONLY, 0644);
+    entry->fd = open(path, O_RDONLY, 0644);
 
-    if (state->fd < 0)
+    if (entry->fd < 0)
         return -1;
 
-    state->size = lseek(state->fd, 0, SEEK_END);
+    entry->size = lseek(entry->fd, 0, SEEK_END);
 
-    if (state->size % LOG_ENTRYSIZE != 0)
+    if (entry->size % LOG_ENTRYSIZE != 0)
         return -1;
 
-    state->position = state->size;
+    entry->position = entry->size;
 
     return 0;
 
 }
 
-int log_state_close(struct log_state *state)
+int log_entry_close(struct log_entry *entry)
 {
 
-    close(state->fd);
+    close(entry->fd);
 
     return 0;
 
@@ -68,17 +68,15 @@ int log_entry_prepare(struct log_entry *entry)
 
 }
 
-int log_entry_read(struct log_entry *entry, struct log_state *state)
+int log_entry_read(struct log_entry *entry)
 {
 
     char buffer[BUFSIZ];
     int count;
 
-    entry->offset = state->position;
+    lseek(entry->fd, entry->position, SEEK_SET);
 
-    lseek(state->fd, state->position, SEEK_SET);
-
-    count = read(state->fd, buffer, LOG_ENTRYSIZE);
+    count = read(entry->fd, buffer, LOG_ENTRYSIZE);
 
     if (count != LOG_ENTRYSIZE)
         return 0;
@@ -89,25 +87,25 @@ int log_entry_read(struct log_entry *entry, struct log_state *state)
 
 }
 
-int log_entry_readprev(struct log_entry *entry, struct log_state *state)
+int log_entry_readprev(struct log_entry *entry)
 {
 
-    if (state->position < LOG_ENTRYSIZE)
+    if (entry->position < LOG_ENTRYSIZE)
         return 0;
 
-    state->position -= LOG_ENTRYSIZE;
+    entry->position -= LOG_ENTRYSIZE;
 
-    return log_entry_read(entry, state);
+    return log_entry_read(entry);
 
 }
 
-int log_entry_find(struct log_entry *entry, struct log_state *state, char *id)
+int log_entry_find(struct log_entry *entry, char *id)
 {
 
     if (strcmp("HEAD", id) == 0)
-        return log_entry_readprev(entry, state);
+        return log_entry_readprev(entry);
 
-    while (log_entry_readprev(entry, state))
+    while (log_entry_readprev(entry))
     {
 
         if (memcmp(entry->id, id, strlen(id)) == 0)
@@ -239,7 +237,7 @@ int log_entry_add(struct log_entry *entry)
     if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
 
-    entry->offset = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
+    entry->position = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
 
     close(fd);
 
@@ -260,7 +258,7 @@ int log_entry_update(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    lseek(fd, entry->offset, SEEK_SET);
+    lseek(fd, entry->position, SEEK_SET);
 
     if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
         return -1;
@@ -305,7 +303,9 @@ void log_entry_init(struct log_entry *entry, unsigned int total)
     entry->aborted = 0;
     entry->passed = 0;
     entry->failed = 0;
-    entry->offset = 0;
+    entry->fd = 0;
+    entry->size = 0;
+    entry->position = 0;
 
 }
 
