@@ -8,12 +8,12 @@
 #include "log.h"
 #include "run.h"
 
-int run_prepare(struct run *run, struct log_entry *entry)
+int run_prepare(struct run *run, struct log *log)
 {
 
     char path[BUFSIZ];
 
-    config_get_rundir(path, BUFSIZ, entry->id, run->index);
+    config_get_rundir(path, BUFSIZ, log->id, run->index);
 
     if (util_mkdir(path) < 0)
         return -1;
@@ -22,13 +22,13 @@ int run_prepare(struct run *run, struct log_entry *entry)
 
 }
 
-int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
+int run_update_remote(struct run *run, struct log *log, char *remote)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "remote");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "remote");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -42,14 +42,14 @@ int run_update_remote(struct run *run, struct log_entry *entry, char *remote)
 
 }
 
-int run_update_status(struct run *run, struct log_entry *entry, int status)
+int run_update_status(struct run *run, struct log *log, int status)
 {
 
     char path[BUFSIZ];
     char *statusname;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "status");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "status");
 
     switch (status)
     {
@@ -88,7 +88,7 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
 
 }
 
-int run_get_pid(struct run *run, struct log_entry *entry)
+int run_get_pid(struct run *run, struct log *log)
 {
 
     char path[BUFSIZ];
@@ -96,7 +96,7 @@ int run_get_pid(struct run *run, struct log_entry *entry)
     unsigned int pid;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "pid");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -113,13 +113,13 @@ int run_get_pid(struct run *run, struct log_entry *entry)
 
 }
 
-int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid)
+int run_update_pid(struct run *run, struct log *log, unsigned int pid)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "pid");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -133,16 +133,16 @@ int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid)
 
 }
 
-int run_open(struct run *run, struct log_entry *entry)
+int run_open(struct run *run, struct log *log)
 {
 
     char path[BUFSIZ];
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "stderr");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "stderr");
 
     run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    config_get_runpath(path, BUFSIZ, entry->id, run->index, "stdout");
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "stdout");
 
     run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 

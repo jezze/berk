@@ -12,39 +12,39 @@
 
 #define LOG_ENTRYSIZE 82
 
-int log_entry_open(struct log_entry *entry)
+int log_open(struct log *log)
 {
 
     char path[BUFSIZ];
 
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    entry->fd = open(path, O_RDONLY, 0644);
+    log->fd = open(path, O_RDONLY, 0644);
 
-    if (entry->fd < 0)
+    if (log->fd < 0)
         return -1;
 
-    entry->size = lseek(entry->fd, 0, SEEK_END);
+    log->size = lseek(log->fd, 0, SEEK_END);
 
-    if (entry->size % LOG_ENTRYSIZE != 0)
+    if (log->size % LOG_ENTRYSIZE != 0)
         return -1;
 
-    entry->position = entry->size;
+    log->position = log->size;
 
     return 0;
 
 }
 
-int log_entry_close(struct log_entry *entry)
+int log_close(struct log *log)
 {
 
-    close(entry->fd);
+    close(log->fd);
 
     return 0;
 
 }
 
-int log_entry_prepare(struct log_entry *entry)
+int log_prepare(struct log *log)
 {
 
     char path[BUFSIZ];
@@ -54,12 +54,12 @@ int log_entry_prepare(struct log_entry *entry)
     if (util_mkdir(path) < 0)
         return -1;
 
-    config_get_rundirshort(path, BUFSIZ, entry->id);
+    config_get_rundirshort(path, BUFSIZ, log->id);
 
     if (util_mkdir(path) < 0)
         return -1;
 
-    config_get_rundirfull(path, BUFSIZ, entry->id);
+    config_get_rundirfull(path, BUFSIZ, log->id);
 
     if (util_mkdir(path) < 0)
         return -1;
@@ -68,47 +68,47 @@ int log_entry_prepare(struct log_entry *entry)
 
 }
 
-int log_entry_read(struct log_entry *entry)
+int log_read(struct log *log)
 {
 
     char buffer[BUFSIZ];
     int count;
 
-    lseek(entry->fd, entry->position, SEEK_SET);
+    lseek(log->fd, log->position, SEEK_SET);
 
-    count = read(entry->fd, buffer, LOG_ENTRYSIZE);
+    count = read(log->fd, buffer, LOG_ENTRYSIZE);
 
     if (count != LOG_ENTRYSIZE)
         return 0;
 
-    sscanf(buffer, "%s %s %u %u %u %u %u\n", entry->id, entry->datetime, &entry->total, &entry->complete, &entry->aborted, &entry->passed, &entry->failed);
+    sscanf(buffer, "%s %s %u %u %u %u %u\n", log->id, log->datetime, &log->total, &log->complete, &log->aborted, &log->passed, &log->failed);
 
     return count;
 
 }
 
-int log_entry_readprev(struct log_entry *entry)
+int log_readprev(struct log *log)
 {
 
-    if (entry->position < LOG_ENTRYSIZE)
+    if (log->position < LOG_ENTRYSIZE)
         return 0;
 
-    entry->position -= LOG_ENTRYSIZE;
+    log->position -= LOG_ENTRYSIZE;
 
-    return log_entry_read(entry);
+    return log_read(log);
 
 }
 
-int log_entry_find(struct log_entry *entry, char *id)
+int log_find(struct log *log, char *id)
 {
 
     if (strcmp("HEAD", id) == 0)
-        return log_entry_readprev(entry);
+        return log_readprev(log);
 
-    while (log_entry_readprev(entry))
+    while (log_readprev(log))
     {
 
-        if (memcmp(entry->id, id, strlen(id)) == 0)
+        if (memcmp(log->id, id, strlen(id)) == 0)
             return 1;
 
     }
@@ -117,7 +117,7 @@ int log_entry_find(struct log_entry *entry, char *id)
 
 }
 
-int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int descriptor)
+int log_printstd(struct log *log, unsigned int run, unsigned int descriptor)
 {
 
     char buffer[BUFSIZ];
@@ -129,12 +129,12 @@ int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int d
     {
 
     case 1:
-        config_get_runpath(path, BUFSIZ, entry->id, run, "stdout");
+        config_get_runpath(path, BUFSIZ, log->id, run, "stdout");
 
         break;
 
     case 2:
-        config_get_runpath(path, BUFSIZ, entry->id, run, "stderr");
+        config_get_runpath(path, BUFSIZ, log->id, run, "stderr");
 
         break;
 
@@ -154,7 +154,7 @@ int log_entry_printstd(struct log_entry *entry, unsigned int run, unsigned int d
 
 }
 
-int log_entry_printrun(struct log_entry *entry, unsigned int run)
+int log_printrun(struct log *log, unsigned int run)
 {
 
     char status[BUFSIZ];
@@ -163,7 +163,7 @@ int log_entry_printrun(struct log_entry *entry, unsigned int run)
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, entry->id, run, "remote");
+    config_get_runpath(path, BUFSIZ, log->id, run, "remote");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -175,7 +175,7 @@ int log_entry_printrun(struct log_entry *entry, unsigned int run)
 
     close(fd);
 
-    config_get_runpath(path, BUFSIZ, entry->id, run, "status");
+    config_get_runpath(path, BUFSIZ, log->id, run, "status");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -193,22 +193,22 @@ int log_entry_printrun(struct log_entry *entry, unsigned int run)
 
 }
 
-int log_entry_print(struct log_entry *entry)
+int log_print(struct log *log)
 {
 
     char path[BUFSIZ];
     unsigned int i;
 
-    config_get_rundirfull(path, BUFSIZ, entry->id);
-    printf("id=%s datetime=%s\n", entry->id, entry->datetime);
-    printf("total=%u complete=%u aborted=%u passed=%u failed=%u\n", entry->total, entry->complete, entry->aborted, entry->passed, entry->failed);
+    config_get_rundirfull(path, BUFSIZ, log->id);
+    printf("id=%s datetime=%s\n", log->id, log->datetime);
+    printf("total=%u complete=%u aborted=%u passed=%u failed=%u\n", log->total, log->complete, log->aborted, log->passed, log->failed);
     printf("\n");
 
-    for (i = 0; i < entry->total; i++)
+    for (i = 0; i < log->total; i++)
     {
 
         printf("    ");
-        log_entry_printrun(entry, i);
+        log_printrun(log, i);
 
     }
 
@@ -218,7 +218,7 @@ int log_entry_print(struct log_entry *entry)
 
 }
 
-int log_entry_add(struct log_entry *entry)
+int log_add(struct log *log)
 {
 
     char path[BUFSIZ];
@@ -226,7 +226,7 @@ int log_entry_add(struct log_entry *entry)
     int fd;
 
     time(&timeraw);
-    strftime(entry->datetime, 25, "%FT%T%z", localtime(&timeraw));
+    strftime(log->datetime, 25, "%FT%T%z", localtime(&timeraw));
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
     fd = open(path, O_WRONLY | O_CREAT | O_APPEND, 0644);
@@ -234,10 +234,10 @@ int log_entry_add(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
         return -1;
 
-    entry->position = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
+    log->position = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
 
     close(fd);
 
@@ -245,7 +245,7 @@ int log_entry_add(struct log_entry *entry)
 
 }
 
-int log_entry_update(struct log_entry *entry)
+int log_update(struct log *log)
 {
 
     char path[BUFSIZ];
@@ -258,9 +258,9 @@ int log_entry_update(struct log_entry *entry)
     if (fd < 0)
         return -1;
 
-    lseek(fd, entry->position, SEEK_SET);
+    lseek(fd, log->position, SEEK_SET);
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", entry->id, entry->datetime, entry->total, entry->complete, entry->aborted, entry->passed, entry->failed) != LOG_ENTRYSIZE)
+    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
         return -1;
 
     close(fd);
@@ -292,20 +292,20 @@ static void createid(char *dest, unsigned int length)
 
 }
 
-void log_entry_init(struct log_entry *entry, unsigned int total)
+void log_init(struct log *log, unsigned int total)
 {
 
-    memset(entry, 0, sizeof (struct log_entry));
-    createid(entry->id, 32);
+    memset(log, 0, sizeof (struct log));
+    createid(log->id, 32);
 
-    entry->total = total;
-    entry->complete = 0;
-    entry->aborted = 0;
-    entry->passed = 0;
-    entry->failed = 0;
-    entry->fd = 0;
-    entry->size = 0;
-    entry->position = 0;
+    log->total = total;
+    log->complete = 0;
+    log->aborted = 0;
+    log->passed = 0;
+    log->failed = 0;
+    log->fd = 0;
+    log->size = 0;
+    log->position = 0;
 
 }
 

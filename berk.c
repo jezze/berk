@@ -116,7 +116,7 @@ static char *assert_list(char *arg)
 
 }
 
-static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int index, char *name, char *command)
+static int run_exec(struct log *log, unsigned int pid, unsigned int index, char *name, char *command)
 {
 
     struct remote remote;
@@ -131,19 +131,19 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     if (remote_prepare(&remote))
         return error_remote_prepare(remote.name);
 
-    if (run_prepare(&run, entry))
+    if (run_prepare(&run, log))
         return error_run_prepare(run.index);
 
-    if (run_update_remote(&run, entry, remote.name))
+    if (run_update_remote(&run, log, remote.name))
         error_run_update(run.index, "remote");
 
-    if (run_update_pid(&run, entry, pid))
+    if (run_update_pid(&run, log, pid))
         error_run_update(run.index, "pid");
 
-    if (run_update_status(&run, entry, RUN_STATUS_PENDING))
+    if (run_update_status(&run, log, RUN_STATUS_PENDING))
         error_run_update(run.index, "status");
 
-    if (!run_open(&run, entry))
+    if (!run_open(&run, log))
     {
 
         event_start(remote.name, run.index);
@@ -153,34 +153,34 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
             int rc = remote_exec(&remote, &run, command);
 
-            if (run_update_pid(&run, entry, 0))
+            if (run_update_pid(&run, log, 0))
                 error_run_update(run.index, "pid");
 
             if (rc == 0)
             {
 
-                if (run_update_status(&run, entry, RUN_STATUS_PASSED))
+                if (run_update_status(&run, log, RUN_STATUS_PASSED))
                     error_run_update(run.index, "status");
 
-                entry->passed++;
-                entry->complete++;
+                log->passed++;
+                log->complete++;
 
-                if (log_entry_update(entry))
-                    error("Could not update log entry.");
+                if (log_update(log))
+                    error("Could not update log.");
 
             }
 
             else
             {
 
-                if (run_update_status(&run, entry, RUN_STATUS_FAILED))
+                if (run_update_status(&run, log, RUN_STATUS_FAILED))
                     error_run_update(run.index, "status");
 
-                entry->failed++;
-                entry->complete++;
+                log->failed++;
+                log->complete++;
 
-                if (log_entry_update(entry))
-                    error("Could not update log entry.");
+                if (log_update(log))
+                    error("Could not update log.");
 
             }
 
@@ -597,17 +597,17 @@ static int parse_exec(int argc, char **argv)
     if (name && command)
     {
 
-        struct log_entry entry;
+        struct log log;
         unsigned int names = util_split(name);
 
-        log_entry_init(&entry, names);
-        event_begin(entry.id);
+        log_init(&log, names);
+        event_begin(log.id);
 
-        if (log_entry_prepare(&entry))
+        if (log_prepare(&log))
             return error("Could not prepare log.");
 
-        if (log_entry_add(&entry))
-            return error("Could not add log entry.");
+        if (log_add(&log))
+            return error("Could not add log.");
 
         if (nofork)
         {
@@ -615,7 +615,7 @@ static int parse_exec(int argc, char **argv)
             unsigned int i;
 
             for (i = 0; (name = util_nextword(name, i, names)); i++)
-                run_exec(&entry, 0, i, name, command);
+                run_exec(&log, 0, i, name, command);
 
         }
 
@@ -631,7 +631,7 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(&entry, getpid(), i, name, command);
+                    return run_exec(&log, getpid(), i, name, command);
 
                 if (doseq)
                     waitpid(pid, &status, 0);
@@ -643,7 +643,7 @@ static int parse_exec(int argc, char **argv)
 
         }
 
-        event_end(entry.id);
+        event_end(log.id);
 
         return EXIT_SUCCESS;
 
@@ -898,17 +898,17 @@ static int parse_log(int argc, char **argv)
     if (id && run)
     {
 
-        struct log_entry entry;
+        struct log log;
         unsigned int r = strtoul(run, NULL, 10);
 
-        if (log_entry_open(&entry) < 0)
-            return error("Unable to open entry.");
+        if (log_open(&log) < 0)
+            return error("Unable to open log.");
 
-        if (log_entry_find(&entry, id))
-            log_entry_printstd(&entry, r, descriptor);
+        if (log_find(&log, id))
+            log_printstd(&log, r, descriptor);
 
-        if (log_entry_close(&entry) < 0)
-            return error("Unable to close entry.");
+        if (log_close(&log) < 0)
+            return error("Unable to close log.");
 
         return EXIT_SUCCESS;
 
@@ -917,16 +917,16 @@ static int parse_log(int argc, char **argv)
     else if (id)
     {
 
-        struct log_entry entry;
+        struct log log;
 
-        if (log_entry_open(&entry) < 0)
-            return error("Unable to open entry.");
+        if (log_open(&log) < 0)
+            return error("Unable to open log.");
 
-        if (log_entry_find(&entry, id))
-            log_entry_print(&entry);
+        if (log_find(&log, id))
+            log_print(&log);
 
-        if (log_entry_close(&entry) < 0)
-            return error("Unable to close entry.");
+        if (log_close(&log) < 0)
+            return error("Unable to close log.");
 
         return EXIT_SUCCESS;
 
@@ -935,27 +935,27 @@ static int parse_log(int argc, char **argv)
     else
     {
 
-        struct log_entry entry;
+        struct log log;
         unsigned int s = strtoul(skip, NULL, 10);
         unsigned int c = strtoul(count, NULL, 10);
         unsigned int n;
 
-        if (log_entry_open(&entry) < 0)
-            return error("Unable to open entry.");
+        if (log_open(&log) < 0)
+            return error("Unable to open log.");
 
-        for (n = 1; log_entry_readprev(&entry); n++)
+        for (n = 1; log_readprev(&log); n++)
         {
 
             if (n > s)
-                log_entry_print(&entry);
+                log_print(&log);
 
             if (c && n - s == c)
                 break;
 
         }
 
-        if (log_entry_close(&entry) < 0)
-            return error("Unable to close entry.");
+        if (log_close(&log) < 0)
+            return error("Unable to close log.");
 
         return EXIT_SUCCESS;
 
@@ -1235,19 +1235,19 @@ static int parse_stop(int argc, char **argv)
     if (id)
     {
 
-        struct log_entry entry;
+        struct log log;
         unsigned int i;
 
-        if (log_entry_open(&entry) < 0)
-            return error("Unable to open entry.");
+        if (log_open(&log) < 0)
+            return error("Unable to open log.");
 
-        if (!log_entry_find(&entry, id))
-            return error("Unable to find entry.");
+        if (!log_find(&log, id))
+            return error("Unable to find log.");
 
-        if (log_entry_close(&entry) < 0)
-            return error("Unable to close entry.");
+        if (log_close(&log) < 0)
+            return error("Unable to close log.");
 
-        for (i = 0; i < entry.total; i++)
+        for (i = 0; i < log.total; i++)
         {
 
             struct run run;
@@ -1255,24 +1255,24 @@ static int parse_stop(int argc, char **argv)
 
             run_init(&run, i);
 
-            pid = run_get_pid(&run, &entry);
+            pid = run_get_pid(&run, &log);
 
             if (pid >= 0)
             {
 
                 kill(pid, SIGTERM);
 
-                if (run_update_pid(&run, &entry, 0))
+                if (run_update_pid(&run, &log, 0))
                     error_run_update(run.index, "pid");
 
-                if (run_update_status(&run, &entry, RUN_STATUS_ABORTED))
+                if (run_update_status(&run, &log, RUN_STATUS_ABORTED))
                     error_run_update(run.index, "status");
 
-                entry.aborted++;
-                entry.complete++;
+                log.aborted++;
+                log.complete++;
 
-                if (log_entry_update(&entry))
-                    error("Could not update log entry.");
+                if (log_update(&log))
+                    error("Could not update log.");
 
             }
 
@@ -1357,26 +1357,26 @@ static int parse_wait(int argc, char **argv)
     if (id)
     {
 
-        struct log_entry entry;
+        struct log log;
 
-        if (log_entry_open(&entry) < 0)
-            return error("Unable to open entry.");
+        if (log_open(&log) < 0)
+            return error("Unable to open log.");
 
-        if (log_entry_find(&entry, id))
+        if (log_find(&log, id))
         {
 
-            while (entry.complete < entry.total)
+            while (log.complete < log.total)
             {
 
                 sleep(1);
-                log_entry_read(&entry);
+                log_read(&log);
 
             }
 
         }
 
-        if (log_entry_close(&entry) < 0)
-            return error("Unable to close entry.");
+        if (log_close(&log) < 0)
+            return error("Unable to close log.");
 
         return EXIT_SUCCESS;
 

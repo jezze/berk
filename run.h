@@ -17,11 +17,11 @@ struct run
 
 };
 
-int run_prepare(struct run *run, struct log_entry *entry);
-int run_update_remote(struct run *run, struct log_entry *entry, char *remote);
-int run_update_status(struct run *run, struct log_entry *entry, int status);
-int run_get_pid(struct run *run, struct log_entry *entry);
-int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid);
-int run_open(struct run *run, struct log_entry *entry);
+int run_prepare(struct run *run, struct log *log);
+int run_update_remote(struct run *run, struct log *log, char *remote);
+int run_update_status(struct run *run, struct log *log, int status);
+int run_get_pid(struct run *run, struct log *log);
+int run_update_pid(struct run *run, struct log *log, unsigned int pid);
+int run_open(struct run *run, struct log *log);
 int run_close(struct run *run);
 void run_init(struct run *run, unsigned int index);
