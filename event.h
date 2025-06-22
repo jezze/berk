@@ -1,5 +1,5 @@
-int event_begin(struct log_entry *entry);
-int event_end(struct log_entry *entry);
-int event_start(struct remote *remote, struct run *run);
-int event_stop(struct remote *remote, struct run *run);
-int event_send(struct remote *remote);
+int event_begin(char *id);
+int event_end(char *id);
+int event_start(char *remote, unsigned int run);
+int event_stop(char *remote, unsigned int run);
+int event_send(char *remote);

@@ -146,7 +146,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
     if (!run_open(&run, entry))
     {
 
-        event_start(&remote, &run);
+        event_start(remote.name, run.index);
 
         if (!remote_connect(&remote))
         {
@@ -196,7 +196,7 @@ static int run_exec(struct log_entry *entry, unsigned int pid, unsigned int inde
 
         }
 
-        event_stop(&remote, &run);
+        event_stop(remote.name, run.index);
 
         if (run_close(&run))
             error_run_close(run.index);
@@ -233,7 +233,7 @@ static int run_send(char *name, char *localpath, char *remotepath)
         int rc = remote_send(&remote, localpath, remotepath);
 
         if (rc == 0)
-            event_send(&remote);
+            event_send(remote.name);
         else
             error("Could not send file.");
 
@@ -601,7 +601,7 @@ static int parse_exec(int argc, char **argv)
         unsigned int names = util_split(name);
 
         log_entry_init(&entry, names);
-        event_begin(&entry);
+        event_begin(entry.id);
 
         if (log_entry_prepare(&entry))
             return error("Could not prepare log.");
@@ -643,7 +643,7 @@ static int parse_exec(int argc, char **argv)
 
         }
 
-        event_end(&entry);
+        event_end(entry.id);
 
         return EXIT_SUCCESS;
 

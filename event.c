@@ -1,12 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <libssh2.h>
 #include "config.h"
-#include "log.h"
-#include "run.h"
-#include "remote.h"
 
 static int runhook(char *name)
 {
@@ -22,46 +17,46 @@ static int runhook(char *name)
 
 }
 
-int event_begin(struct log_entry *entry)
+int event_begin(char *id)
 {
 
-    printf("event=begin id=%s\n", entry->id);
+    printf("event=begin id=%s\n", id);
 
     return runhook("begin");
 
 }
 
-int event_end(struct log_entry *entry)
+int event_end(char *id)
 {
 
-    printf("event=end total=%d complete=%d passed=%d failed=%d\n", entry->total, entry->complete, entry->passed, entry->failed);
+    printf("event=end id=%s\n", id);
 
     return runhook("end");
 
 }
 
-int event_start(struct remote *remote, struct run *run)
+int event_start(char *remote, unsigned int run)
 {
 
-    printf("event=start remote=%s run=%d\n", remote->name, run->index);
+    printf("event=start remote=%s run=%d\n", remote, run);
 
     return runhook("start");
 
 }
 
-int event_stop(struct remote *remote, struct run *run)
+int event_stop(char *remote, unsigned int run)
 {
 
-    printf("event=stop remote=%s run=%d\n", remote->name, run->index);
+    printf("event=stop remote=%s run=%d\n", remote, run);
 
     return runhook("stop");
 
 }
 
-int event_send(struct remote *remote)
+int event_send(char *remote)
 {
 
-    printf("event=send remote=%s\n", remote->name);
+    printf("event=send remote=%s\n", remote);
 
     return runhook("send");
 
