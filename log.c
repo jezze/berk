@@ -74,6 +74,8 @@ int log_entry_read(struct log_entry *entry, struct log_state *state)
     char buffer[BUFSIZ];
     int count;
 
+    entry->offset = state->position;
+
     lseek(state->fd, state->position, SEEK_SET);
 
     count = read(state->fd, buffer, LOG_ENTRYSIZE);

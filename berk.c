@@ -1196,6 +1196,100 @@ static int parse_shell(int argc, char **argv)
 
 }
 
+static int parse_stop(int argc, char **argv)
+{
+
+    char *id = NULL;
+    unsigned int argp = 0;
+    unsigned int argi;
+
+    for (argi = 0; argi < argc; argi++)
+    {
+
+        char *arg = argv[argi];
+
+        if (arg[0] == '-')
+        {
+
+            return error_flag_unrecognized(arg);
+
+        }
+
+        else
+        {
+
+            switch (argp++)
+            {
+
+            case 0:
+                id = assert_print(arg);
+
+                break;
+
+            default:
+                return error_toomany();
+
+            }
+
+        }
+
+    }
+
+    if (id)
+    {
+
+        struct log_entry entry;
+        struct log_state state;
+        unsigned int i;
+
+        if (log_state_open(&state) < 0)
+            return error("Unable to open state.");
+
+        if (!log_entry_find(&entry, &state, id))
+            return error("Unable to find entry.");
+
+        if (log_state_close(&state) < 0)
+            return error("Unable to close state.");
+
+        for (i = 0; i < entry.total; i++)
+        {
+
+            struct run run;
+            int pid;
+
+            run_init(&run, i);
+
+            pid = run_get_pid(&run, &entry);
+
+            if (pid >= 0)
+            {
+
+                kill(pid, SIGTERM);
+
+                if (run_update_pid(&run, &entry, 0))
+                    error_run_update(run.index, "pid");
+
+                if (run_update_status(&run, &entry, RUN_STATUS_ABORTED))
+                    error_run_update(run.index, "status");
+
+                entry.aborted++;
+                entry.complete++;
+
+                if (log_entry_update(&entry))
+                    error("Could not update log entry.");
+
+            }
+
+        }
+
+        return EXIT_SUCCESS;
+
+    }
+
+    return error_missing();
+
+}
+
 static int parse_version(int argc, char **argv)
 {
 
@@ -1297,7 +1391,6 @@ static int parse_wait(int argc, char **argv)
 
 }
 
-
 int main(int argc, char **argv)
 {
 
@@ -1315,6 +1408,7 @@ int main(int argc, char **argv)
         {"remove", parse_remove, "remove <namelist>", NULL, 1},
         {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
         {"shell", parse_shell, "shell [-t <type>] <name>", "Args:\n    -t  Terminal type (default: vt102)\n\n", 1},
+        {"stop", parse_stop, "stop <refspec>", NULL, 1},
         {"version", parse_version, "version", NULL, 0},
         {"wait", parse_wait, "wait <refspec>", NULL, 1},
         {0}

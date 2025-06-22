@@ -88,6 +88,31 @@ int run_update_status(struct run *run, struct log_entry *entry, int status)
 
 }
 
+int run_get_pid(struct run *run, struct log_entry *entry)
+{
+
+    char path[BUFSIZ];
+    char buffer[64];
+    unsigned int pid;
+    int fd;
+
+    config_get_runpath(path, BUFSIZ, entry->id, run->index, "pid");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return -1;
+
+    read(fd, buffer, 64);
+
+    sscanf(buffer, "%u\n", &pid);
+
+    close(fd);
+
+    return pid;
+
+}
+
 int run_update_pid(struct run *run, struct log_entry *entry, unsigned int pid)
 {
 
