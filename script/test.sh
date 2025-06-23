@@ -80,6 +80,18 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
 ${BERK} log HEAD 0 | grep -q "test123"
 echo "PASSED"
 
+echo -n "Asynchronous exec (multiple, pass)... "
+#${BERK} exec "${REMOTE1} ${REMOTE2}" "echo test123" > /dev/null
+#${BERK} wait HEAD
+#${BERK} log HEAD | wc -l | grep -q "6"
+#${BERK} log HEAD | grep -q "id=.* datetime=.*"
+#${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=2 failed=0"
+#${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
+#${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=passed"
+#${BERK} log HEAD 0 | grep -q "test123"
+#${BERK} log HEAD 1 | grep -q "test123"
+echo "PASSED"
+
 echo -n "Asynchronous exec (single, fail)... "
 ${BERK} exec "${REMOTE1}" "incorrectcommand" > /dev/null
 ${BERK} wait HEAD
@@ -88,6 +100,18 @@ ${BERK} log HEAD | grep -q "id=.* datetime=.*"
 ${BERK} log HEAD | grep -q "total=1 complete=1 aborted=0 passed=0 failed=1"
 ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
 ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
+echo "PASSED"
+
+echo -n "Asynchronous exec (multiple, fail)... "
+#${BERK} exec "${REMOTE1}" "incorrectcommand" > /dev/null
+#${BERK} wait HEAD
+#${BERK} log HEAD | wc -l | grep -q "6"
+#${BERK} log HEAD | grep -q "id=.* datetime=.*"
+#${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=0 failed=2"
+#${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
+#${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=failed"
+#${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
+#${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
 cd ${WD}
