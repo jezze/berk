@@ -1390,7 +1390,7 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parse_add, "add [-h hostname] [-t <type>] <name>", "Args:\n    -h  Hostname\n    -t  Type\n", 1},
+        {"add", parse_add, "add [-h <hostname>] [-t <type>] <name>", "Args:\n    -h  Hostname\n    -t  Type\n", 1},
         {"config", parse_config, "config <namelist>", NULL, 1},
         {"config", parse_config, "config [-d] <namelist> <key>", "Args:\n    -d  Delete key\nList of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
         {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
