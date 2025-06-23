@@ -25,7 +25,7 @@ ${BERK} init | grep -q "Initialized berk in '.berk'."
 ${BERK} log 2>&1 | grep -q "berk: Unable to open log."
 echo "PASSED"
 
-echo -n "Local machine... "
+echo -n "Add remote... "
 ${BERK} add -t "local" "${REMOTE1}" | grep -q "Remote '${REMOTE1}' added."
 ${BERK} add -t "local" "${REMOTE2}" | grep -q "Remote '${REMOTE2}' added."
 echo "PASSED"
@@ -36,7 +36,7 @@ ${BERK} send "${REMOTE1}" "file1.txt" "file2.txt" > /dev/null
 cat file2.txt | grep -q "testdata"
 echo "PASSED"
 
-echo -n "Synchronous exec (single host, status passed)... "
+echo -n "Exec (synchronous, single host, status passed)... "
 ${BERK} exec -n "${REMOTE1}" "echo test123" > /dev/null
 ${BERK} log HEAD | wc -l | grep -q "5"
 ${BERK} log HEAD | grep -q "id=.* datetime=.*"
@@ -45,7 +45,7 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
 ${BERK} log HEAD 0 | grep -q "test123"
 echo "PASSED"
 
-echo -n "Synchronous exec (multiple hosts, status passed)... "
+echo -n "Exec (synchronous, multiple hosts, status passed)... "
 ${BERK} exec -n "${REMOTE1} ${REMOTE2}" "echo test123" > /dev/null
 ${BERK} log HEAD | wc -l | grep -q "6"
 ${BERK} log HEAD | grep -q "id=.* datetime=.*"
@@ -56,7 +56,7 @@ ${BERK} log HEAD 0 | grep -q "test123"
 ${BERK} log HEAD 1 | grep -q "test123"
 echo "PASSED"
 
-echo -n "Synchronous exec (single host, status failed)... "
+echo -n "Exec (synchronous, single host, status failed)... "
 ${BERK} exec -n "${REMOTE1}" "incorrectcommand" > /dev/null
 ${BERK} log HEAD | wc -l | grep -q "5"
 ${BERK} log HEAD | grep -q "id=.* datetime=.*"
@@ -65,7 +65,7 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
 ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
-echo -n "Synchronous exec (multiple hosts, status failed)... "
+echo -n "Exec (asynchronous, multiple hosts, status failed)... "
 ${BERK} exec -n "${REMOTE1} ${REMOTE2}" "incorrectcommand" > /dev/null
 ${BERK} log HEAD | wc -l | grep -q "6"
 ${BERK} log HEAD | grep -q "id=.* datetime=.*"
@@ -76,7 +76,7 @@ ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
 ${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
-echo -n "Asynchronous exec (single host, status passed)... "
+echo -n "Exec (asynchronous, single host, status passed)... "
 ${BERK} exec "${REMOTE1}" "echo test123" > /dev/null
 ${BERK} wait HEAD
 ${BERK} log HEAD | wc -l | grep -q "5"
@@ -86,7 +86,7 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
 ${BERK} log HEAD 0 | grep -q "test123"
 echo "PASSED"
 
-echo -n "Asynchronous exec (multiple hosts, status passed)... "
+echo -n "Exec (asynchronous, multiple hosts, status passed)... "
 #${BERK} exec "${REMOTE1} ${REMOTE2}" "echo test123" > /dev/null
 #${BERK} wait HEAD
 #${BERK} log HEAD | wc -l | grep -q "6"
@@ -98,7 +98,7 @@ echo -n "Asynchronous exec (multiple hosts, status passed)... "
 #${BERK} log HEAD 1 | grep -q "test123"
 echo "PASSED"
 
-echo -n "Asynchronous exec (single host, status failed)... "
+echo -n "Exec (asynchronous, single host, status failed)... "
 ${BERK} exec "${REMOTE1}" "incorrectcommand" > /dev/null
 ${BERK} wait HEAD
 ${BERK} log HEAD | wc -l | grep -q "5"
@@ -108,7 +108,7 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
 ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
-echo -n "Asynchronous exec (multiple hosts, status failed)... "
+echo -n "Exec (asynchronous, multiple hosts, status failed)... "
 #${BERK} exec "${REMOTE1}" "incorrectcommand" > /dev/null
 #${BERK} wait HEAD
 #${BERK} log HEAD | wc -l | grep -q "6"
@@ -120,7 +120,7 @@ echo -n "Asynchronous exec (multiple hosts, status failed)... "
 #${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
-echo -n "Asynchronous exec (single host, abort)... "
+echo -n "Exec (asynchronous, single host, abort)... "
 ${BERK} exec "${REMOTE1}" "sleep 10" > /dev/null
 ${BERK} stop HEAD
 ${BERK} log HEAD | wc -l | grep -q "5"
