@@ -9,31 +9,34 @@ rm -rf ${WD}/tmp
 mkdir ${WD}/tmp
 cd ${WD}/tmp
 
-echo -n "Basic... "
-berk | grep -q "Usage: berk"
-berk log 2>&1 | grep -q "berk: Could not find '.berk' directory."
-berk init | grep -q "Initialized berk in '.berk'."
-berk log 2>&1 | grep -q "berk: Unable to open entry."
+echo -n "Uninitialized... "
+${BERK} | grep -q "Usage: berk"
+${BERK} version | grep -q "berk version 0.0.1"
+${BERK} log 2>&1 | grep -q "berk: Could not find '.berk' directory."
+
+echo -n "Initialized... "
+${BERK} init | grep -q "Initialized berk in '.berk'."
+${BERK} log 2>&1 | grep -q "berk: Unable to open log."
 echo "PASSED"
 
-echo -n "Add local... "
-berk add -t local test | grep -q "Remote 'test' added."
+echo -n "Local machine... "
+${BERK} add -t local test | grep -q "Remote 'test' added."
 echo "PASSED"
 
 echo -n "Synchronous exec... "
-berk exec -n test "uptime" > /dev/null
-berk log | grep -q "id="
-berk log | wc | tr -s ' ' | grep -q " 5 10 154"
-berk log HEAD | grep -q "total=1"
-berk log HEAD 0 | grep -q "days"
+${BERK} exec -n test "uptime" > /dev/null
+${BERK} log | grep -q "id="
+${BERK} log | wc | tr -s ' ' | grep -q " 5 10 154"
+${BERK} log HEAD | grep -q "total=1"
+${BERK} log HEAD 0 | grep -q "load average"
 echo "PASSED"
 
 echo -n "Asynchronous exec... "
-berk exec test "uptime" > /dev/null
-berk wait HEAD
-berk log | grep -q "id="
-berk log HEAD | grep -q "run="
-berk log HEAD 0 | grep -q "days"
+${BERK} exec test "uptime" > /dev/null
+${BERK} wait HEAD
+${BERK} log | grep -q "id="
+${BERK} log HEAD | grep -q "run="
+${BERK} log HEAD 0 | grep -q "load average"
 echo "PASSED"
 
 cd ${WD}
