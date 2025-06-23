@@ -26,17 +26,20 @@ echo "PASSED"
 
 echo -n "Synchronous exec... "
 ${BERK} exec -n "${REMOTE1}" "echo test123" > /dev/null
-${BERK} log | grep -q "id="
-${BERK} log | wc -l | grep -q "5"
-${BERK} log HEAD | grep -q "total=1"
+${BERK} log HEAD | wc -l | grep -q "5"
+${BERK} log HEAD | grep -q "id=.* datetime=.*"
+${BERK} log HEAD | grep -q "total=1 complete=1 aborted=0 passed=1 failed=0"
+${BERK} log HEAD | grep -q "    run=0 remote=myhost status=passed"
 ${BERK} log HEAD 0 | grep -q "test123"
 echo "PASSED"
 
 echo -n "Asynchronous exec... "
 ${BERK} exec "${REMOTE1}" "echo test123" > /dev/null
 ${BERK} wait HEAD
-${BERK} log | grep -q "id="
-${BERK} log HEAD | grep -q "run="
+${BERK} log HEAD | wc -l | grep -q "5"
+${BERK} log HEAD | grep -q "id=.* datetime=.*"
+${BERK} log HEAD | grep -q "total=1 complete=1 aborted=0 passed=1 failed=0"
+${BERK} log HEAD | grep -q "    run=0 remote=myhost status=passed"
 ${BERK} log HEAD 0 | grep -q "test123"
 echo "PASSED"
 
