@@ -114,5 +114,14 @@ echo -n "Asynchronous exec (multiple, fail)... "
 #${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
 echo "PASSED"
 
+echo -n "Asynchronous exec (single, abort)... "
+${BERK} exec "${REMOTE1}" "sleep 10" > /dev/null
+${BERK} stop HEAD
+${BERK} log HEAD | wc -l | grep -q "5"
+${BERK} log HEAD | grep -q "id=.* datetime=.*"
+${BERK} log HEAD | grep -q "total=1 complete=1 aborted=1 passed=0 failed=0"
+${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=aborted"
+echo "PASSED"
+
 cd ${WD}
 rm -rf ${WD}/tmp
