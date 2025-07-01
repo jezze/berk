@@ -23,7 +23,6 @@ struct command
     char *name;
     int (*parse)(int argc, char **argv);
     char *usage;
-    char *description;
     unsigned int needconfig;
 
 };
@@ -1399,22 +1398,22 @@ int main(int argc, char **argv)
 {
 
     static struct command commands[] = {
-        {"add", parse_add, "add [-h <hostname>] [-t <type>] <name>", "Args:\n    -h  Hostname\n    -t  Type\n", 1},
-        {"config", parse_config, "config <namelist>", NULL, 1},
-        {"config", parse_config, "config [-d] <namelist> <key>", "Args:\n    -d  Delete key\nList of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
-        {"config", parse_config, "config <namelist> <key> <value>", "List of keys:\n    name hostname port username password privatekey publickey tags\n", 1},
-        {"exec", parse_exec, "exec [-n] [-s] [-w] <namelist> <command>", "Args:\n    -n  No fork\n    -s  Sequential runs\n    -w  Wait for completion\n", 1},
-        {"init", parse_init, "init", NULL, 0},
-        {"list", parse_list, "list [-t <tags>]", NULL, 1},
-        {"log", parse_log, "log [-c <count>] [-s <skip>]", "Args:\n    -c  Number of entries\n    -s  Skip entries\n", 1},
-        {"log", parse_log, "log <refspec>", "Args:\n    -e  Show stderr\n", 1},
-        {"log", parse_log, "log [-e] <refspec> <run>", "Args:\n    -e  Show stderr\n", 1},
-        {"remove", parse_remove, "remove <namelist>", NULL, 1},
-        {"send", parse_send, "send <namelist> <localpath> <remotepath>", NULL, 1},
-        {"shell", parse_shell, "shell [-t <type>] <name>", "Args:\n    -t  Terminal type (default: vt102)\n\n", 1},
-        {"stop", parse_stop, "stop <refspec>", NULL, 1},
-        {"version", parse_version, "version", NULL, 0},
-        {"wait", parse_wait, "wait <refspec>", NULL, 1},
+        {"add", parse_add, "add [-h <hostname>] [-t <type>] <name>", 1},
+        {"config", parse_config, "config <namelist>", 1},
+        {"config", parse_config, "config [-d] <namelist> <key>", 1},
+        {"config", parse_config, "config <namelist> <key> <value>", 1},
+        {"exec", parse_exec, "exec [-n] [-s] [-w] <namelist> <command>", 1},
+        {"init", parse_init, "init", 0},
+        {"list", parse_list, "list [-t <tags>]", 1},
+        {"log", parse_log, "log [-c <count>] [-s <skip>]", 1},
+        {"log", parse_log, "log <refspec>", 1},
+        {"log", parse_log, "log [-e] <refspec> <run>", 1},
+        {"remove", parse_remove, "remove <namelist>", 1},
+        {"send", parse_send, "send <namelist> <localpath> <remotepath>", 1},
+        {"shell", parse_shell, "shell [-t <type>] <name>", 1},
+        {"stop", parse_stop, "stop <refspec>", 1},
+        {"version", parse_version, "version", 0},
+        {"wait", parse_wait, "wait <refspec>", 1},
         {0}
     };
 
