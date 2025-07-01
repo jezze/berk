@@ -15,74 +15,7 @@
 #include "run.h"
 #include "remote.h"
 #include "event.h"
-
-#define ARGS_TYPE_NONE 0
-#define ARGS_TYPE_COMMAND 1
-#define ARGS_TYPE_FLAG 2
-
-struct args_state
-{
-
-    unsigned int argp;
-    unsigned int argi;
-    unsigned int type;
-    char flag;
-    unsigned int hash;
-    char *arg;
-
-};
-
-static void args_init(struct args_state *state)
-{
-
-    state->argp = 0;
-    state->argi = 0;
-    state->type = ARGS_TYPE_NONE;
-    state->flag = 0;
-    state->hash = 0;
-    state->arg = NULL;
-
-}
-
-static int args_next(struct args_state *state, int argc, char **argv)
-{
-
-    state->type = ARGS_TYPE_NONE;
-    state->flag = 0;
-    state->hash = 0;
-    state->arg = NULL;
-
-    if (state->argi >= argc)
-        return 0;
-
-    state->arg = argv[state->argi];
-
-    if (state->arg[0] == '-')
-    {
-
-        state->type = ARGS_TYPE_FLAG;
-        state->flag = state->arg[1];
-        state->hash = util_hash(state->arg);
-
-    }
-
-    else
-    {
-
-        state->type = ARGS_TYPE_COMMAND;
-
-    }
-
-    return ++state->argi;
-
-}
-
-static unsigned int args_position(struct args_state *state)
-{
-
-    return state->argp++;
-
-}
+#include "args.h"
 
 struct command
 {
