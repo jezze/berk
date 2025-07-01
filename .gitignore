@@ -8,3 +8,4 @@ deb/
 pkgbuild/
 !pkgbuild/Makefile
 !pkgbuild/PKGBUILD
+testdir/

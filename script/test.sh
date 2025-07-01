@@ -9,9 +9,9 @@ REMOTE1="myhost1"
 REMOTE2="myhost2"
 TESTDATA="testdata123testdata456"
 
-rm -rf ${WD}/tmp
-mkdir ${WD}/tmp
-cd ${WD}/tmp
+rm -rf ${WD}/testdir
+mkdir ${WD}/testdir
+cd ${WD}/testdir
 
 echo -n "Uninitialized... "
 ${BERK} | grep -q "Usage: berk"
@@ -94,7 +94,7 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
 ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
 echo "OK"
 
-echo -n "Exec (asynchronous, multiple hosts, status failed)... "
+echo -n "Exec (synchronous, multiple hosts, status failed)... "
 ${BERK} exec -n "${REMOTE1} ${REMOTE2}" "incorrectcommand" > /dev/null
 ${BERK} log HEAD | wc -l | grep -q "6"
 ${BERK} log HEAD | grep -q "id=.* datetime=.*"
@@ -116,15 +116,15 @@ ${BERK} log HEAD 0 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (asynchronous, multiple hosts, status passed)... "
-#${BERK} exec "${REMOTE1} ${REMOTE2}" "echo ${TESTDATA}" > /dev/null
-#${BERK} wait HEAD
-#${BERK} log HEAD | wc -l | grep -q "6"
-#${BERK} log HEAD | grep -q "id=.* datetime=.*"
-#${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=2 failed=0"
-#${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
-#${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=passed"
-#${BERK} log HEAD 0 | grep -q "${TESTDATA}"
-#${BERK} log HEAD 1 | grep -q "${TESTDATA}"
+${BERK} exec "${REMOTE1} ${REMOTE2}" "echo ${TESTDATA}" > /dev/null
+${BERK} wait HEAD
+${BERK} log HEAD | wc -l | grep -q "6"
+${BERK} log HEAD | grep -q "id=.* datetime=.*"
+${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=2 failed=0"
+${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=passed"
+${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=passed"
+${BERK} log HEAD 0 | grep -q "${TESTDATA}"
+${BERK} log HEAD 1 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (asynchronous, single host, status failed)... "
@@ -138,15 +138,15 @@ ${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
 echo "OK"
 
 echo -n "Exec (asynchronous, multiple hosts, status failed)... "
-#${BERK} exec "${REMOTE1}" "incorrectcommand" > /dev/null
-#${BERK} wait HEAD
-#${BERK} log HEAD | wc -l | grep -q "6"
-#${BERK} log HEAD | grep -q "id=.* datetime=.*"
-#${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=0 failed=2"
-#${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
-#${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=failed"
-#${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
-#${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
+${BERK} exec "${REMOTE1} ${REMOTE2}" "incorrectcommand" > /dev/null
+${BERK} wait HEAD
+${BERK} log HEAD | wc -l | grep -q "6"
+${BERK} log HEAD | grep -q "id=.* datetime=.*"
+${BERK} log HEAD | grep -q "total=2 complete=2 aborted=0 passed=0 failed=2"
+${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=failed"
+${BERK} log HEAD | grep -q "    run=1 remote=${REMOTE2} status=failed"
+${BERK} log -e HEAD 0 | grep -q "incorrectcommand: command not found"
+${BERK} log -e HEAD 1 | grep -q "incorrectcommand: command not found"
 echo "OK"
 
 echo -n "Exec (asynchronous, single host, abort)... "
@@ -159,4 +159,3 @@ ${BERK} log HEAD | grep -q "    run=0 remote=${REMOTE1} status=aborted"
 echo "OK"
 
 cd ${WD}
-rm -rf ${WD}/tmp
