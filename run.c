@@ -42,11 +42,11 @@ int run_update_remote(struct run *run, struct log *log, char *remote)
 
 }
 
-int run_update_status(struct run *run, struct log *log, int status)
+int run_update_status(struct run *run, struct log *log, unsigned int status)
 {
 
     char path[BUFSIZ];
-    char *statusname;
+    char *statusname = "unknown";
     int fd;
 
     config_get_runpath(path, BUFSIZ, log->id, run->index, "status");
@@ -104,10 +104,9 @@ int run_get_pid(struct run *run, struct log *log)
         return -1;
 
     read(fd, buffer, 64);
+    close(fd);
 
     sscanf(buffer, "%u\n", &pid);
-
-    close(fd);
 
     return pid;
 
