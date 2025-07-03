@@ -5,15 +5,14 @@
 #include <unistd.h>
 #include "config.h"
 #include "util.h"
-#include "log.h"
 #include "run.h"
 
-int run_prepare(struct run *run, struct log *log)
+int run_prepare(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
 
-    config_get_rundir(path, BUFSIZ, log->id, run->index);
+    config_get_rundir(path, BUFSIZ, id, run->index);
 
     if (util_mkdir(path) < 0)
         return -1;
@@ -22,13 +21,13 @@ int run_prepare(struct run *run, struct log *log)
 
 }
 
-int run_update_remote(struct run *run, struct log *log, char *remote)
+int run_update_remote(struct run *run, char *id, char *remote)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "remote");
+    config_get_runpath(path, BUFSIZ, id, run->index, "remote");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -42,7 +41,7 @@ int run_update_remote(struct run *run, struct log *log, char *remote)
 
 }
 
-unsigned int run_get_status(struct run *run, struct log *log)
+unsigned int run_get_status(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
@@ -50,7 +49,7 @@ unsigned int run_get_status(struct run *run, struct log *log)
     unsigned int count;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "status");
+    config_get_runpath(path, BUFSIZ, id, run->index, "status");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -74,14 +73,14 @@ unsigned int run_get_status(struct run *run, struct log *log)
 
 }
 
-int run_update_status(struct run *run, struct log *log, unsigned int status)
+int run_update_status(struct run *run, char *id, unsigned int status)
 {
 
     char path[BUFSIZ];
     char *statusname = "unknown";
     int fd;
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "status");
+    config_get_runpath(path, BUFSIZ, id, run->index, "status");
 
     switch (status)
     {
@@ -125,7 +124,7 @@ int run_update_status(struct run *run, struct log *log, unsigned int status)
 
 }
 
-unsigned int run_get_pid(struct run *run, struct log *log)
+unsigned int run_get_pid(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
@@ -133,7 +132,7 @@ unsigned int run_get_pid(struct run *run, struct log *log)
     unsigned int count;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, id, run->index, "pid");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -159,13 +158,13 @@ unsigned int run_get_pid(struct run *run, struct log *log)
 
 }
 
-int run_update_pid(struct run *run, struct log *log, unsigned int pid)
+int run_update_pid(struct run *run, char *id, unsigned int pid)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, id, run->index, "pid");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
@@ -179,16 +178,16 @@ int run_update_pid(struct run *run, struct log *log, unsigned int pid)
 
 }
 
-int run_open(struct run *run, struct log *log)
+int run_open(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "stderr");
+    config_get_runpath(path, BUFSIZ, id, run->index, "stderr");
 
     run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-    config_get_runpath(path, BUFSIZ, log->id, run->index, "stdout");
+    config_get_runpath(path, BUFSIZ, id, run->index, "stdout");
 
     run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 

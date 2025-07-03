@@ -136,12 +136,12 @@ static void update(struct log *log)
 
         run_init(&run, i);
 
-        pid = run_get_pid(&run, log);
+        pid = run_get_pid(&run, log->id);
 
         if (pid == 0)
             log->complete++;
 
-        status = run_get_status(&run, log);
+        status = run_get_status(&run, log->id);
 
         switch (status)
         {
@@ -170,7 +170,7 @@ static void update(struct log *log)
 
 }
 
-static int run_exec(struct log *log, unsigned int pid, unsigned int index, char *name, char *command)
+static int run_exec(char *id, unsigned int pid, unsigned int index, char *name, char *command)
 {
 
     struct remote remote;
@@ -185,19 +185,19 @@ static int run_exec(struct log *log, unsigned int pid, unsigned int index, char 
     if (remote_prepare(&remote))
         return error_remote_prepare(remote.name);
 
-    if (run_prepare(&run, log))
+    if (run_prepare(&run, id))
         return error_run_prepare(run.index);
 
-    if (run_update_remote(&run, log, remote.name))
+    if (run_update_remote(&run, id, remote.name))
         error_run_update(run.index, "remote");
 
-    if (run_update_pid(&run, log, pid))
+    if (run_update_pid(&run, id, pid))
         error_run_update(run.index, "pid");
 
-    if (run_update_status(&run, log, RUN_STATUS_PENDING))
+    if (run_update_status(&run, id, RUN_STATUS_PENDING))
         error_run_update(run.index, "status");
 
-    if (!run_open(&run, log))
+    if (!run_open(&run, id))
     {
 
         event_start(remote.name, run.index);
@@ -207,10 +207,10 @@ static int run_exec(struct log *log, unsigned int pid, unsigned int index, char 
 
             int rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
 
-            if (run_update_pid(&run, log, 0))
+            if (run_update_pid(&run, id, 0))
                 error_run_update(run.index, "pid");
 
-            if (run_update_status(&run, log, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
+            if (run_update_status(&run, id, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
                 error_run_update(run.index, "status");
 
             if (remote_disconnect(&remote))
@@ -229,8 +229,6 @@ static int run_exec(struct log *log, unsigned int pid, unsigned int index, char 
 
         if (run_close(&run))
             error_run_close(run.index);
-
-        update(log);
 
     }
 
@@ -650,7 +648,12 @@ static int parse_exec(int argc, char **argv)
             unsigned int i;
 
             for (i = 0; (name = util_nextword(name, i, names)); i++)
-                run_exec(&log, 0, i, name, command);
+            {
+
+                run_exec(log.id, 0, i, name, command);
+                update(&log);
+
+            }
 
         }
 
@@ -666,7 +669,15 @@ static int parse_exec(int argc, char **argv)
                 pid_t pid = fork();
 
                 if (pid == 0)
-                    return run_exec(&log, getpid(), i, name, command);
+                {
+
+                    int rc = run_exec(log.id, getpid(), i, name, command);
+
+                    update(&log);
+
+                    return rc;
+
+                }
 
                 if (doseq)
                     waitpid(pid, &status, 0);
@@ -1296,17 +1307,17 @@ static int parse_stop(int argc, char **argv)
 
             run_init(&run, i);
 
-            pid = run_get_pid(&run, &log);
+            pid = run_get_pid(&run, log.id);
 
             if (pid)
             {
 
                 kill(pid, SIGTERM);
 
-                if (run_update_pid(&run, &log, 0))
+                if (run_update_pid(&run, log.id, 0))
                     error_run_update(run.index, "pid");
 
-                if (run_update_status(&run, &log, RUN_STATUS_ABORTED))
+                if (run_update_status(&run, log.id, RUN_STATUS_ABORTED))
                     error_run_update(run.index, "status");
 
             }
