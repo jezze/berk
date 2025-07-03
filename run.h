@@ -15,8 +15,9 @@ struct run
 
 int run_prepare(struct run *run, struct log *log);
 int run_update_remote(struct run *run, struct log *log, char *remote);
+unsigned int run_get_status(struct run *run, struct log *log);
 int run_update_status(struct run *run, struct log *log, unsigned int status);
-int run_get_pid(struct run *run, struct log *log);
+unsigned int run_get_pid(struct run *run, struct log *log);
 int run_update_pid(struct run *run, struct log *log, unsigned int pid);
 int run_open(struct run *run, struct log *log);
 int run_close(struct run *run);

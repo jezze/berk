@@ -42,6 +42,38 @@ int run_update_remote(struct run *run, struct log *log, char *remote)
 
 }
 
+unsigned int run_get_status(struct run *run, struct log *log)
+{
+
+    char path[BUFSIZ];
+    char buffer[64];
+    unsigned int count;
+    int fd;
+
+    config_get_runpath(path, BUFSIZ, log->id, run->index, "status");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd < 0)
+        return 0;
+
+    count = read(fd, buffer, 64);
+
+    close(fd);
+
+    if (count)
+    {
+
+        buffer[count - 1] = '\0';
+
+        return util_hash(buffer);
+
+    }
+
+    return 0;
+
+}
+
 int run_update_status(struct run *run, struct log *log, unsigned int status)
 {
 
@@ -53,6 +85,11 @@ int run_update_status(struct run *run, struct log *log, unsigned int status)
 
     switch (status)
     {
+
+    case RUN_STATUS_UNKNOWN:
+        statusname = "unknown";
+
+        break;
 
     case RUN_STATUS_PENDING:
         statusname = "pending";
@@ -88,12 +125,12 @@ int run_update_status(struct run *run, struct log *log, unsigned int status)
 
 }
 
-int run_get_pid(struct run *run, struct log *log)
+unsigned int run_get_pid(struct run *run, struct log *log)
 {
 
     char path[BUFSIZ];
     char buffer[64];
-    unsigned int pid;
+    unsigned int count;
     int fd;
 
     config_get_runpath(path, BUFSIZ, log->id, run->index, "pid");
@@ -101,14 +138,24 @@ int run_get_pid(struct run *run, struct log *log)
     fd = open(path, O_RDONLY, 0644);
 
     if (fd < 0)
-        return -1;
+        return 0;
 
-    read(fd, buffer, 64);
+    count = read(fd, buffer, 64);
+
     close(fd);
 
-    sscanf(buffer, "%u\n", &pid);
+    if (count)
+    {
 
-    return pid;
+        unsigned int pid;
+
+        sscanf(buffer, "%u\n", &pid);
+
+        return pid;
+
+    }
+
+    return 0;
 
 }
 
