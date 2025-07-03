@@ -123,6 +123,7 @@ static void update(struct log *log)
     unsigned int i;
 
     log->complete = 0;
+    log->aborted = 0;
     log->passed = 0;
     log->failed = 0;
 
