@@ -27,7 +27,7 @@ running ssh server that we can contact and tell it to execute commands.
 
 This command will add a new remote called "myhost":
 
-    $ berk add myhost myhost.mydomain.com
+    $ berk add myhost -h myhost.mydomain.com
 
 To check what remotes you have you can do:
 
