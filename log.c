@@ -102,13 +102,38 @@ int log_readprev(struct log *log)
 int log_find(struct log *log, char *id)
 {
 
-    if (strcmp("HEAD", id) == 0)
+    unsigned int length = strlen(id) + 1;
+
+    if (length == 5 && memcmp(id, "HEAD", length) == 0)
         return log_readprev(log);
+
+    if (length > 6 && memcmp(id, "HEAD~", 5) == 0)
+    {
+
+        unsigned int count = 0;
+        unsigned int i;
+        int rc = log_readprev(log);
+
+        sscanf(id, "HEAD~%u", &count);
+
+        for (i = 0; i < count; i++)
+        {
+
+            rc = log_readprev(log);
+
+            if (rc == 0)
+                return 0;
+
+        }
+
+        return 1;
+
+    }
 
     while (log_readprev(log))
     {
 
-        if (memcmp(log->id, id, strlen(id)) == 0)
+        if (memcmp(log->id, id, length) == 0)
             return 1;
 
     }
