@@ -1,19 +1,24 @@
-#define ARGS_TYPE_NONE 0
-#define ARGS_TYPE_COMMAND 1
-#define ARGS_TYPE_FLAG 2
+#define ARGS_NONE 0
+#define ARGS_COMMAND 1
+#define ARGS_FLAG 2
+#define ARGS_OPTION 3
+#define ARGS_DONE 4
+#define ARGS_ERROR 5
 
-struct args_state
+struct args
 {
 
-    unsigned int argp;
-    unsigned int argi;
-    unsigned int type;
-    char flag;
-    unsigned int hash;
-    char *arg;
+    unsigned int index;
+    unsigned int position;
+    unsigned int state;
+    unsigned char flag;
+    char *options;
+    char *value;
+    int argc;
+    char **argv;
 
 };
 
-int args_next(struct args_state *state, int argc, char **argv);
-unsigned int args_position(struct args_state *state);
-void args_init(struct args_state *state);
+void args_setoptions(struct args *args, char *options);
+void args_init(struct args *args, int argc, char **argv);
+unsigned int args_next(struct args *args);

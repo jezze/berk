@@ -28,43 +28,101 @@ struct command
 
 };
 
-static int assert_args(struct command *commands, int argc, char **argv)
+static void assert_args(struct args *args)
 {
 
-    unsigned int i;
+    if (args->state == ARGS_DONE)
+        return;
 
-    if (!argc)
+    if (args->flag)
+        exit(error_flag_unrecognized(args->value));
+
+    exit(error("Unknown command"));
+
+}
+
+static unsigned int assert_command(char *arg)
+{
+
+    util_trim(arg);
+
+    switch (arg[0])
     {
 
-        printf("Usage: %s <command> [<args>]\n\n", CONFIG_PROGNAME);
-        printf("List of commands:\n");
+    case 'a':
+        if (!strcmp(arg, "add"))
+            return 1;
 
-        for (i = 0; commands[i].name; i++)
-            printf("    %s\n", commands[i].usage);
+        break;
 
-        return EXIT_SUCCESS;
+    case 'c':
+        if (!strcmp(arg, "config"))
+            return 2;
+
+        break;
+
+    case 'e':
+        if (!strcmp(arg, "exec"))
+            return 3;
+
+        break;
+
+    case 'h':
+        if (!strcmp(arg, "help"))
+            return 4;
+
+        break;
+
+    case 'i':
+        if (!strcmp(arg, "init"))
+            return 5;
+
+        break;
+
+    case 'l':
+        if (!strcmp(arg, "list"))
+            return 6;
+
+        if (!strcmp(arg, "log"))
+            return 7;
+
+        break;
+
+    case 'r':
+        if (!strcmp(arg, "remove"))
+            return 8;
+
+        break;
+
+    case 's':
+        if (!strcmp(arg, "send"))
+            return 9;
+
+        if (!strcmp(arg, "shell"))
+            return 10;
+
+        if (!strcmp(arg, "stop"))
+            return 11;
+
+        break;
+
+    case 'v':
+        if (!strcmp(arg, "version"))
+            return 12;
+
+        break;
+
+    case 'w':
+        if (!strcmp(arg, "wait"))
+            return 13;
+
+        break;
 
     }
 
-    for (i = 0; commands[i].name; i++)
-    {
+    exit(error_arg_parse(arg, "command"));
 
-        if (strcmp(argv[0], commands[i].name))
-            continue;
-
-        if (commands[i].needconfig)
-        {
-
-            if (!config_init())
-                return error_init();
-
-        }
-
-        return commands[i].parse(argc - 1, argv + 1);
-
-    }
-
-    return error_arg_invalid(argv[0]);
+    return 0;
 
 }
 
@@ -282,53 +340,37 @@ static int run_send(char *name, char *localpath, char *remotepath)
 
 }
 
-static int parse_add(int argc, char **argv)
+static int command_add(struct args *args)
 {
 
-    struct args_state state;
     char *hostname = NULL;
     char *name = NULL;
     char *type = "ssh";
 
-    args_init(&state);
+    args_setoptions(args, "h:t:");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 'h':
-                args_next(&state, argc, argv);
-
-                hostname = assert_print(state.arg);
-
-                break;
-
-            case 't':
-                args_next(&state, argc, argv);
-
-                type = assert_print(state.arg);
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 'h':
+            hostname = assert_print(args->value);
 
             break;
 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        case 't':
+            type = assert_print(args->value);
+
+            break;
+
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_print(state.arg);
+            case 1:
+                name = assert_print(args->value);
 
                 break;
 
@@ -342,6 +384,8 @@ static int parse_add(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name)
     {
@@ -369,55 +413,43 @@ static int parse_add(int argc, char **argv)
 
 }
 
-static int parse_config(int argc, char **argv)
+static int command_config(struct args *args)
 {
 
-    struct args_state state;
     unsigned int delete = 0;
     char *value = NULL;
     char *name = NULL;
     char *key = NULL;
 
-    args_init(&state);
+    args_setoptions(args, "d");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 'd':
-                delete = 1;
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 'd':
+            delete = 1;
 
             break;
 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_list(state.arg);
-
-                break;
-
             case 1:
-                key = assert_alpha(state.arg);
+                name = assert_list(args->value);
 
                 break;
 
             case 2:
-                value = assert_print(state.arg);
+                key = assert_alpha(args->value);
+
+                break;
+
+            case 3:
+                value = assert_print(args->value);
 
                 break;
 
@@ -431,6 +463,8 @@ static int parse_config(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name && key && value)
     {
@@ -558,61 +592,49 @@ static int parse_config(int argc, char **argv)
 
 }
 
-static int parse_exec(int argc, char **argv)
+static int command_exec(struct args *args)
 {
 
-    struct args_state state;
     unsigned int doseq = 0;
     unsigned int dowait = 0;
     unsigned int nofork = 0;
     char *command = NULL;
     char *name = NULL;
 
-    args_init(&state);
+    args_setoptions(args, "nsw");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 'n':
-                nofork = 1;
-
-                break;
-
-            case 's':
-                doseq = 1;
-
-                break;
-
-            case 'w':
-                dowait = 1;
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 'n':
+            nofork = 1;
 
             break;
 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        case 's':
+            doseq = 1;
+
+            break;
+
+        case 'w':
+            dowait = 1;
+
+            break;
+
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_list(state.arg);
+            case 1:
+                name = assert_list(args->value);
 
                 break;
 
-            case 1:
-                command = state.arg;
+            case 2:
+                command = args->value;
 
                 break;
 
@@ -626,6 +648,8 @@ static int parse_exec(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name && command)
     {
@@ -699,27 +723,54 @@ static int parse_exec(int argc, char **argv)
 
 }
 
-static int parse_init(int argc, char **argv)
+static int command_help(struct args *args)
 {
 
-    struct args_state state;
+    args_setoptions(args, 0);
 
-    args_init(&state);
+    while (args_next(args))
+        return error_toomany();
 
-    while (args_next(&state, argc, argv))
+    assert_args(args);
+
     {
 
-        switch (state.type)
-        {
-
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
-        case ARGS_TYPE_COMMAND:
-            return error_toomany();
-
-        }
+        printf("Usage: %s <command> [<args>]\n", args->argv[0]);
+        printf("\n");
+        printf("List of commands:\n");
+        printf("    %s\n", "add [-h <hostname>] [-t <type>] <name>");
+        printf("    %s\n", "config <namelist>");
+        printf("    %s\n", "config [-d] <namelist> <key>");
+        printf("    %s\n", "config <namelist> <key> <value>");
+        printf("    %s\n", "exec [-n] [-s] [-w] <namelist> <command>");
+        printf("    %s\n", "help");
+        printf("    %s\n", "init");
+        printf("    %s\n", "list [-t <tags>]");
+        printf("    %s\n", "log [-c <count>] [-s <skip>]");
+        printf("    %s\n", "log <refspec>");
+        printf("    %s\n", "log [-e] <refspec> <run>");
+        printf("    %s\n", "remove <namelist>");
+        printf("    %s\n", "send <namelist> <localpath> <remotepath>");
+        printf("    %s\n", "shell [-t <type>] <name>");
+        printf("    %s\n", "stop <refspec>");
+        printf("    %s\n", "version");
+        printf("    %s\n", "wait <refspec>");
 
     }
+
+    return EXIT_SUCCESS;
+
+}
+
+static int command_init(struct args *args)
+{
+
+    args_setoptions(args, 0);
+
+    while (args_next(args))
+        return error_toomany();
+
+    assert_args(args);
 
     {
 
@@ -771,44 +822,32 @@ static int parse_init(int argc, char **argv)
 
 }
 
-static int parse_list(int argc, char **argv)
+static int command_list(struct args *args)
 {
 
-    struct args_state state;
     char *tags = NULL;
 
-    args_init(&state);
+    args_setoptions(args, "t:");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 't':
-                args_next(&state, argc, argv);
-
-                tags = assert_print(state.arg);
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 't':
+            tags = assert_print(args->value);
 
             break;
 
-        case ARGS_TYPE_COMMAND:
+        default:
             return error_toomany();
 
         }
 
     }
+
+    assert_args(args);
 
     {
 
@@ -878,65 +917,49 @@ static int parse_list(int argc, char **argv)
 
 }
 
-static int parse_log(int argc, char **argv)
+static int command_log(struct args *args)
 {
 
-    struct args_state state;
     unsigned int descriptor = 1;
     char *count = "0";
     char *skip = "0";
     char *run = NULL;
     char *id = NULL;
 
-    args_init(&state);
+    args_setoptions(args, "c:es:");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 'c':
-                args_next(&state, argc, argv);
-
-                count = assert_digit(state.arg);
-
-                break;
-
-            case 'e':
-                descriptor = 2;
-
-                break;
-
-            case 's':
-                args_next(&state, argc, argv);
-
-                skip = assert_digit(state.arg);
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 'e':
+            descriptor = 2;
 
             break;
 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        case 'c':
+            count = assert_digit(args->value);
+
+            break;
+
+        case 's':
+            skip = assert_digit(args->value);
+
+            break;
+
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                id = assert_print(state.arg);
+            case 1:
+                id = assert_print(args->value);
 
                 break;
 
-            case 1:
-                run = assert_digit(state.arg);
+            case 2:
+                run = assert_digit(args->value);
 
                 break;
 
@@ -950,6 +973,8 @@ static int parse_log(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (id && run)
     {
@@ -1021,29 +1046,25 @@ static int parse_log(int argc, char **argv)
 
 }
 
-static int parse_remove(int argc, char **argv)
+static int command_remove(struct args *args)
 {
 
-    struct args_state state;
     char *name = NULL;
 
-    args_init(&state);
+    args_setoptions(args, 0);
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
-
-        case ARGS_TYPE_COMMAND:
-            switch (state.argp)
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_list(state.arg);
+            case 1:
+                name = assert_list(args->value);
 
                 break;
 
@@ -1057,6 +1078,8 @@ static int parse_remove(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name)
     {
@@ -1089,41 +1112,37 @@ static int parse_remove(int argc, char **argv)
 
 }
 
-static int parse_send(int argc, char **argv)
+static int command_send(struct args *args)
 {
 
-    struct args_state state;
     char *name = NULL;
     char *remotepath = NULL;
     char *localpath = NULL;
 
-    args_init(&state);
+    args_setoptions(args, 0);
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
-
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_list(state.arg);
-
-                break;
-
             case 1:
-                localpath = assert_print(state.arg);
+                name = assert_list(args->value);
 
                 break;
 
             case 2:
-                remotepath = assert_print(state.arg);
+                localpath = assert_print(args->value);
+
+                break;
+
+            case 3:
+                remotepath = assert_print(args->value);
 
                 break;
 
@@ -1137,6 +1156,8 @@ static int parse_send(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name && localpath && remotepath)
     {
@@ -1155,45 +1176,31 @@ static int parse_send(int argc, char **argv)
 
 }
 
-static int parse_shell(int argc, char **argv)
+static int command_shell(struct args *args)
 {
 
-    struct args_state state;
     char *name = NULL;
     char *type = "vt102";
 
-    args_init(&state);
+    args_setoptions(args, "t:");
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            switch (state.flag)
-            {
-
-            case 't':
-                args_next(&state, argc, argv);
-
-                type = assert_print(state.arg);
-
-                break;
-
-            default:
-                return error_flag_unrecognized(state.arg);
-
-            }
+        case 't':
+            type = assert_print(args->value);
 
             break;
 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                name = assert_print(state.arg);
+            case 1:
+                name = assert_print(args->value);
 
                 break;
 
@@ -1207,6 +1214,8 @@ static int parse_shell(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (name)
     {
@@ -1247,29 +1256,25 @@ static int parse_shell(int argc, char **argv)
 
 }
 
-static int parse_stop(int argc, char **argv)
+static int command_stop(struct args *args)
 {
 
-    struct args_state state;
     char *id = NULL;
 
-    args_init(&state);
+    args_setoptions(args, 0);
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
- 
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                id = assert_print(state.arg);
+            case 1:
+                id = assert_print(args->value);
 
                 break;
 
@@ -1283,6 +1288,8 @@ static int parse_stop(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (id)
     {
@@ -1334,28 +1341,15 @@ static int parse_stop(int argc, char **argv)
 
 }
 
-static int parse_version(int argc, char **argv)
+static int command_version(struct args *args)
 {
 
-    struct args_state state;
+    args_setoptions(args, 0);
 
-    args_init(&state);
+    while (args_next(args))
+        return error_toomany();
 
-    while (args_next(&state, argc, argv))
-    {
-
-        switch (state.type)
-        {
-
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
-
-        case ARGS_TYPE_COMMAND:
-            return error_toomany();
-
-        }
-
-    }
+    assert_args(args);
 
     printf("%s version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
 
@@ -1363,29 +1357,25 @@ static int parse_version(int argc, char **argv)
 
 }
 
-static int parse_wait(int argc, char **argv)
+static int command_wait(struct args *args)
 {
 
-    struct args_state state;
     char *id = NULL;
 
-    args_init(&state);
+    args_setoptions(args, 0);
 
-    while (args_next(&state, argc, argv))
+    while (args_next(args))
     {
 
-        switch (state.type)
+        switch (args->flag)
         {
 
-        case ARGS_TYPE_FLAG:
-            return error_flag_unrecognized(state.arg);
-
-        case ARGS_TYPE_COMMAND:
-            switch (args_position(&state))
+        default:
+            switch (args->position)
             {
 
-            case 0:
-                id = assert_print(state.arg);
+            case 1:
+                id = assert_print(args->value);
 
                 break;
 
@@ -1399,6 +1389,8 @@ static int parse_wait(int argc, char **argv)
         }
 
     }
+
+    assert_args(args);
 
     if (id)
     {
@@ -1432,30 +1424,114 @@ static int parse_wait(int argc, char **argv)
 
 }
 
+static int command(struct args *args)
+{
+
+    unsigned int command = 0;
+
+    args_setoptions(args, "h");
+
+    while (args_next(args))
+    {
+
+        switch (args->flag)
+        {
+
+        default:
+            switch (args->position)
+            {
+
+            case 1:
+                command = assert_command(args->value);
+
+                switch (command)
+                {
+
+                case 1:
+                case 2:
+                case 3:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 13:
+                    if (!config_init())
+                        return error_init();
+
+                    break;
+
+                }
+
+                switch (command)
+                {
+
+                case 1:
+                    return command_add(args);
+
+                case 2:
+                    return command_config(args);
+
+                case 3:
+                    return command_exec(args);
+
+                case 4:
+                    return command_help(args);
+
+                case 5:
+                    return command_init(args);
+
+                case 6:
+                    return command_list(args);
+
+                case 7:
+                    return command_log(args);
+
+                case 8:
+                    return command_remove(args);
+
+                case 9:
+                    return command_send(args);
+
+                case 10:
+                    return command_shell(args);
+
+                case 11:
+                    return command_stop(args);
+
+                case 12:
+                    return command_version(args);
+
+                case 13:
+                    return command_wait(args);
+
+                }
+
+                break;
+
+            default:
+                return error_toomany();
+
+            }
+
+        }
+
+    }
+
+    return command_help(args);
+
+}
+
 int main(int argc, char **argv)
 {
 
-    static struct command commands[] = {
-        {"add", parse_add, "add [-h <hostname>] [-t <type>] <name>", 1},
-        {"config", parse_config, "config <namelist>", 1},
-        {"config", parse_config, "config [-d] <namelist> <key>", 1},
-        {"config", parse_config, "config <namelist> <key> <value>", 1},
-        {"exec", parse_exec, "exec [-n] [-s] [-w] <namelist> <command>", 1},
-        {"init", parse_init, "init", 0},
-        {"list", parse_list, "list [-t <tags>]", 1},
-        {"log", parse_log, "log [-c <count>] [-s <skip>]", 1},
-        {"log", parse_log, "log <refspec>", 1},
-        {"log", parse_log, "log [-e] <refspec> <run>", 1},
-        {"remove", parse_remove, "remove <namelist>", 1},
-        {"send", parse_send, "send <namelist> <localpath> <remotepath>", 1},
-        {"shell", parse_shell, "shell [-t <type>] <name>", 1},
-        {"stop", parse_stop, "stop <refspec>", 1},
-        {"version", parse_version, "version", 0},
-        {"wait", parse_wait, "wait <refspec>", 1},
-        {0}
-    };
+    struct args args;
 
-    return assert_args(commands, argc - 1, argv + 1);
+    args_init(&args, argc, argv);
+    args_next(&args);
+
+    return command(&args);
 
 }
 

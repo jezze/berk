@@ -14,9 +14,9 @@ mkdir ${WD}/testdir
 cd ${WD}/testdir
 
 echo -n "Uninitialized... "
-${BERK} | grep -q "Usage: berk"
+${BERK} | grep -q "Usage: ${BERK}"
 ${BERK} version | grep -q "berk version ${VERSION}"
-for cmd in "add config exec list log remove send shell stop wait"
+for cmd in add config exec list log remove send shell stop wait
 do
     ${BERK} ${cmd} 2>&1 | grep -q "berk: Could not find '.berk' directory."
 done
