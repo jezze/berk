@@ -129,8 +129,6 @@ static unsigned int assert_command(char *arg)
 static char *assert_alpha(char *arg)
 {
 
-    util_trim(arg);
-
     if (!util_assert_alpha(arg))
         exit(error_arg_parse(arg, "alpha"));
 
@@ -141,8 +139,6 @@ static char *assert_alpha(char *arg)
 static char *assert_digit(char *arg)
 {
 
-    util_trim(arg);
-
     if (!util_assert_digit(arg))
         exit(error_arg_parse(arg, "digit"));
 
@@ -152,8 +148,6 @@ static char *assert_digit(char *arg)
 
 static char *assert_print(char *arg)
 {
-
-    util_trim(arg);
 
     if (!util_assert_print(arg))
         exit(error_arg_parse(arg, "print"));
@@ -169,7 +163,7 @@ static char *assert_list(char *arg)
     util_strip(arg);
 
     if (!util_assert_printspace(arg))
-        exit(error_arg_parse(arg, "printspace"));
+        exit(error_arg_parse(arg, "list"));
 
     return arg;
 
@@ -417,8 +411,8 @@ static int command_config(struct args *args)
 {
 
     unsigned int delete = 0;
+    char *namelist = NULL;
     char *value = NULL;
-    char *name = NULL;
     char *key = NULL;
 
     args_setoptions(args, "d");
@@ -439,7 +433,7 @@ static int command_config(struct args *args)
             {
 
             case 1:
-                name = assert_list(args->value);
+                namelist = assert_list(args->value);
 
                 break;
 
@@ -466,14 +460,15 @@ static int command_config(struct args *args)
 
     assert_args(args);
 
-    if (name && key && value)
+    if (namelist && key && value)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         unsigned int keyhash = util_hash(key);
         unsigned int i;
+        char *name;
 
-        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        for (i = 0; (name = util_nextword(namelist, i, names)); i++)
         {
 
             struct remote remote;
@@ -495,14 +490,15 @@ static int command_config(struct args *args)
 
     }
 
-    else if (name && key)
+    else if (namelist && key)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         unsigned int keyhash = util_hash(key);
         unsigned int i;
+        char *name;
 
-        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        for (i = 0; (name = util_nextword(namelist, i, names)); i++)
         {
 
             struct remote remote;
@@ -539,13 +535,14 @@ static int command_config(struct args *args)
 
     }
 
-    else if (name)
+    else if (namelist)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         unsigned int i;
+        char *name;
 
-        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        for (i = 0; (name = util_nextword(namelist, i, names)); i++)
         {
 
             struct remote remote;
@@ -598,8 +595,8 @@ static int command_exec(struct args *args)
     unsigned int doseq = 0;
     unsigned int dowait = 0;
     unsigned int nofork = 0;
+    char *namelist = NULL;
     char *command = NULL;
-    char *name = NULL;
 
     args_setoptions(args, "nsw");
 
@@ -629,7 +626,7 @@ static int command_exec(struct args *args)
             {
 
             case 1:
-                name = assert_list(args->value);
+                namelist = assert_list(args->value);
 
                 break;
 
@@ -651,10 +648,10 @@ static int command_exec(struct args *args)
 
     assert_args(args);
 
-    if (name && command)
+    if (namelist && command)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         struct log log;
 
         log_init(&log, names);
@@ -670,8 +667,9 @@ static int command_exec(struct args *args)
         {
 
             unsigned int i;
+            char *name;
 
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
+            for (i = 0; (name = util_nextword(namelist, i, names)); i++)
             {
 
                 run_exec(log.id, 0, i, name, command);
@@ -686,8 +684,9 @@ static int command_exec(struct args *args)
 
             unsigned int i;
             int status = 0;
+            char *name;
 
-            for (i = 0; (name = util_nextword(name, i, names)); i++)
+            for (i = 0; (name = util_nextword(namelist, i, names)); i++)
             {
 
                 pid_t pid = fork();
@@ -1049,7 +1048,7 @@ static int command_log(struct args *args)
 static int command_remove(struct args *args)
 {
 
-    char *name = NULL;
+    char *namelist = NULL;
 
     args_setoptions(args, 0);
 
@@ -1064,7 +1063,7 @@ static int command_remove(struct args *args)
             {
 
             case 1:
-                name = assert_list(args->value);
+                namelist = assert_list(args->value);
 
                 break;
 
@@ -1081,13 +1080,14 @@ static int command_remove(struct args *args)
 
     assert_args(args);
 
-    if (name)
+    if (namelist)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         unsigned int i;
+        char *name;
 
-        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        for (i = 0; (name = util_nextword(namelist, i, names)); i++)
         {
 
             struct remote remote;
@@ -1115,9 +1115,9 @@ static int command_remove(struct args *args)
 static int command_send(struct args *args)
 {
 
-    char *name = NULL;
     char *remotepath = NULL;
     char *localpath = NULL;
+    char *namelist = NULL;
 
     args_setoptions(args, 0);
 
@@ -1132,7 +1132,7 @@ static int command_send(struct args *args)
             {
 
             case 1:
-                name = assert_list(args->value);
+                namelist = assert_list(args->value);
 
                 break;
 
@@ -1159,13 +1159,14 @@ static int command_send(struct args *args)
 
     assert_args(args);
 
-    if (name && localpath && remotepath)
+    if (namelist && localpath && remotepath)
     {
 
-        unsigned int names = util_split(name);
+        unsigned int names = util_split(namelist);
         unsigned int i;
+        char *name;
 
-        for (i = 0; (name = util_nextword(name, i, names)); i++)
+        for (i = 0; (name = util_nextword(namelist, i, names)); i++)
             run_send(name, localpath, remotepath);
 
         return EXIT_SUCCESS;
