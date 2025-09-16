@@ -102,12 +102,12 @@ int log_readprev(struct log *log)
 int log_find(struct log *log, char *id)
 {
 
-    unsigned int length = strlen(id) + 1;
+    unsigned int length = strlen(id);
 
-    if (length == 5 && memcmp(id, "HEAD", length) == 0)
+    if (length == 4 && memcmp(id, "HEAD", 4) == 0)
         return log_readprev(log);
 
-    if (length > 6 && memcmp(id, "HEAD~", 5) == 0)
+    if (length > 5 && memcmp(id, "HEAD~", 5) == 0)
     {
 
         unsigned int count = 0;

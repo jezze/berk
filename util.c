@@ -7,13 +7,15 @@
 char *util_assert_alnum(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isalnum(*str))
+        if (!isalnum(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -24,13 +26,15 @@ char *util_assert_alnum(char *str)
 char *util_assert_alpha(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isalpha(*str))
+        if (!isalpha(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -41,13 +45,15 @@ char *util_assert_alpha(char *str)
 char *util_assert_digit(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isdigit(*str))
+        if (!isdigit(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -58,13 +64,15 @@ char *util_assert_digit(char *str)
 char *util_assert_xdigit(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isxdigit(*str))
+        if (!isxdigit(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -75,13 +83,15 @@ char *util_assert_xdigit(char *str)
 char *util_assert_print(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isprint(*str))
+        if (!isprint(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -92,13 +102,15 @@ char *util_assert_print(char *str)
 char *util_assert_space(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isspace(*str))
+        if (!isspace(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
@@ -109,13 +121,15 @@ char *util_assert_space(char *str)
 char *util_assert_printspace(char *str)
 {
 
-    while (*str)
+    char *s = str;
+
+    while (*s)
     {
 
-        if (!isprint(*str) && !isspace(*str))
+        if (!isprint(*s) && !isspace(*s))
             return 0;
 
-        str++;
+        s++;
 
     }
 
