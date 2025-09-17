@@ -428,13 +428,15 @@ static void do_exec(char *command, unsigned int nofork, unsigned int doseq, unsi
     struct log log;
 
     log_init(&log, names);
-    event_begin(log.id);
 
     if (log_prepare(&log))
         panic(ERROR_LOG_PREPARE);
 
     if (log_add(&log))
         panic(ERROR_LOG_ADD);
+
+    printf("%s\n", log.id);
+    event_begin(log.id);
 
     if (nofork)
     {
@@ -520,7 +522,7 @@ static void do_init(void)
         if (fd < 0)
             panic(ERROR_HOOK_CREATE, hooks[i]);
 
-        dprintf(fd, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
+        dprintf(fd, "#!/bin/sh\n\n# To enable this hook, rename it to \"%s\".\n", hooks[i]);
         close(fd);
 
     }

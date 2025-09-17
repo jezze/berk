@@ -1,64 +1,81 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include "config.h"
 
-static int runhook(char *name)
+static int runhook(char *path, char *command)
 {
 
-    char path[BUFSIZ];
-
-    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, name);
-
     if (access(path, F_OK | X_OK) == 0)
-        return system(path);
+        return system(command);
 
-    return 0;
+    return EXIT_FAILURE;
 
 }
 
 int event_begin(char *id)
 {
 
-    printf("event=begin id=%s\n", id);
+    char path[128];
+    char command[BUFSIZ];
 
-    return runhook("begin");
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, "begin");
+    snprintf(command, BUFSIZ, "%s %s", path, id);
+
+    return runhook(path, command);
 
 }
 
 int event_end(char *id)
 {
 
-    printf("event=end id=%s\n", id);
+    char path[128];
+    char command[BUFSIZ];
 
-    return runhook("end");
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, "end");
+    snprintf(command, BUFSIZ, "%s %s", path, id);
+
+    return runhook(path, command);
 
 }
 
 int event_start(char *remote, unsigned int run)
 {
 
-    printf("event=start remote=%s run=%d\n", remote, run);
+    char path[128];
+    char command[BUFSIZ];
 
-    return runhook("start");
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, "start");
+    snprintf(command, BUFSIZ, "%s %s %u", path, remote, run);
+
+    return runhook(path, command);
 
 }
 
 int event_stop(char *remote, unsigned int run)
 {
 
-    printf("event=stop remote=%s run=%d\n", remote, run);
+    char path[128];
+    char command[BUFSIZ];
 
-    return runhook("stop");
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, "stop");
+    snprintf(command, BUFSIZ, "%s %s %u", path, remote, run);
+
+    return runhook(path, command);
 
 }
 
 int event_send(char *remote)
 {
 
-    printf("event=send remote=%s\n", remote);
+    char path[BUFSIZ];
+    char command[BUFSIZ];
 
-    return runhook("send");
+    config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, "send");
+    snprintf(command, BUFSIZ, "%s", path);
+
+    return runhook(path, command);
 
 }
 
