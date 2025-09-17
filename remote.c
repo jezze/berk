@@ -199,7 +199,7 @@ int remote_save(struct remote *remote)
 
 }
 
-int remote_erase(struct remote *remote)
+int remote_remove(struct remote *remote)
 {
 
     char path[BUFSIZ];

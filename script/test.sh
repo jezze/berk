@@ -24,7 +24,7 @@ echo "OK"
 
 echo -n "Initialized... "
 ${BERK} init | grep -q "Initialized berk in '.berk'."
-${BERK} log 2>&1 | grep -q "berk: Unable to open log."
+${BERK} log 2>&1 | grep -q "berk: Could not open log."
 echo "OK"
 
 echo -n "Add remotes... "

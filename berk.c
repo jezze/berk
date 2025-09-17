@@ -9,7 +9,6 @@
 #include <sys/wait.h>
 #include <libssh2.h>
 #include "config.h"
-#include "error.h"
 #include "util.h"
 #include "ini.h"
 #include "log.h"
@@ -18,15 +17,65 @@
 #include "event.h"
 #include "args.h"
 
-struct command
+#define ERROR_EXIST                     "Already initialized."
+#define ERROR_INIT                      "Could not find '%s' directory."
+#define ERROR_MKDIR                     "Could not create directory '%s'."
+#define ERROR_OPENDIR                   "Could not open directory '%s'."
+#define ERROR_HOOK_CREATE               "Could not create hook '%s'."
+#define ERROR_LOG_OPEN                  "Could not open log."
+#define ERROR_LOG_CLOSE                 "Could not close log."
+#define ERROR_LOG_ADD                   "Could not add log."
+#define ERROR_LOG_UPDATE                "Could not update log."
+#define ERROR_LOG_PREPARE               "Could not prepare log."
+#define ERROR_LOG_FIND                  "Could not find log '%s'."
+#define ERROR_REMOTE_PREPARE            "Could not init remote '%s'."
+#define ERROR_REMOTE_LOAD               "Could not load remote '%s'."
+#define ERROR_REMOTE_SAVE               "Could not save remote '%s'."
+#define ERROR_REMOTE_CONNECT            "Could not connect to remote '%s'."
+#define ERROR_REMOTE_DISCONNECT         "Could not disconnect from remote '%s'."
+#define ERROR_REMOTE_SET                "Could not configure remote '%s' to set '%s' to '%s'."
+#define ERROR_REMOTE_SEND               "Could not send file."
+#define ERROR_REMOTE_SHELL              "Could not open shell of type '%s' on remote '%s'."
+#define ERROR_REMOTE_REMOVE             "Could not remove remote '%s'."
+#define ERROR_RUN_PREPARE               "Could not prepare run '%u'."
+#define ERROR_RUN_UPDATE                "Could not update run '%u' with type '%s'."
+#define ERROR_RUN_OPEN                  "Could not open run '%u'."
+#define ERROR_RUN_CLOSE                 "Could not close run '%u'."
+#define ERROR_ARG_MANY                  "Too many arguments."
+#define ERROR_ARG_COMMAND               "Unrecognized command '%s'."
+#define ERROR_ARG_INVALID               "Invalid argument '%s'."
+#define ERROR_ARG_PARSE                 "Could not parse '%s' as '%s'."
+#define ERROR_ARG_FLAG                  "Unrecognized flag '%s'."
+#define ERROR_ARG_UNKNOWN               "Argument parsing failed."
+
+int error(char *format, ...)
 {
 
-    char *name;
-    int (*parse)(int argc, char **argv);
-    char *usage;
-    unsigned int needconfig;
+    va_list args;
 
-};
+    va_start(args, format);
+    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+
+    return EXIT_FAILURE;
+
+}
+
+void panic(char *format, ...)
+{
+
+    va_list args;
+
+    va_start(args, format);
+    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+    exit(EXIT_FAILURE);
+
+}
 
 static void assert_args(struct args *args)
 {
@@ -35,149 +84,88 @@ static void assert_args(struct args *args)
         return;
 
     if (args->flag)
-        exit(error_flag_unrecognized(args->value));
+        panic(ERROR_ARG_FLAG, args->value);
 
-    exit(error("Unknown command"));
+    panic(ERROR_ARG_UNKNOWN);
 
 }
 
-static unsigned int assert_command_config(char *arg)
+static unsigned int get_command_config(char *arg)
 {
 
-    switch (arg[0])
-    {
+    if (!strcmp(arg, "get"))
+        return 1;
 
-    case 'g':
-        if (!strcmp(arg, "get"))
-            return 1;
+    if (!strcmp(arg, "list"))
+        return 2;
 
-        break;
+    if (!strcmp(arg, "set"))
+        return 3;
 
-    case 'l':
-        if (!strcmp(arg, "list"))
-            return 2;
+    if (!strcmp(arg, "unset"))
+        return 4;
 
-        break;
-
-    case 's':
-        if (!strcmp(arg, "set"))
-            return 3;
-
-        break;
-
-    case 'u':
-        if (!strcmp(arg, "unset"))
-            return 4;
-
-        break;
-
-    }
-
-    exit(error_arg_parse(arg, "command"));
+    panic(ERROR_ARG_COMMAND, arg);
 
     return 0;
 
 }
 
-static unsigned int assert_command_remote(char *arg)
+static unsigned int get_command_remote(char *arg)
 {
 
-    switch (arg[0])
-    {
+    if (!strcmp(arg, "add"))
+        return 1;
 
-    case 'a':
-        if (!strcmp(arg, "add"))
-            return 1;
+    if (!strcmp(arg, "remove"))
+        return 2;
 
-        break;
-
-    case 'r':
-        if (!strcmp(arg, "remove"))
-            return 2;
-
-        break;
-
-    }
-
-    exit(error_arg_parse(arg, "command"));
+    panic(ERROR_ARG_COMMAND, arg);
 
     return 0;
 
 }
 
-static unsigned int assert_command(char *arg)
+static unsigned int get_command_main(char *arg)
 {
 
-    switch (arg[0])
-    {
+    if (!strcmp(arg, "config"))
+        return 1;
 
-    case 'c':
-        if (!strcmp(arg, "config"))
-            return 1;
+    if (!strcmp(arg, "exec"))
+        return 2;
 
-        break;
+    if (!strcmp(arg, "help"))
+        return 3;
 
-    case 'e':
-        if (!strcmp(arg, "exec"))
-            return 2;
+    if (!strcmp(arg, "init"))
+        return 4;
 
-        break;
+    if (!strcmp(arg, "log"))
+        return 5;
 
-    case 'h':
-        if (!strcmp(arg, "help"))
-            return 3;
+    if (!strcmp(arg, "remote"))
+        return 6;
 
-        break;
+    if (!strcmp(arg, "send"))
+        return 7;
 
-    case 'i':
-        if (!strcmp(arg, "init"))
-            return 4;
+    if (!strcmp(arg, "shell"))
+        return 8;
 
-        break;
+    if (!strcmp(arg, "show"))
+        return 9;
 
-    case 'l':
-        if (!strcmp(arg, "log"))
-            return 5;
+    if (!strcmp(arg, "stop"))
+        return 10;
 
-        break;
+    if (!strcmp(arg, "version"))
+        return 11;
 
-    case 'r':
-        if (!strcmp(arg, "remote"))
-            return 6;
+    if (!strcmp(arg, "wait"))
+        return 12;
 
-        break;
-
-
-    case 's':
-        if (!strcmp(arg, "send"))
-            return 7;
-
-        if (!strcmp(arg, "shell"))
-            return 8;
-
-        if (!strcmp(arg, "show"))
-            return 9;
-
-        if (!strcmp(arg, "stop"))
-            return 10;
-
-        break;
-
-    case 'v':
-        if (!strcmp(arg, "version"))
-            return 11;
-
-        break;
-
-    case 'w':
-        if (!strcmp(arg, "wait"))
-            return 12;
-
-        break;
-
-    }
-
-    exit(error_arg_parse(arg, "command"));
+    panic(ERROR_ARG_COMMAND, arg);
 
     return 0;
 
@@ -187,7 +175,7 @@ static char *assert_alpha(char *arg)
 {
 
     if (!util_assert_alpha(arg))
-        exit(error_arg_parse(arg, "alpha"));
+        panic(ERROR_ARG_PARSE, arg, "alpha");
 
     return arg;
 
@@ -197,7 +185,7 @@ static char *assert_digit(char *arg)
 {
 
     if (!util_assert_digit(arg))
-        exit(error_arg_parse(arg, "digit"));
+        panic(ERROR_ARG_PARSE, arg, "digit");
 
     return arg;
 
@@ -207,13 +195,13 @@ static char *assert_print(char *arg)
 {
 
     if (!util_assert_print(arg))
-        exit(error_arg_parse(arg, "print"));
+        panic(ERROR_ARG_PARSE, arg, "print");
 
     return arg;
 
 }
 
-static void update(struct log *log)
+static void updatelog(struct log *log)
 {
 
     unsigned int i;
@@ -262,11 +250,11 @@ static void update(struct log *log)
     }
 
     if (log_update(log))
-        error("Could not update log.");
+        panic(ERROR_LOG_UPDATE);
 
 }
 
-static int run_exec(char *id, unsigned int pid, unsigned int index, char *name, char *command)
+static int execute(char *id, unsigned int pid, unsigned int index, char *name, char *command)
 {
 
     struct remote remote;
@@ -276,22 +264,22 @@ static int run_exec(char *id, unsigned int pid, unsigned int index, char *name, 
     run_init(&run, index);
 
     if (remote_load(&remote))
-        return error_remote_load(remote.name);
+        panic(ERROR_REMOTE_LOAD, remote.name);
 
     if (remote_prepare(&remote))
-        return error_remote_prepare(remote.name);
+        panic(ERROR_REMOTE_PREPARE, remote.name);
 
     if (run_prepare(&run, id))
-        return error_run_prepare(run.index);
+        panic(ERROR_RUN_PREPARE, run.index);
 
     if (run_update_remote(&run, id, remote.name))
-        error_run_update(run.index, "remote");
+        panic(ERROR_RUN_UPDATE, run.index, "remote");
 
     if (run_update_pid(&run, id, pid))
-        error_run_update(run.index, "pid");
+        panic(ERROR_RUN_UPDATE, run.index, "pid");
 
     if (run_update_status(&run, id, RUN_STATUS_PENDING))
-        error_run_update(run.index, "status");
+        panic(ERROR_RUN_UPDATE, run.index, "status");
 
     if (!run_open(&run, id))
     {
@@ -304,34 +292,34 @@ static int run_exec(char *id, unsigned int pid, unsigned int index, char *name, 
             int rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
 
             if (run_update_pid(&run, id, 0))
-                error_run_update(run.index, "pid");
+                panic(ERROR_RUN_UPDATE, run.index, "pid");
 
             if (run_update_status(&run, id, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
-                error_run_update(run.index, "status");
+                panic(ERROR_RUN_UPDATE, run.index, "status");
 
             if (remote_disconnect(&remote))
-                error_remote_disconnect(remote.name);
+                panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
         }
 
         else
         {
 
-            error_remote_connect(remote.name);
+            panic(ERROR_REMOTE_CONNECT, remote.name);
 
         }
 
         event_stop(remote.name, run.index);
 
         if (run_close(&run))
-            error_run_close(run.index);
+            panic(ERROR_RUN_CLOSE, run.index);
 
     }
 
     else
     {
 
-        error_run_open(run.index);
+        panic(ERROR_RUN_OPEN, run.index);
 
     }
 
@@ -349,7 +337,7 @@ static void do_config_get(char *name, char *key)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
     value = remote_get_value(&remote, keyhash);
 
@@ -365,7 +353,7 @@ static void do_config_list(char *name)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
     if (remote.name)
         printf("name=%s\n", remote.name);
@@ -405,13 +393,13 @@ static void do_config_set(char *name, char *key, char *value)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
     if (remote_set_value(&remote, keyhash, value) != keyhash)
-        error("Could not configure remote '%s' to set '%s' to '%s'.", remote.name, key, value);
+        panic(ERROR_REMOTE_SET, remote.name, key, value);
 
     if (remote_save(&remote))
-        error_remote_save(name);
+        panic(ERROR_REMOTE_SAVE, name);
 
 }
 
@@ -424,17 +412,17 @@ static void do_config_unset(char *name, char *key)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
     if (remote_set_value(&remote, keyhash, NULL) != keyhash)
-        error("Could not configure remote '%s' to remove '%s'.", remote.name, key);
+        panic(ERROR_REMOTE_SET, remote.name, key);
 
     if (remote_save(&remote))
-        error_remote_save(name);
+        panic(ERROR_REMOTE_SAVE, name);
 
 }
 
-static int do_exec(char *command, unsigned int nofork, unsigned int doseq, unsigned int dowait, unsigned int names, char **name)
+static void do_exec(char *command, unsigned int nofork, unsigned int doseq, unsigned int dowait, unsigned int names, char **name)
 {
 
     struct log log;
@@ -443,10 +431,10 @@ static int do_exec(char *command, unsigned int nofork, unsigned int doseq, unsig
     event_begin(log.id);
 
     if (log_prepare(&log))
-        return error("Could not prepare log.");
+        panic(ERROR_LOG_PREPARE);
 
     if (log_add(&log))
-        return error("Could not add log.");
+        panic(ERROR_LOG_ADD);
 
     if (nofork)
     {
@@ -456,8 +444,8 @@ static int do_exec(char *command, unsigned int nofork, unsigned int doseq, unsig
         for (i = 0; i < names; i++)
         {
 
-            run_exec(log.id, 0, i, name[i], command);
-            update(&log);
+            execute(log.id, 0, i, name[i], command);
+            updatelog(&log);
 
         }
 
@@ -477,11 +465,8 @@ static int do_exec(char *command, unsigned int nofork, unsigned int doseq, unsig
             if (pid == 0)
             {
 
-                int rc = run_exec(log.id, getpid(), i, name[i], command);
-
-                update(&log);
-
-                return rc;
+                execute(log.id, getpid(), i, name[i], command);
+                updatelog(&log);
 
             }
 
@@ -497,8 +482,6 @@ static int do_exec(char *command, unsigned int nofork, unsigned int doseq, unsig
 
     event_end(log.id);
 
-    return -1;
-
 }
 
 static void do_init(void)
@@ -511,10 +494,10 @@ static void do_init(void)
     int fd;
 
     if (mkdir(CONFIG_ROOT, 0775) < 0)
-        error("Already initialized.");
+        panic(ERROR_EXIST);
 
     if (!config_init())
-        error_init();
+        panic(ERROR_INIT, CONFIG_ROOT);
 
     core.version = CONFIG_VERSION;
 
@@ -522,7 +505,7 @@ static void do_init(void)
     config_get_path(path, BUFSIZ, CONFIG_HOOKS);
 
     if (mkdir(path, 0775) < 0)
-        error("Could not create directory '%s'.", CONFIG_HOOKS);
+        panic(ERROR_MKDIR, CONFIG_HOOKS);
 
     for (i = 0; hooks[i]; i++)
     {
@@ -535,7 +518,7 @@ static void do_init(void)
         fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
 
         if (fd < 0)
-            error("Could not create hook file '%s'.", hooks[i]);
+            panic(ERROR_HOOK_CREATE, hooks[i]);
 
         dprintf(fd, "#!/bin/sh\n#\n# To enable this hook, rename this file to \"%s\".\n", hooks[i]);
         close(fd);
@@ -555,7 +538,7 @@ static void do_log(char *count, char *skip)
     unsigned int n;
 
     if (log_open(&log) < 0)
-        error("Unable to open log.");
+        panic(ERROR_LOG_OPEN);
 
     for (n = 1; log_readprev(&log); n++)
     {
@@ -569,7 +552,7 @@ static void do_log(char *count, char *skip)
     }
 
     if (log_close(&log) < 0)
-        error("Unable to close log.");
+        panic(ERROR_LOG_CLOSE);
 
 }
 
@@ -587,7 +570,7 @@ static void do_remote_add(char *name, char *type, char *hostname)
         remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
 
     if (remote_save(&remote))
-        error_remote_save(name);
+        panic(ERROR_REMOTE_SAVE, name);
 
     printf("Remote '%s' added.\n", name);
 
@@ -601,10 +584,10 @@ static void do_remote_remove(char *name)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
-    if (remote_erase(&remote))
-        error("Could not remove remote '%s'.", remote.name);
+    if (remote_remove(&remote))
+        panic(ERROR_REMOTE_REMOVE, remote.name);
 
     printf("Remote '%s' removed.\n", remote.name);
 
@@ -622,7 +605,7 @@ static void do_remote(char *tags)
     dir = opendir(path);
 
     if (dir == NULL)
-        error("Could not open '%s'.", path);
+        panic(ERROR_OPENDIR, path);
 
     while ((entry = readdir(dir)) != NULL)
     {
@@ -681,10 +664,10 @@ static void do_send(char *name, char *localpath, char *remotepath)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(remote.name);
+        panic(ERROR_REMOTE_LOAD, remote.name);
 
     if (remote_prepare(&remote))
-        error_remote_prepare(remote.name);
+        panic(ERROR_REMOTE_PREPARE, remote.name);
 
     if (!remote_connect(&remote))
     {
@@ -694,17 +677,17 @@ static void do_send(char *name, char *localpath, char *remotepath)
         if (rc == 0)
             event_send(remote.name);
         else
-            error("Could not send file.");
+            panic(ERROR_REMOTE_SEND);
 
         if (remote_disconnect(&remote))
-            error_remote_disconnect(remote.name);
+            panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
     }
 
     else
     {
 
-        error_remote_connect(remote.name);
+        panic(ERROR_REMOTE_CONNECT, remote.name);
 
     }
 
@@ -718,26 +701,26 @@ static void do_shell(char *name, char *type)
     remote_init(&remote, name);
 
     if (remote_load(&remote))
-        error_remote_load(name);
+        panic(ERROR_REMOTE_LOAD, name);
 
     if (remote_prepare(&remote))
-        error_remote_prepare(name);
+        panic(ERROR_REMOTE_PREPARE, name);
 
     if (!remote_connect(&remote))
     {
 
         if (remote_shell(&remote, type))
-            error("Could not open shell of type '%s' on remote '%s'.", type, remote.name);
+            panic(ERROR_REMOTE_SHELL, type, remote.name);
 
         if (remote_disconnect(&remote))
-            error_remote_disconnect(remote.name);
+            panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
     }
 
     else
     {
 
-        error_remote_connect(remote.name);
+        panic(ERROR_REMOTE_CONNECT, remote.name);
 
     }
 
@@ -750,7 +733,7 @@ static void do_show(char *id, char *run, unsigned int descriptor)
     struct log log;
 
     if (log_open(&log) < 0)
-        error("Unable to open log.");
+        panic(ERROR_LOG_OPEN);
 
     if (log_find(&log, id))
     {
@@ -774,7 +757,7 @@ static void do_show(char *id, char *run, unsigned int descriptor)
     }
 
     if (log_close(&log) < 0)
-        error("Unable to close log.");
+        panic(ERROR_LOG_CLOSE);
 
 }
 
@@ -785,13 +768,13 @@ static void do_stop(char *id)
     struct log log;
 
     if (log_open(&log) < 0)
-        error("Unable to open log.");
+        panic(ERROR_LOG_OPEN);
 
     if (!log_find(&log, id))
-        error("Unable to find log.");
+        panic(ERROR_LOG_FIND, id);
 
     if (log_close(&log) < 0)
-        error("Unable to close log.");
+        panic(ERROR_LOG_CLOSE);
 
     for (i = 0; i < log.total; i++)
     {
@@ -809,16 +792,16 @@ static void do_stop(char *id)
             kill(pid, SIGTERM);
 
             if (run_update_pid(&run, log.id, 0))
-                error_run_update(run.index, "pid");
+                panic(ERROR_RUN_UPDATE, run.index, "pid");
 
             if (run_update_status(&run, log.id, RUN_STATUS_ABORTED))
-                error_run_update(run.index, "status");
+                panic(ERROR_RUN_UPDATE, run.index, "status");
 
         }
 
     }
 
-    update(&log);
+    updatelog(&log);
 
 }
 
@@ -828,7 +811,7 @@ static void do_wait(char *id)
     struct log log;
 
     if (log_open(&log) < 0)
-        error("Unable to open log.");
+        panic(ERROR_LOG_OPEN);
 
     if (log_find(&log, id))
     {
@@ -844,7 +827,7 @@ static void do_wait(char *id)
     }
 
     if (log_close(&log) < 0)
-        error("Unable to close log.");
+        panic(ERROR_LOG_CLOSE);
 
 }
 
@@ -1032,7 +1015,7 @@ static int command_config(struct args *args)
             {
 
             case 1:
-                command = assert_command_config(args->value);
+                command = get_command_config(args->value);
 
                 switch (command)
                 {
@@ -1130,7 +1113,7 @@ static int command_help(struct args *args)
     args_setoptions(args, 0);
 
     while (args_next(args))
-        return error_toomany();
+        panic(ERROR_ARG_MANY);
 
     assert_args(args);
     printf("Usage: %s <command> [<args>]\n", args->argv[0]);
@@ -1164,7 +1147,7 @@ static int command_init(struct args *args)
     args_setoptions(args, 0);
 
     while (args_next(args))
-        return error_toomany();
+        panic(ERROR_ARG_MANY);
 
     assert_args(args);
     do_init();
@@ -1198,7 +1181,7 @@ static int command_log(struct args *args)
             break;
 
         default:
-            return error_toomany();
+            panic(ERROR_ARG_MANY);
 
         }
 
@@ -1309,7 +1292,7 @@ static int command_remote(struct args *args)
             {
 
             case 1:
-                command = assert_command_remote(args->value);
+                command = get_command_remote(args->value);
 
                 switch (command)
                 {
@@ -1461,7 +1444,7 @@ static int command_show(struct args *args)
             break;
 
         default:
-            return error_toomany();
+            panic(ERROR_ARG_MANY);
 
         }
 
@@ -1511,7 +1494,7 @@ static int command_version(struct args *args)
     args_setoptions(args, 0);
 
     while (args_next(args))
-        return error_toomany();
+        panic(ERROR_ARG_MANY);
 
     assert_args(args);
 
@@ -1552,7 +1535,7 @@ static int command_wait(struct args *args)
 
 }
 
-static int command(struct args *args)
+static int command_main(struct args *args)
 {
 
     unsigned int command = 0;
@@ -1570,7 +1553,7 @@ static int command(struct args *args)
             {
 
             case 1:
-                command = assert_command(args->value);
+                command = get_command_main(args->value);
 
                 switch (command)
                 {
@@ -1582,7 +1565,7 @@ static int command(struct args *args)
 
                 default:
                     if (!config_init())
-                        return error_init();
+                        panic(ERROR_INIT, CONFIG_ROOT);
 
                     break;
 
@@ -1632,7 +1615,7 @@ static int command(struct args *args)
                 break;
 
             default:
-                return error_toomany();
+                panic(ERROR_ARG_MANY);
 
             }
 
@@ -1652,7 +1635,7 @@ int main(int argc, char **argv)
     args_init(&args, argc, argv);
     args_next(&args);
 
-    return command(&args);
+    return command_main(&args);
 
 }
 

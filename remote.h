@@ -33,7 +33,7 @@ void *remote_get_value(struct remote *remote, unsigned int hash);
 unsigned int remote_set_value(struct remote *remote, unsigned int hash, char *value);
 int remote_load(struct remote *remote);
 int remote_save(struct remote *remote);
-int remote_erase(struct remote *remote);
+int remote_remove(struct remote *remote);
 int remote_prepare(struct remote *remote);
 int remote_connect(struct remote *remote);
 int remote_disconnect(struct remote *remote);

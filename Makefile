@@ -1,9 +1,9 @@
 .PHONY: all clean dist install test
 
 BIN:=berk
-SRC:=args.c berk.c config.c error.c event.c ini.c log.c remote.c run.c util.c
-HEADERS:=args.h config.h error.h event.h ini.h log.h remote.h run.h util.h
-OBJ:=args.o berk.o config.o error.o event.o ini.o log.o remote.o run.o util.o
+SRC:=args.c berk.c config.c event.c ini.c log.c remote.c run.c util.c
+HEADERS:=args.h config.h event.h ini.h log.h remote.h run.h util.h
+OBJ:=args.o berk.o config.o event.o ini.o log.o remote.o run.o util.o
 CFLAGS:=-Wall -Werror -pedantic
 TARNAME:=berk
 TARVER:=0.0.1
