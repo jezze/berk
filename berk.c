@@ -415,7 +415,7 @@ static void do_config_unset(char *name, char *key)
         panic(ERROR_REMOTE_LOAD, name);
 
     if (remote_set_value(&remote, keyhash, NULL) != keyhash)
-        panic(ERROR_REMOTE_SET, remote.name, key);
+        panic(ERROR_REMOTE_SET, remote.name, key, "NULL");
 
     if (remote_save(&remote))
         panic(ERROR_REMOTE_SAVE, name);
