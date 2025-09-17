@@ -1,4 +1,6 @@
-# About
+# Berk
+
+## About
 
 This program called berk is a simple but versatile job dispatcher. It can, given a set of machines, called remotes, execute jobs on each machine and log the outputs.
 
@@ -8,33 +10,35 @@ Berk was written to be a replacement for Jenkins and similar bloated software an
 
 It was written by Jens Nyberg.
 
-# Build
+## Build
 
 Run:
 
-$ make
+    $ make
 
-# Install
+## Install
 
-$ sudo make install
+    $ sudo make install
 
-# Package
+## Package
 
 Source:
 
-$ make dist
+    $ make dist
 
 For Arch:
 
-$ cd pkgbuild
-$ make
+    $ cd pkgbuild
+    $ make
 
 For Debian:
 
-$ cd deb
-$ make
+    $ cd deb
+    $ make
 
-# Getting started
+## Quick tutorial
+
+### Setting up
 
 First choose a directory where berk can store it's configuration. The recommended way is to use the root of your source tree which is the same directory where you typically can find the .git directory.
 
@@ -73,7 +77,9 @@ By default the private and public key pairs will be the id_rsa and id_rsa.pub ke
 
 It is also possible, but not exactly recommended to set a password for the remote machine as well. This password will be stored in clear text so only use this in an environment where you know its safe to store data like that. Use this command to set a password:
 
-    $ berk config password MySecretPassword myhost
+    $ berk config set password MySecretPassword myhost
+
+### Executing jobs
 
 Now it's time to execute a command on your remote. Since berk is intended to be used with many remotes simultanously we are gonna issue the same command multiple times on the same remote.
 
