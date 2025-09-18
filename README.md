@@ -93,9 +93,8 @@ Take notice of the id that is printed. That id number is used to identify this e
 
 By default, berk will run all jobs in parallell and asynchronously. There are flags to exec that changes this behaviour:
 
-    -n: No forking. Basically jobs will not fork and instead run sequentially and berk will exit when all jobs are done.
-    -s: Sequential. Only when one remote is done will the next start. Berk will exit before finishing.
-    -w: Wait. Only used with -s. Berk will wait for everything to finish before exiting.
+    -n: Jobs will not fork and instead run sequentially and berk will exit when all jobs are done.
+    -w: Berk will wait for everything to finish before exiting.
 
 If you want to wait for a job to finish you can run:
 

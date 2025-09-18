@@ -405,7 +405,7 @@ static void do_config_unset(char *name, char *key)
 
 }
 
-static void do_exec(char *command, unsigned int nofork, unsigned int doseq, unsigned int dowait, unsigned int names, char **name)
+static void do_exec(char *command, unsigned int nofork, unsigned int dowait, unsigned int names, char **name)
 {
 
     struct log log;
@@ -454,9 +454,6 @@ static void do_exec(char *command, unsigned int nofork, unsigned int doseq, unsi
                 updatelog(&log);
 
             }
-
-            if (doseq)
-                waitpid(pid, &status, 0);
 
         }
 
@@ -1015,12 +1012,11 @@ static int command_config(struct args *args)
 static int command_exec(struct args *args)
 {
 
-    unsigned int doseq = 0;
     unsigned int dowait = 0;
     unsigned int nofork = 0;
     char *command = NULL;
 
-    args_setoptions(args, "nsw");
+    args_setoptions(args, "nw");
 
     while (args_next(args))
     {
@@ -1030,11 +1026,6 @@ static int command_exec(struct args *args)
 
         case 'n':
             nofork = 1;
-
-            break;
-
-        case 's':
-            doseq = 1;
 
             break;
 
@@ -1053,7 +1044,7 @@ static int command_exec(struct args *args)
                 break;
 
             default:
-                do_exec(command, nofork, doseq, dowait, args->argc - args->index + 1, args->argv + args->index - 1);
+                do_exec(command, nofork, dowait, args->argc - args->index + 1, args->argv + args->index - 1);
 
                 return EXIT_SUCCESS;
 
@@ -1087,7 +1078,7 @@ static int command_help(struct args *args)
     printf("    %s\n", "config list <remote> [<remote>...]");
     printf("    %s\n", "config set <key> <value> <remote> [<remote>...]");
     printf("    %s\n", "config unset <key> <remote> [<remote>...]");
-    printf("    %s\n", "exec [-n] [-s] [-w] <command> <remote> [<remote>...]");
+    printf("    %s\n", "exec [-n] [-w] <command> <remote> [<remote>...]");
     printf("    %s\n", "help");
     printf("    %s\n", "init");
     printf("    %s\n", "log [-c <count>] [-s <skip>]");
