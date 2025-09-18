@@ -104,6 +104,9 @@ int log_find(struct log *log, char *id)
 
     unsigned int length = strlen(id);
 
+    if (length > 32)
+        return 0;
+
     if (length == 4 && memcmp(id, "HEAD", 4) == 0)
         return log_readprev(log);
 
