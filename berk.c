@@ -1097,9 +1097,9 @@ static int command_help(struct args *args)
     printf("    %s\n", "send <localpath> <remotepath> <remote> [<remote>...]");
     printf("    %s\n", "shell [-t <type>] <remote>");
     printf("    %s\n", "show [-e] [-i <refspec>] [-o] [-r <run>]");
-    printf("    %s\n", "stop <refspec> [<refspec>...]");
+    printf("    %s\n", "stop [<refspec>...]");
     printf("    %s\n", "version");
-    printf("    %s\n", "wait <refspec> [<refspec>...]");
+    printf("    %s\n", "wait [<refspec>...]");
 
     return EXIT_SUCCESS;
 
@@ -1424,7 +1424,7 @@ static int command_show(struct args *args)
 static int command_stop(struct args *args)
 {
 
-    char *id = NULL;
+    char *id = "HEAD";
 
     args_setoptions(args, 0);
 
@@ -1440,6 +1440,8 @@ static int command_stop(struct args *args)
             if (id)
                 do_stop(id);
 
+            id = NULL;
+
             break;
 
         }
@@ -1447,6 +1449,9 @@ static int command_stop(struct args *args)
     }
 
     assert_args(args);
+
+    if (id)
+        do_stop(id);
 
     return EXIT_SUCCESS;
 
@@ -1471,7 +1476,7 @@ static int command_version(struct args *args)
 static int command_wait(struct args *args)
 {
 
-    char *id = NULL;
+    char *id = "HEAD";
 
     args_setoptions(args, 0);
 
@@ -1487,6 +1492,8 @@ static int command_wait(struct args *args)
             if (id)
                 do_wait(id);
 
+            id = NULL;
+
             break;
 
         }
@@ -1494,6 +1501,9 @@ static int command_wait(struct args *args)
     }
 
     assert_args(args);
+
+    if (id)
+        do_wait(id);
 
     return EXIT_SUCCESS;
 

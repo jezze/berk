@@ -99,11 +99,11 @@ By default, berk will run all jobs in parallell and asynchronously. There are fl
 
 If you want to wait for a job to finish you can run:
 
-    $ berk wait <id>
+    $ berk wait
 
 If a job takes to long or has become stuck you can kill it with:
 
-    $ berk stop <id>
+    $ berk stop
 
 Next, we will check on the results.
 
