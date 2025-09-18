@@ -259,6 +259,7 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
 
     struct remote remote;
     struct run run;
+    int rc;
 
     remote_init(&remote, name);
     run_init(&run, index);
@@ -281,47 +282,29 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
     if (run_update_status(&run, id, RUN_STATUS_PENDING))
         panic(ERROR_RUN_UPDATE, run.index, "status");
 
-    if (!run_open(&run, id))
-    {
-
-        event_start(remote.name, run.index);
-
-        if (!remote_connect(&remote))
-        {
-
-            int rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
-
-            if (run_update_pid(&run, id, 0))
-                panic(ERROR_RUN_UPDATE, run.index, "pid");
-
-            if (run_update_status(&run, id, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
-                panic(ERROR_RUN_UPDATE, run.index, "status");
-
-            if (remote_disconnect(&remote))
-                panic(ERROR_REMOTE_DISCONNECT, remote.name);
-
-        }
-
-        else
-        {
-
-            panic(ERROR_REMOTE_CONNECT, remote.name);
-
-        }
-
-        event_stop(remote.name, run.index);
-
-        if (run_close(&run))
-            panic(ERROR_RUN_CLOSE, run.index);
-
-    }
-
-    else
-    {
-
+    if (run_open(&run, id))
         panic(ERROR_RUN_OPEN, run.index);
 
-    }
+    event_start(remote.name, run.index);
+
+    if (remote_connect(&remote))
+        panic(ERROR_REMOTE_CONNECT, remote.name);
+
+    rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
+
+    if (run_update_pid(&run, id, 0))
+        panic(ERROR_RUN_UPDATE, run.index, "pid");
+
+    if (run_update_status(&run, id, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
+        panic(ERROR_RUN_UPDATE, run.index, "status");
+
+    if (remote_disconnect(&remote))
+        panic(ERROR_REMOTE_DISCONNECT, remote.name);
+
+    event_stop(remote.name, run.index);
+
+    if (run_close(&run))
+        panic(ERROR_RUN_CLOSE, run.index);
 
     return 0;
 
@@ -662,6 +645,7 @@ static void do_send(char *name, char *localpath, char *remotepath)
 {
 
     struct remote remote;
+    int rc;
 
     remote_init(&remote, name);
 
@@ -671,27 +655,18 @@ static void do_send(char *name, char *localpath, char *remotepath)
     if (remote_prepare(&remote))
         panic(ERROR_REMOTE_PREPARE, remote.name);
 
-    if (!remote_connect(&remote))
-    {
-
-        int rc = remote_send(&remote, localpath, remotepath);
-
-        if (rc == 0)
-            event_send(remote.name);
-        else
-            panic(ERROR_REMOTE_SEND);
-
-        if (remote_disconnect(&remote))
-            panic(ERROR_REMOTE_DISCONNECT, remote.name);
-
-    }
-
-    else
-    {
-
+    if (remote_connect(&remote))
         panic(ERROR_REMOTE_CONNECT, remote.name);
 
-    }
+    rc = remote_send(&remote, localpath, remotepath);
+
+    if (rc == 0)
+        event_send(remote.name);
+    else
+        panic(ERROR_REMOTE_SEND);
+
+    if (remote_disconnect(&remote))
+        panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
 }
 
@@ -708,23 +683,14 @@ static void do_shell(char *name, char *type)
     if (remote_prepare(&remote))
         panic(ERROR_REMOTE_PREPARE, name);
 
-    if (!remote_connect(&remote))
-    {
-
-        if (remote_shell(&remote, type))
-            panic(ERROR_REMOTE_SHELL, type, remote.name);
-
-        if (remote_disconnect(&remote))
-            panic(ERROR_REMOTE_DISCONNECT, remote.name);
-
-    }
-
-    else
-    {
-
+    if (remote_connect(&remote))
         panic(ERROR_REMOTE_CONNECT, remote.name);
 
-    }
+    if (remote_shell(&remote, type))
+        panic(ERROR_REMOTE_SHELL, type, remote.name);
+
+    if (remote_disconnect(&remote))
+        panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
 }
 
@@ -737,24 +703,22 @@ static void do_show(char *id, char *run, unsigned int descriptor)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    if (log_find(&log, id))
+    if (!log_find(&log, id))
+        panic(ERROR_LOG_FIND, id);
+
+    switch (descriptor)
     {
 
-        switch (descriptor)
-        {
+    case 0:
+        log_print(&log);
 
-        case 0:
-            log_print(&log);
+        break;
 
-            break;
+    case 1:
+    case 2:
+        log_printstd(&log, r, descriptor);
 
-        case 1:
-        case 2:
-            log_printstd(&log, r, descriptor);
-
-            break;
-
-        }
+        break;
 
     }
 
@@ -815,16 +779,14 @@ static void do_wait(char *id)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    if (log_find(&log, id))
+    if (!log_find(&log, id))
+        panic(ERROR_LOG_FIND, id);
+
+    while (log.complete < log.total)
     {
 
-        while (log.complete < log.total)
-        {
-
-            sleep(1);
-            log_read(&log);
-
-        }
+        sleep(1);
+        log_read(&log);
 
     }
 
