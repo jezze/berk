@@ -155,13 +155,13 @@ To do more advanced setups you can tag remotes. This way you can for instance te
 
     $ berk config set tags "beer donut" "myhost"
 
-Using berk list with a tag we can now filter out only the remotes that match the tag we are interested in like "donut":
+Using berk remote with a tag we can now filter out only the remotes that match the tag we are interested in like "donut":
 
     $ berk remote -t donut
 
 We can use the results to run our uptime command again but only on the remotes we previously filtered out:
 
-    $ berk exec "uptime" $(berk list -t donut)
+    $ berk exec "uptime" $(berk remote -t donut)
 
 This way, and with some bash magic, you can make very complex execution schemes.
 
