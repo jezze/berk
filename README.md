@@ -85,7 +85,7 @@ If you set a password, that will take precedence over your ssh keys.
 
 Now it's time to execute a command on your remote. Since berk is intended to be used with many remotes simultanously we are gonna issue the same command to multiple remotes.
 
-    $ berk exec "uptime" "myhost" "myhost"
+    $ berk exec -c "uptime" "myhost" "myhost"
 
 This command will check the uptime on "myhost" twice. In normal circumstance you will typically use different remotes but since we only defined one, this will have to do. You can add more remotes using berk remote add.
 
@@ -160,7 +160,7 @@ Using berk remote with a tag we can now filter out only the remotes that match t
 
 We can use the results to run our uptime command again but only on the remotes we previously filtered out:
 
-    $ berk exec "uptime" $(berk remote -t donut)
+    $ berk exec -c "uptime" $(berk remote -t donut)
 
 This way, and with some bash magic, you can make very complex execution schemes.
 

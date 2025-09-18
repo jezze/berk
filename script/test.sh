@@ -66,7 +66,7 @@ cat file2.txt | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (synchronous, single host, status passed)... "
-${BERK} exec -n "echo ${TESTDATA}" "${REMOTE1}" > /dev/null
+${BERK} exec -n -c "echo ${TESTDATA}" "${REMOTE1}" > /dev/null
 ${BERK} show | wc -l | grep -q "5"
 ${BERK} show | grep -q "id=.* datetime=.*"
 ${BERK} show | grep -q "total=1 complete=1 aborted=0 passed=1 failed=0"
@@ -75,7 +75,7 @@ ${BERK} show -o -r 0 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (synchronous, multiple hosts, status passed)... "
-${BERK} exec -n "echo ${TESTDATA}" "${REMOTE1}" "${REMOTE2}" > /dev/null
+${BERK} exec -n -c "echo ${TESTDATA}" "${REMOTE1}" "${REMOTE2}" > /dev/null
 ${BERK} show | wc -l | grep -q "6"
 ${BERK} show | grep -q "id=.* datetime=.*"
 ${BERK} show | grep -q "total=2 complete=2 aborted=0 passed=2 failed=0"
@@ -86,7 +86,7 @@ ${BERK} show -o -r 1 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (synchronous, single host, status failed)... "
-${BERK} exec -n "incorrectcommand" "${REMOTE1}" > /dev/null
+${BERK} exec -n -c "incorrectcommand" "${REMOTE1}" > /dev/null
 ${BERK} show | wc -l | grep -q "5"
 ${BERK} show | grep -q "id=.* datetime=.*"
 ${BERK} show | grep -q "total=1 complete=1 aborted=0 passed=0 failed=1"
@@ -95,7 +95,7 @@ ${BERK} show -e -r 0 | grep -q "incorrectcommand"
 echo "OK"
 
 echo -n "Exec (synchronous, multiple hosts, status failed)... "
-${BERK} exec -n "incorrectcommand" "${REMOTE1}" "${REMOTE2}" > /dev/null
+${BERK} exec -n -c "incorrectcommand" "${REMOTE1}" "${REMOTE2}" > /dev/null
 ${BERK} show | wc -l | grep -q "6"
 ${BERK} show | grep -q "id=.* datetime=.*"
 ${BERK} show | grep -q "total=2 complete=2 aborted=0 passed=0 failed=2"
@@ -106,7 +106,7 @@ ${BERK} show -e -r 1 | grep -q "incorrectcommand"
 echo "OK"
 
 echo -n "Exec (asynchronous, single host, status passed)... "
-${BERK} exec "echo ${TESTDATA}" "${REMOTE1}" > /dev/null
+${BERK} exec -c "echo ${TESTDATA}" "${REMOTE1}" > /dev/null
 ${BERK} wait
 ${BERK} show | wc -l | grep -q "5"
 ${BERK} show | grep -q "id=.* datetime=.*"
@@ -116,7 +116,7 @@ ${BERK} show -o -r 0 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (asynchronous, multiple hosts, status passed)... "
-${BERK} exec "echo ${TESTDATA}" "${REMOTE1}" "${REMOTE2}" > /dev/null
+${BERK} exec -c "echo ${TESTDATA}" "${REMOTE1}" "${REMOTE2}" > /dev/null
 ${BERK} wait
 ${BERK} show | wc -l | grep -q "6"
 ${BERK} show | grep -q "id=.* datetime=.*"
@@ -128,7 +128,7 @@ ${BERK} show -o -r 1 | grep -q "${TESTDATA}"
 echo "OK"
 
 echo -n "Exec (asynchronous, single host, status failed)... "
-${BERK} exec "incorrectcommand" "${REMOTE1}" > /dev/null
+${BERK} exec -c "incorrectcommand" "${REMOTE1}" > /dev/null
 ${BERK} wait
 ${BERK} show | wc -l | grep -q "5"
 ${BERK} show | grep -q "id=.* datetime=.*"
@@ -138,7 +138,7 @@ ${BERK} show -e -r 0 | grep -q "incorrectcommand"
 echo "OK"
 
 echo -n "Exec (asynchronous, multiple hosts, status failed)... "
-${BERK} exec "incorrectcommand" "${REMOTE1}" "${REMOTE2}" > /dev/null
+${BERK} exec -c "incorrectcommand" "${REMOTE1}" "${REMOTE2}" > /dev/null
 ${BERK} wait
 ${BERK} show | wc -l | grep -q "6"
 ${BERK} show | grep -q "id=.* datetime=.*"
@@ -150,7 +150,7 @@ ${BERK} show -e -r 1 | grep -q "incorrectcommand"
 echo "OK"
 
 echo -n "Exec (asynchronous, single host, abort)... "
-${BERK} exec "sleep 10" "${REMOTE1}" > /dev/null
+${BERK} exec -c "sleep 10" "${REMOTE1}" > /dev/null
 ${BERK} stop
 ${BERK} show | wc -l | grep -q "5"
 ${BERK} show | grep -q "id=.* datetime=.*"

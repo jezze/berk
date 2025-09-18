@@ -47,6 +47,7 @@
 #define ERROR_ARG_PARSE                 "Could not parse '%s' as '%s'."
 #define ERROR_ARG_FLAG                  "Unrecognized flag '%s'."
 #define ERROR_ARG_UNKNOWN               "Argument parsing failed."
+#define DEFAULT_COMMAND                 "hostname; uname -a; uptime; date; whoami; df; free";
 
 int error(char *format, ...)
 {
@@ -1014,15 +1015,20 @@ static int command_exec(struct args *args)
 
     unsigned int dowait = 0;
     unsigned int nofork = 0;
-    char *command = NULL;
+    char *command = DEFAULT_COMMAND;
 
-    args_setoptions(args, "nw");
+    args_setoptions(args, "c:nw");
 
     while (args_next(args))
     {
 
         switch (args->flag)
         {
+
+        case 'c':
+            command = args->value;
+
+            break;
 
         case 'n':
             nofork = 1;
@@ -1035,22 +1041,9 @@ static int command_exec(struct args *args)
             break;
 
         default:
-            switch (args->position)
-            {
+            do_exec(command, nofork, dowait, args->argc - args->index + 1, args->argv + args->index - 1);
 
-            case 1:
-                command = args->value;
-
-                break;
-
-            default:
-                do_exec(command, nofork, dowait, args->argc - args->index + 1, args->argv + args->index - 1);
-
-                return EXIT_SUCCESS;
-
-            }
-
-            break;
+            return EXIT_SUCCESS;
 
         }
 
