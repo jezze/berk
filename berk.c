@@ -1084,7 +1084,7 @@ static int command_help(struct args *args)
     printf("\n");
     printf("List of commands:\n");
     printf("    %s\n", "config get <key> <remote> [<remote>...]");
-    printf("    %s\n", "config list <remote>");
+    printf("    %s\n", "config list <remote> [<remote>...]");
     printf("    %s\n", "config set <key> <value> <remote> [<remote>...]");
     printf("    %s\n", "config unset <key> <remote> [<remote>...]");
     printf("    %s\n", "exec [-n] [-s] [-w] <command> <remote> [<remote>...]");
