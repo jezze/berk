@@ -187,6 +187,6 @@ This is nice if you want to connect to your remote to do some smaller changes.
 
 ### Hooks
 
-Under .berk/hooks there are a bunch of hook samples. If you remove the .sample prefix from any of them, they will get executed at certain times while berk is running depending on their name.
+Under .berk/hooks there are a bunch of hook samples. If you remove the .sample suffix from any of them, they will get executed at certain times while berk is running depending on their name.
 
 You can use these hooks to script your own notifications for example.
