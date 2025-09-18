@@ -1096,7 +1096,7 @@ static int command_help(struct args *args)
     printf("    %s\n", "remote remove <remote> [<remote>...]");
     printf("    %s\n", "send <localpath> <remotepath> <remote> [<remote>...]");
     printf("    %s\n", "shell [-t <type>] <remote>");
-    printf("    %s\n", "show [-e] [-i <refspec>] [-o] [-r <run>]");
+    printf("    %s\n", "show [-e] [-o] [-r <run>] [<refspec>...]");
     printf("    %s\n", "stop [<refspec>...]");
     printf("    %s\n", "version");
     printf("    %s\n", "wait [<refspec>...]");
@@ -1379,7 +1379,7 @@ static int command_show(struct args *args)
     char *run = "0";
     char *id = "HEAD";
 
-    args_setoptions(args, "ei:or:");
+    args_setoptions(args, "eor:");
 
     while (args_next(args))
     {
@@ -1397,25 +1397,29 @@ static int command_show(struct args *args)
 
             break;
 
-        case 'i':
-            id = assert_print(args->value);
-
-            break;
-
         case 'r':
             run = assert_digit(args->value);
 
             break;
 
         default:
-            panic(ERROR_ARG_MANY);
+            id = assert_print(args->value);
+
+            if (id)
+                do_show(id, run, descriptor);
+
+            id = NULL;
+
+            break;
 
         }
 
     }
 
     assert_args(args);
-    do_show(id, run, descriptor);
+
+    if (id)
+        do_show(id, run, descriptor);
 
     return EXIT_SUCCESS;
 
