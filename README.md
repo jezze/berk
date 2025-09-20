@@ -50,13 +50,13 @@ This will create a .berk folder. If you later invoke berk from either here or fr
 
 ### Remotes
 
-Next we need to add a remote. A remote is a machine somewhere that we can connect to (usually over ssh) and tell it to execute jobs for us.
+Next we need to add a remote. A remote is a computer that we can connect to (usually over ssh) and tell it to execute jobs for us.
 
-If you want to create a remote that has ssh (which is the default) you can supply a hostname and a name for your machine:
+If you want to create a remote that has a running ssh server (which is the default) you can supply a hostname and a name for your machine:
 
     $ berk remote add -h "myhost.mydomain.com" "myhost"
 
-Sometimes its nice to use your own local machine as a remote:
+Alternatively, if you don't have a computer with ssh you can create a remote that runs on your local computer:
 
     $ berk remote add -t local "mylocalhost"
 
@@ -64,11 +64,13 @@ To check what remotes you have you can do:
 
     $ berk remote
 
+### Configure remotes
+
 To check the configuration of "myhost" do:
 
     $ berk config "myhost"
 
-It is easy to change the configuration for a remote. Say you want the user to be called "testuser" instead of your own username you can write:
+For the remote, you might want a different username. Say you want the user to be called "testuser" instead you write:
 
     $ berk config set username "testuser" "myhost"
 
@@ -87,7 +89,7 @@ NOTE: The password will be stored in clear text so only use this in an environme
 
 ### Executing jobs
 
-Now it's time to execute a command on your remote. Since berk is intended to be operate on multiple remotes simultanously we are gonna send the same command to multiple remotes.
+Now it's time to actually execute a job on your remote. Since berk is mostly intended to operate on multiple remotes simultanously we are going to send the same command to multiple remotes.
 
 This command will check the uptime on "myhost" twice: 
 
@@ -97,12 +99,12 @@ NOTE: In normal circumstance you will typically use different remotes but since 
 
 Take notice of the job id that was printed. You can use the job id later to inspect the result of the job.
 
-By default, berk will run a job against all remotes in parallell and asynchronously. There are flags to exec that changes this behaviour:
+By default, berk will run a job against all remotes in parallell and asynchronously. There are flags that changes this behaviour:
 
     -n: Jobs will not fork and instead run sequentially and berk will exit when all jobs are done.
-    -w: Berk will wait for everything to finish before exiting.
+    -w: Berk will run everything in parallell but wait for everything to finish before exiting.
 
-If you want to wait for the latest job to finish you can run:
+If you want to wait for the latest job to finish you can also run:
 
     $ berk wait
 
@@ -112,15 +114,15 @@ If a job takes to long or has become stuck you can kill it with:
 
 Next, we will check on the results.
 
-### Looking at results
+### Show information
 
-Remember the job id you got from your the exec command in the previous section? This is also known as a refspec.
+Remember the job id you got from your the exec command in the previous section?
 
 To look at the status of your job you can run:
 
     $ berk show <id>
 
-But if you are only interested in the latest job you can ommit the id, and you will get the same result:
+But if you are only interested in the latest job you can skip the id, and you will get the same result:
 
     $ berk show
 
@@ -153,7 +155,7 @@ If a run for some reason failed you can instead look at the error output:
 
 ### Transfer files
 
-You can transfer files over to your remote. Just run something like:
+You can transfer files over to your remote:
 
     $ berk send "myfile.txt" "/home/myname/myfile.txt" "myhost"
 
@@ -177,16 +179,20 @@ This way, and with some bash magic, you can make very complex execution schemes.
 
 ### Shell
 
-Another nice feature is that you can easily connect to your remote and get a shell.
-
-Just run:
+Another nice feature is that you can easily connect to your remote and get a shell:
 
     $ berk shell "myhost"
 
-This is nice if you want to connect to your remote to do some smaller changes.
+This is nice if you want to connect to your remote to do some changes.
 
 ### Hooks
 
-Under .berk/hooks there are a bunch of hook samples. If you remove the .sample suffix from any of them, they will get executed at certain times while berk is running depending on their name.
+Under .berk/hooks there are a bunch of samples. If you remove the .sample suffix from any of them they will get executed while berk is running.
 
-You can use these hooks to script your own notifications for example.
+    begin: Triggered before a job is started.
+    end: Triggered after a job has finished.
+    start: Triggered before a run on a remote is started.
+    stop: Triggered after a run on a remote is finished.
+    send: Triggered when a send is performed.
+
+As an example, you can use these hooks to script your own notifications.
