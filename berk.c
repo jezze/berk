@@ -1003,9 +1003,9 @@ static int command_config(struct args *args)
 static int command_exec(struct args *args)
 {
 
+    char *command = DEFAULT_COMMAND;
     unsigned int dowait = 0;
     unsigned int nofork = 0;
-    char *command = DEFAULT_COMMAND;
     unsigned int index = 0;
 
     args_setoptions(args, "c:nw");
