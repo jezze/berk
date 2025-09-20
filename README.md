@@ -63,12 +63,13 @@ Alternatively, if you don't have a computer with ssh you can create a remote tha
 To check what remotes you have you can do:
 
     $ berk remote
+    myhost
 
 ### Configure remotes
 
 To check the configuration of "myhost" do:
 
-    $ berk config "myhost"
+    $ berk config list "myhost"
 
 For the remote, you might want a different username. Say you want the user to be called "testuser" instead you write:
 
