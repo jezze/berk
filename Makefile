@@ -26,7 +26,7 @@ dist: ${TARPKG}
 
 install: ${BIN}
 	install -Dm 755 ${BIN} ${DESTDIR}/usr/bin/${BIN}
-	install -Dm 644 ${MANGZ} ${DESTDIR}/usr/share/man//man1/${MANGZ}
+	install -Dm 644 ${MANGZ} ${DESTDIR}/usr/share/man/man1/${MANGZ}
 
 .c.o:
 	${CC} -c -o $@ ${CFLAGS} $<
