@@ -973,28 +973,22 @@ static int command_config(struct args *args)
         {
 
         default:
-            switch (args->position)
+            command = get_command_config(args->value);
+
+            switch (command)
             {
 
             case 1:
-                command = get_command_config(args->value);
+                return command_config_get(args);
 
-                switch (command)
-                {
+            case 2:
+                return command_config_list(args);
 
-                case 1:
-                    return command_config_get(args);
+            case 3:
+                return command_config_set(args);
 
-                case 2:
-                    return command_config_list(args);
-
-                case 3:
-                    return command_config_set(args);
-
-                case 4:
-                    return command_config_unset(args);
- 
-                }
+            case 4:
+                return command_config_unset(args);
 
             }
 
@@ -1236,22 +1230,16 @@ static int command_remote(struct args *args)
             break;
 
         default:
-            switch (args->position)
+            command = get_command_remote(args->value);
+
+            switch (command)
             {
 
             case 1:
-                command = get_command_remote(args->value);
+                return command_remote_add(args);
 
-                switch (command)
-                {
-
-                case 1:
-                    return command_remote_add(args);
-
-                case 2:
-                    return command_remote_remove(args);
- 
-                }
+            case 2:
+                return command_remote_remove(args);
 
             }
 
@@ -1511,75 +1499,66 @@ static int command_main(struct args *args)
         {
 
         default:
-            switch (args->position)
+            command = get_command_main(args->value);
+
+            switch (command)
             {
 
-            case 1:
-                command = get_command_main(args->value);
-
-                switch (command)
-                {
-
-                case 3:
-                case 4:
-                case 11:
-                    break;
-
-                default:
-                    if (!config_init())
-                        panic(ERROR_INIT, CONFIG_ROOT);
-
-                    break;
-
-                }
-
-                switch (command)
-                {
-
-                case 1:
-                    return command_config(args);
-
-                case 2:
-                    return command_exec(args);
-
-                case 3:
-                    return command_help(args);
-
-                case 4:
-                    return command_init(args);
-
-                case 5:
-                    return command_log(args);
-
-                case 6:
-                    return command_remote(args);
-
-                case 7:
-                    return command_send(args);
-
-                case 8:
-                    return command_shell(args);
-
-                case 9:
-                    return command_show(args);
-
-                case 10:
-                    return command_stop(args);
-
-                case 11:
-                    return command_version(args);
-
-                case 12:
-                    return command_wait(args);
-
-                }
-
+            case 3:
+            case 4:
+            case 11:
                 break;
 
             default:
-                panic(ERROR_ARG_MANY);
+                if (!config_init())
+                    panic(ERROR_INIT, CONFIG_ROOT);
+
+                break;
 
             }
+
+            switch (command)
+            {
+
+            case 1:
+                return command_config(args);
+
+            case 2:
+                return command_exec(args);
+
+            case 3:
+                return command_help(args);
+
+            case 4:
+                return command_init(args);
+
+            case 5:
+                return command_log(args);
+
+            case 6:
+                return command_remote(args);
+
+            case 7:
+                return command_send(args);
+
+            case 8:
+                return command_shell(args);
+
+            case 9:
+                return command_show(args);
+
+            case 10:
+                return command_stop(args);
+
+            case 11:
+                return command_version(args);
+
+            case 12:
+                return command_wait(args);
+
+            }
+
+            break;
 
         }
 
