@@ -962,8 +962,6 @@ static int command_config_unset(struct args *args)
 static int command_config(struct args *args)
 {
 
-    unsigned int command = 0;
-
     args_setoptions(args, 0);
 
     while (args_next(args))
@@ -973,9 +971,7 @@ static int command_config(struct args *args)
         {
 
         default:
-            command = get_command_config(args->value);
-
-            switch (command)
+            switch (get_command_config(args->value))
             {
 
             case 1:
@@ -1213,7 +1209,6 @@ static int command_remote_remove(struct args *args)
 static int command_remote(struct args *args)
 {
 
-    unsigned int command = 0;
     char *tags = NULL;
 
     args_setoptions(args, "t:");
@@ -1230,9 +1225,7 @@ static int command_remote(struct args *args)
             break;
 
         default:
-            command = get_command_remote(args->value);
-
-            switch (command)
+            switch (get_command_remote(args->value))
             {
 
             case 1:
@@ -1488,8 +1481,6 @@ static int command_wait(struct args *args)
 static int command_main(struct args *args)
 {
 
-    unsigned int command = 0;
-
     args_setoptions(args, "h");
 
     while (args_next(args))
@@ -1499,9 +1490,7 @@ static int command_main(struct args *args)
         {
 
         default:
-            command = get_command_main(args->value);
-
-            switch (command)
+            switch (get_command_main(args->value))
             {
 
             case 3:
@@ -1517,7 +1506,7 @@ static int command_main(struct args *args)
 
             }
 
-            switch (command)
+            switch (get_command_main(args->value))
             {
 
             case 1:
