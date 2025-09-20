@@ -25,7 +25,11 @@ int log_open(struct log *log)
     if (log->fd < 0)
         return -1;
 
+    flock(log->fd, LOCK_SH);
+
     log->size = lseek(log->fd, 0, SEEK_END);
+
+    flock(log->fd, LOCK_UN);
 
     if (log->size % LOG_ENTRYSIZE != 0)
         return -1;
@@ -75,9 +79,12 @@ int log_read(struct log *log)
     char buffer[BUFSIZ];
     int count;
 
+    flock(log->fd, LOCK_SH);
     lseek(log->fd, log->position, SEEK_SET);
 
     count = read(log->fd, buffer, LOG_ENTRYSIZE);
+
+    flock(log->fd, LOCK_UN);
 
     if (count != LOG_ENTRYSIZE)
         return 0;
@@ -287,8 +294,8 @@ int log_update(struct log *log)
     if (fd < 0)
         return -1;
 
-    lseek(fd, log->position, SEEK_SET);
     flock(fd, LOCK_SH);
+    lseek(fd, log->position, SEEK_SET);
 
     if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
         return -1;

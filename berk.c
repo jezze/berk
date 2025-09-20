@@ -41,6 +41,8 @@
 #define ERROR_RUN_UPDATE                "Could not update run '%u' with type '%s'."
 #define ERROR_RUN_OPEN                  "Could not open run '%u'."
 #define ERROR_RUN_CLOSE                 "Could not close run '%u'."
+#define ERROR_RUN_GETPID                "Could not get pid of run '%u'."
+#define ERROR_RUN_GETSTATUS             "Could not get status of run '%u'."
 #define ERROR_ARG_MANY                  "Too many arguments."
 #define ERROR_ARG_COMMAND               "Unrecognized command '%s'."
 #define ERROR_ARG_INVALID               "Invalid argument '%s'."
@@ -223,10 +225,16 @@ static void updatelog(struct log *log)
 
         pid = run_get_pid(&run, log->id);
 
+        if (pid < 0)
+            continue;
+
         if (pid == 0)
             log->complete++;
 
         status = run_get_status(&run, log->id);
+
+        if (status < 0)
+            continue;
 
         switch (status)
         {
@@ -749,6 +757,9 @@ static void do_stop(char *id)
         run_init(&run, i);
 
         pid = run_get_pid(&run, log.id);
+
+        if (pid < 0)
+            panic(ERROR_RUN_GETPID);
 
         if (pid)
         {

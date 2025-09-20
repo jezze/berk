@@ -41,7 +41,7 @@ int run_update_remote(struct run *run, char *id, char *remote)
 
 }
 
-unsigned int run_get_status(struct run *run, char *id)
+int run_get_status(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
@@ -54,7 +54,7 @@ unsigned int run_get_status(struct run *run, char *id)
     fd = open(path, O_RDONLY, 0644);
 
     if (fd < 0)
-        return 0;
+        return -1;
 
     count = read(fd, buffer, 64);
 
@@ -69,7 +69,7 @@ unsigned int run_get_status(struct run *run, char *id)
 
     }
 
-    return 0;
+    return -1;
 
 }
 
@@ -124,7 +124,7 @@ int run_update_status(struct run *run, char *id, unsigned int status)
 
 }
 
-unsigned int run_get_pid(struct run *run, char *id)
+int run_get_pid(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
@@ -137,7 +137,7 @@ unsigned int run_get_pid(struct run *run, char *id)
     fd = open(path, O_RDONLY, 0644);
 
     if (fd < 0)
-        return 0;
+        return -1;
 
     count = read(fd, buffer, 64);
 
@@ -154,7 +154,7 @@ unsigned int run_get_pid(struct run *run, char *id)
 
     }
 
-    return 0;
+    return -1;
 
 }
 
