@@ -2,16 +2,15 @@
 
 set -e
 
-WD="$(pwd)"
-BERK="${WD}/berk"
+BERK=${1}
+TESTDIR=${2}
+
 VERSION="0.0.1"
 REMOTE1="myhost1"
 REMOTE2="myhost2"
 TESTDATA="testdata123testdata456"
 
-rm -rf ${WD}/testdir
-mkdir ${WD}/testdir
-cd ${WD}/testdir
+cd "${TESTDIR}"
 
 echo -n "Uninitialized... "
 ${BERK} | grep -q "Usage: ${BERK}"
@@ -157,5 +156,3 @@ ${BERK} show | grep -q "id=.* datetime=.*"
 ${BERK} show | grep -q "total=1 complete=1 aborted=1 passed=0 failed=0"
 ${BERK} show | grep -q "    run=0 remote=${REMOTE1} status=aborted"
 echo "OK"
-
-cd ${WD}

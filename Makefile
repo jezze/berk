@@ -10,14 +10,15 @@ TARVER:=0.0.1
 TARDIR:=${TARNAME}-${TARVER}
 TARPKG:=${TARDIR}.tar.gz
 SCRIPTDIR:=script
-TESTSCRIPT:=${CURDIR}/${SCRIPTDIR}/test.sh
+TESTDIR:=testdir
+TESTSCRIPT:=${SCRIPTDIR}/test.sh
 
 all: ${BIN}
 
-test: ${TESTSCRIPT}
+test: ${TESTDIR}
 
 clean:
-	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG}
+	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG} ${TESTDIR}
 
 dist: ${TARPKG}
 
@@ -37,5 +38,6 @@ ${TARDIR}:
 ${TARPKG}: ${TARDIR}
 	tar czf $@ $^
 
-${TESTSCRIPT}: ${BIN}
-	${TESTSCRIPT}
+${TESTDIR}:
+	mkdir -p ${TESTDIR}
+	${TESTSCRIPT} ${CURDIR}/berk ${TESTDIR}
