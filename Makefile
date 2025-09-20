@@ -38,6 +38,6 @@ ${TARDIR}:
 ${TARPKG}: ${TARDIR}
 	tar czf $@ $^
 
-${TESTDIR}:
-	mkdir -p ${TESTDIR}
-	${TESTSCRIPT} ${CURDIR}/berk ${TESTDIR}
+${TESTDIR}: ${BIN}
+	mkdir -p $@
+	${TESTSCRIPT} ${CURDIR}/${BIN} $@
