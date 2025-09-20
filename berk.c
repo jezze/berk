@@ -207,12 +207,11 @@ static char *assert_print(char *arg)
 static void updatelog(struct log *log)
 {
 
+    unsigned int complete = 0;
+    unsigned int aborted = 0;
+    unsigned int passed = 0;
+    unsigned int failed = 0;
     unsigned int i;
-
-    log->complete = 0;
-    log->aborted = 0;
-    log->passed = 0;
-    log->failed = 0;
 
     for (i = 0; i < log->total; i++)
     {
@@ -223,6 +222,14 @@ static void updatelog(struct log *log)
 
         run_init(&run, i);
 
+        pid = run_get_pid(&run, log->id);
+
+        if (pid < 0)
+            continue;
+
+        if (pid == 0)
+            complete++;
+
         status = run_get_status(&run, log->id);
 
         if (status < 0)
@@ -231,38 +238,43 @@ static void updatelog(struct log *log)
         switch (status)
         {
 
+        case RUN_STATUS_UNKNOWN:
+            continue;
+
         case RUN_STATUS_PENDING:
             continue;
 
         case RUN_STATUS_ABORTED:
-            log->aborted++;
+            aborted++;
 
             break;
 
         case RUN_STATUS_PASSED:
-            log->passed++;
+            passed++;
 
             break;
 
         case RUN_STATUS_FAILED:
-            log->failed++;
+            failed++;
 
             break;
 
         }
 
-        pid = run_get_pid(&run, log->id);
-
-        if (pid < 0)
-            continue;
-
-        if (pid == 0)
-            log->complete++;
-
     }
 
-    if (log_update(log))
-        panic(ERROR_LOG_UPDATE);
+    if (complete == log->total)
+    {
+
+        log->complete = complete;
+        log->aborted = aborted;
+        log->passed = passed;
+        log->failed = failed;
+
+        if (log_update(log))
+            panic(ERROR_LOG_UPDATE);
+
+    }
 
 }
 
