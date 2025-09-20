@@ -1059,14 +1059,14 @@ static int command_help(struct args *args)
         panic(ERROR_ARG_MANY);
 
     assert_args(args);
-    printf("Usage: %s <command> [<args>]\n", args->argv[0]);
+    printf("Usage: %s [-h] <command> [<args>]\n", args->argv[0]);
     printf("\n");
     printf("List of commands:\n");
     printf("    %s\n", "config get <key> <remote> [<remote>...]");
     printf("    %s\n", "config list <remote> [<remote>...]");
     printf("    %s\n", "config set <key> <value> <remote> [<remote>...]");
     printf("    %s\n", "config unset <key> <remote> [<remote>...]");
-    printf("    %s\n", "exec [-n] [-w] <command> <remote> [<remote>...]");
+    printf("    %s\n", "exec [-c <command>] [-n] [-w] <remote> [<remote>...]");
     printf("    %s\n", "help");
     printf("    %s\n", "init");
     printf("    %s\n", "log [-c <count>] [-s <skip>]");
@@ -1493,6 +1493,9 @@ static int command_main(struct args *args)
 
         switch (args->flag)
         {
+
+        case 'h':
+            return command_help(args);
 
         default:
             switch (get_command_main(args->value))

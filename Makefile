@@ -12,18 +12,21 @@ TARPKG:=${TARDIR}.tar.gz
 SCRIPTDIR:=script
 TESTDIR:=testdir
 TESTSCRIPT:=${SCRIPTDIR}/test.sh
+MAN:=berk.1
+MANGZ:=berk.1.gz
 
-all: ${BIN}
+all: ${BIN} ${MANGZ}
 
 test: ${TESTDIR}
 
 clean:
-	rm -rf ${BIN} ${OBJ} ${TARDIR} ${TARPKG} ${TESTDIR}
+	rm -rf ${BIN} ${OBJ} ${MANGZ} ${TARDIR} ${TARPKG} ${TESTDIR}
 
 dist: ${TARPKG}
 
 install: ${BIN}
 	install -Dm 755 ${BIN} ${DESTDIR}/usr/bin/${BIN}
+	install -Dm 644 ${MANGZ} ${DESTDIR}/usr/share/man//man1/${MANGZ}
 
 .c.o:
 	${CC} -c -o $@ ${CFLAGS} $<
@@ -31,9 +34,12 @@ install: ${BIN}
 ${BIN}: ${OBJ}
 	${CC} -o $@ $^ -lssh2
 
+${MANGZ}: ${MAN}
+	gzip -c $^ > $@
+
 ${TARDIR}:
 	mkdir -p $@
-	cp -r Makefile ${SRC} ${HEADERS} ${SCRIPTDIR} $@
+	cp -r Makefile ${SRC} ${HEADERS} ${MAN} ${SCRIPTDIR} $@
 
 ${TARPKG}: ${TARDIR}
 	tar czf $@ $^

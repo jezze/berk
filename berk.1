@@ -1,0 +1,186 @@
+.TH man 1 "06 May 2010" "1.0" "nuseradd man page"
+.SH NAME
+berk - A simple and versatile job dispatcher 
+.SH SYNOPSIS
+.B berk
+[-h] <command> [<args>]
+.SH DESCRIPTION
+This program called berk is a simple but versatile job dispatcher. It can, given a set of machines, called remotes, execute jobs on each machine and log the outputs.
+.P
+Jobs can be issued both synchronously or asynchronously, and can be monitored. Various statuses, stdout and stderr is logged and can be easily viewed at any point.
+.P
+Berk was written to be a replacement for Jenkins and similar bloated software and uses a syntax and design similar to git.
+.P
+It was written by Jens Nyberg.
+.SH OPTIONS
+.B -h
+    Show help
+.P
+.B <command>
+    Command. Refer to COMMANDS for more information.
+.P
+.B <args>
+    Command arguments. Refer to COMMANDS for more information.
+.P
+.SH COMMANDS
+.B config list
+<remote> [<remote...>]
+.P
+    List configuration for remote(s).
+
+    <remote>: String with name of remote.
+.P
+.B config set
+<key> <value> <remote> [<remote>...]
+.P
+    Set the value of key for remote(s).
+
+    <key>: String with Configuration key to set.
+    <value>: String with value to give key.
+    <remote>: String with name of remote.
+.P
+.B config unset
+<key> <remote> [<remote>...]
+.P
+    Unset key for remote(s).
+
+    <key>: String with Configuration key to get.
+    <remote>: String with name of remote.
+.P
+.B exec
+[-c <command>] [-n] [-w] <remote> [<remote>...]
+.P
+    Execute command and remote(s).
+
+    -c: The shell command to perform.
+    -n: No forking. Berk will run jobs sequentially.
+    -w: Wait for jobs to finish before exiting.
+
+    <remote>: String with name of remote.
+.P
+.B help
+.P
+    Show help.
+.P
+.B init
+.P
+    Initializes a new work area. This will create the .berk directory where all configuration and logs resides.
+.P
+.B log
+[-c <count>] [-s <skip>]
+.P
+    Show history of all jobs.
+
+    -c: Number of entries to show.
+    -s: Number of entries to skip.
+
+    <count>: Integer value.
+    <skip>: Integer value.
+.P
+.B remote
+[-t <tags>]
+.P
+    List all remotes available.
+
+    -t: Only show remotes with tag.
+
+    <tags>: String with tags, seperated by space.
+.P
+.B remote add
+[-h <hostname>] [-t <type>] <name>
+.P
+    Add a new remote with a given name.
+
+    -h: Hostname of remote.
+    -t: Type of remote.
+
+    <hostname>: String with hostname.
+    <type>: String with type. Valid types are 'ssh' or 'local'.
+.P
+.B remote remove
+<remote> [<remote>...]
+.P
+    Remove existing remote with a given name.
+
+    <remote>: String with name of remote.
+.P
+.B send
+<localpath> <remotepath> <remote> [<remote>...]
+.P
+    Send file to remote(s).
+
+    <localpath>: The local path to the file you wish to send.
+    <remotepath>: The remote path where you want the file to be placed.
+    <remote>: String with name of remote.
+.P
+.B shell 
+[-t <type>] <remote>
+.P
+    Open a shell to a remote.
+
+    -t: Type of shell.
+
+    <type>: String with type of shell, default is vt102.
+    <remote>: String with name of remote.
+.P
+.B show 
+[-e] [-o] [-r <run>] [<refspec>]
+.P
+    Show information about a job, and/or output from runs.
+
+    -e: Show stderr of run.
+    -o: Show stdout of run.
+    -r: Show run.
+
+    <run>: Integer value run number. Typically 0..n.
+    <refspec>: String with either a job id, HEAD or HEAD~x where x is an integer.
+.P
+.B stop 
+[<refspec>]
+.P
+    Stop execution of a running job.
+
+    <refspec>: String with either a job id, HEAD or HEAD~x where x is an integer. Default is HEAD.
+.P
+.B version
+.P
+    Print version of berk.
+.P
+.B wait
+[<refspec>]
+.P
+    Wait for execution of a running job to complete.
+
+    <refspec>: String with either a job id, HEAD or HEAD~x where x is an integer. Default is HEAD.
+.P
+.SH CONFIGURATION
+These are the available keys that can be configured using berk config:
+.P
+.B hostname 
+    The hostname of the remote.
+.P
+.B password
+    The password of the remote.
+.P
+.B privatekey
+    The path to the private key on the machine where berk is executed.
+.P
+.B publickey
+    The path to the public key on the machine where berk is executed.
+.P
+.B port
+    The port of the remote. Default is 22.
+.P
+.B tags
+    The tags of the remote. Multiple tags can be set with a space-seperated string.
+.P
+.B type
+    The type of remote. Valid values are 'local' and 'ssh'. 'ssh' is the default.
+.P
+.B username
+    The username to use when connecting to a remote.
+.P
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Jens Nyberg (jens.nyberg@gmail.com)
