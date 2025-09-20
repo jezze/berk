@@ -223,14 +223,6 @@ static void updatelog(struct log *log)
 
         run_init(&run, i);
 
-        pid = run_get_pid(&run, log->id);
-
-        if (pid < 0)
-            continue;
-
-        if (pid == 0)
-            log->complete++;
-
         status = run_get_status(&run, log->id);
 
         if (status < 0)
@@ -238,6 +230,9 @@ static void updatelog(struct log *log)
 
         switch (status)
         {
+
+        case RUN_STATUS_PENDING:
+            continue;
 
         case RUN_STATUS_ABORTED:
             log->aborted++;
@@ -255,6 +250,14 @@ static void updatelog(struct log *log)
             break;
 
         }
+
+        pid = run_get_pid(&run, log->id);
+
+        if (pid < 0)
+            continue;
+
+        if (pid == 0)
+            log->complete++;
 
     }
 
