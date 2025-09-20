@@ -180,6 +180,24 @@ These are the available keys that can be configured using berk config:
 .B username
     The username to use when connecting to a remote.
 .P
+.SH HOOKS
+Hooks resides under .berk/hooks and are enabled by removing the .sample suffix.
+.P
+.B begin
+    Triggered before a job is started.
+.P
+.B end
+    Triggered after a job has finished.
+.P
+.B start
+    Triggered before a run on a remote is started.
+.P
+.B start
+    Triggered after a run on a remote is finished.
+.P
+.B send
+    Triggered when a send is performed.
+.P
 .SH BUGS
 No known bugs.
 .SH AUTHOR
