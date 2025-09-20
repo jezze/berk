@@ -192,10 +192,10 @@ This is nice if you want to connect to your remote to do some changes.
 
 Under .berk/hooks there are a bunch of samples. If you remove the .sample suffix from any of them they will get executed while berk is running.
 
-    begin: Triggered before a job is started.
-    end: Triggered after a job has finished.
-    start: Triggered before a run on a remote is started.
-    stop: Triggered after a run on a remote is finished.
-    send: Triggered when a send is performed.
+* begin: Triggered before a job is started.
+* end: Triggered after a job has finished.
+* start: Triggered before a run on a remote is started.
+* stop: Triggered after a run on a remote is finished.
+* send: Triggered when a send is performed.
 
 As an example, you can use these hooks to script your own notifications.
