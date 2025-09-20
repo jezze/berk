@@ -4,6 +4,7 @@
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/file.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include "config.h"
@@ -287,10 +288,12 @@ int log_update(struct log *log)
         return -1;
 
     lseek(fd, log->position, SEEK_SET);
+    flock(fd, LOCK_SH);
 
     if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
         return -1;
 
+    flock(fd, LOCK_UN);
     close(fd);
 
     return 0;
