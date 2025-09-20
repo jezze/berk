@@ -38,6 +38,8 @@ For Debian:
 
 ## Quick tutorial
 
+For more detailed information, please refer to man berk(1).
+
 ### Initialization
 
 First choose a directory where berk can store it's configuration. The recommended way is to use the root of your source tree which is the same directory where you typically can find the .git directory.
