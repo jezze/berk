@@ -1006,6 +1006,7 @@ static int command_exec(struct args *args)
     unsigned int dowait = 0;
     unsigned int nofork = 0;
     char *command = DEFAULT_COMMAND;
+    unsigned int index = 0;
 
     args_setoptions(args, "c:nw");
 
@@ -1031,15 +1032,19 @@ static int command_exec(struct args *args)
             break;
 
         default:
-            do_exec(command, nofork, dowait, args->argc - args->index + 1, args->argv + args->index - 1);
+            assert_print(args->value);
 
-            return EXIT_SUCCESS;
+            if (!index)
+                index = args->index - 1;
+
+            break;
 
         }
 
     }
 
     assert_args(args);
+    do_exec(command, nofork, dowait, args->argc - index, args->argv + index);
 
     return EXIT_SUCCESS;
 
