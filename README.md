@@ -58,7 +58,7 @@ If you want to create a remote that has a running ssh server (which is the defau
 
 Alternatively, if you don't have a computer with ssh you can create a remote that runs on your local computer:
 
-    $ berk remote add -t local "mylocalhost"
+    $ berk remote add -t local "myhost"
 
 To check what remotes you have you can do:
 
