@@ -1,5 +1,6 @@
 *.o
 berk
+berk.1.gz
 berk-*.tar.gz
 berk-*/
 deb/
