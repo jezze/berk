@@ -78,7 +78,7 @@ int config_save(struct config_core *core)
 
     config_get_path(path, BUFSIZ, CONFIG_PATH);
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;

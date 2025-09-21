@@ -159,7 +159,7 @@ int remote_save(struct remote *remote)
 
     config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
@@ -507,7 +507,7 @@ static int remote_send_local(struct remote *remote, char *localpath, char *remot
     if (fdlocal < 0)
         return -1;
 
-    fdremote = open(remotepath, O_WRONLY | O_CREAT, fileinfo.st_mode | 0777);
+    fdremote = open(remotepath, O_WRONLY | O_CREAT | O_SYNC, fileinfo.st_mode | 0777);
 
     if (fdremote < 0)
         return -1;

@@ -263,18 +263,13 @@ static void updatelog(struct log *log)
 
     }
 
-    if (complete == log->total)
-    {
+    log->complete = complete;
+    log->aborted = aborted;
+    log->passed = passed;
+    log->failed = failed;
 
-        log->complete = complete;
-        log->aborted = aborted;
-        log->passed = passed;
-        log->failed = failed;
-
-        if (log_update(log))
-            panic(ERROR_LOG_UPDATE);
-
-    }
+    if (log_update(log))
+        panic(ERROR_LOG_UPDATE);
 
 }
 
@@ -521,7 +516,7 @@ static void do_init(void)
         snprintf(buffer, BUFSIZ, "%s.sample", hooks[i]);
         config_get_subpath(path, BUFSIZ, CONFIG_HOOKS, buffer);
 
-        fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0755);
+        fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0755);
 
         if (fd < 0)
             panic(ERROR_HOOK_CREATE, hooks[i]);
@@ -771,10 +766,19 @@ static void do_stop(char *id)
 
         run_init(&run, i);
 
-        pid = run_get_pid(&run, log.id);
+        for (;;)
+        {
 
-        if (pid < 0)
-            panic(ERROR_RUN_GETPID);
+            pid = run_get_pid(&run, log.id);
+
+            if (pid < 0)
+                continue;
+
+            sleep(1);
+
+            break;
+
+        }
 
         if (pid)
         {

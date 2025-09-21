@@ -29,7 +29,7 @@ int run_update_remote(struct run *run, char *id, char *remote)
 
     config_get_runpath(path, BUFSIZ, id, run->index, "remote");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
@@ -112,7 +112,7 @@ int run_update_status(struct run *run, char *id, unsigned int status)
 
     }
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
@@ -166,7 +166,7 @@ int run_update_pid(struct run *run, char *id, unsigned int pid)
 
     config_get_runpath(path, BUFSIZ, id, run->index, "pid");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
@@ -185,11 +185,11 @@ int run_open(struct run *run, char *id)
 
     config_get_runpath(path, BUFSIZ, id, run->index, "stderr");
 
-    run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     config_get_runpath(path, BUFSIZ, id, run->index, "stdout");
 
-    run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     return 0;
 
