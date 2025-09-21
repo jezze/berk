@@ -774,8 +774,6 @@ static void do_stop(char *id)
             if (pid < 0)
                 continue;
 
-            sleep(1);
-
             break;
 
         }
@@ -813,7 +811,6 @@ static void do_wait(char *id)
     while (log.complete < log.total)
     {
 
-        sleep(1);
         log_read(&log);
 
     }
