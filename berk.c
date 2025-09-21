@@ -541,14 +541,19 @@ static void do_log(char *count, char *skip)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    for (n = 1; log_readprev(&log); n++)
+    for (n = 1; log_moveprev(&log, 1) >= 0; n++)
     {
 
-        if (n > s)
-            log_print(&log);
+        if (log_read(&log))
+        {
 
-        if (c && n - s == c)
-            break;
+            if (n > s)
+                log_print(&log);
+
+            if (c && n - s == c)
+                break;
+
+        }
 
     }
 

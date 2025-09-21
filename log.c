@@ -95,15 +95,21 @@ int log_read(struct log *log)
 
 }
 
-int log_readprev(struct log *log)
+int log_moveprev(struct log *log, unsigned int steps)
 {
 
-    if (log->position < LOG_ENTRYSIZE)
-        return 0;
+    unsigned int bytes = steps * LOG_ENTRYSIZE;
 
-    log->position -= LOG_ENTRYSIZE;
+    if (log->position >= bytes)
+    {
 
-    return log_read(log);
+        log->position -= bytes;
+
+        return log->position;
+
+    }
+
+    return -1;
 
 }
 
@@ -116,36 +122,29 @@ int log_find(struct log *log, char *id)
         return 0;
 
     if (length == 4 && memcmp(id, "HEAD", 4) == 0)
-        return log_readprev(log);
+        return (log_moveprev(log, 1) >= 0) ? log_read(log) : 0;
 
     if (length > 5 && memcmp(id, "HEAD~", 5) == 0)
     {
 
         unsigned int count = 0;
-        unsigned int i;
-        int rc = log_readprev(log);
 
         sscanf(id, "HEAD~%u", &count);
 
-        for (i = 0; i < count; i++)
-        {
-
-            rc = log_readprev(log);
-
-            if (rc == 0)
-                return 0;
-
-        }
-
-        return 1;
+        return (log_moveprev(log, count + 1) >= 0) ? log_read(log) : 0;
 
     }
 
-    while (log_readprev(log))
+    while (log_moveprev(log, 1) >= 0)
     {
 
-        if (memcmp(log->id, id, length) == 0)
-            return 1;
+        if (log_read(log))
+        {
+
+            if (memcmp(log->id, id, length) == 0)
+                return 1;
+
+        }
 
     }
 
