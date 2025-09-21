@@ -86,8 +86,11 @@ int log_read(struct log *log)
 
     flock(log->fd, LOCK_UN);
 
+    if (count < 0)
+        return -1;
+
     if (count != LOG_ENTRYSIZE)
-        return 0;
+        return -1;
 
     sscanf(buffer, "%s %s %u %u %u %u %u\n", log->id, log->datetime, &log->total, &log->complete, &log->aborted, &log->passed, &log->failed);
 
@@ -122,7 +125,12 @@ int log_find(struct log *log, char *id)
         return 0;
 
     if (length == 4 && memcmp(id, "HEAD", 4) == 0)
-        return (log_moveprev(log, 1) >= 0) ? log_read(log) : 0;
+    {
+
+        if (log_moveprev(log, 1) >= 0)
+            return log_read(log);
+
+    }
 
     if (length > 5 && memcmp(id, "HEAD~", 5) == 0)
     {
@@ -131,20 +139,19 @@ int log_find(struct log *log, char *id)
 
         sscanf(id, "HEAD~%u", &count);
 
-        return (log_moveprev(log, count + 1) >= 0) ? log_read(log) : 0;
+        if (log_moveprev(log, count + 1) >= 0)
+            return log_read(log);
 
     }
 
     while (log_moveprev(log, 1) >= 0)
     {
 
-        if (log_read(log))
-        {
+        if (log_read(log) < 0)
+            return -1;
 
-            if (memcmp(log->id, id, length) == 0)
-                return 1;
-
-        }
+        if (memcmp(log->id, id, length) == 0)
+            return LOG_ENTRYSIZE;
 
     }
 

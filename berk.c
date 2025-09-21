@@ -27,6 +27,7 @@
 #define ERROR_LOG_ADD                   "Could not add log."
 #define ERROR_LOG_UPDATE                "Could not update log."
 #define ERROR_LOG_PREPARE               "Could not prepare log."
+#define ERROR_LOG_READ                  "Could not read log."
 #define ERROR_LOG_FIND                  "Could not find log '%s'."
 #define ERROR_REMOTE_PREPARE            "Could not init remote '%s'."
 #define ERROR_REMOTE_LOAD               "Could not load remote '%s'."
@@ -544,16 +545,14 @@ static void do_log(char *count, char *skip)
     for (n = 1; log_moveprev(&log, 1) >= 0; n++)
     {
 
-        if (log_read(&log))
-        {
+        if (log_read(&log) < 0)
+            panic(ERROR_LOG_READ);
 
-            if (n > s)
-                log_print(&log);
+        if (n > s)
+            log_print(&log);
 
-            if (c && n - s == c)
-                break;
-
-        }
+        if (c && n - s == c)
+            break;
 
     }
 
@@ -724,7 +723,7 @@ static void do_show(char *id, char *run, unsigned int descriptor)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    if (!log_find(&log, id))
+    if (log_find(&log, id) <= 0)
         panic(ERROR_LOG_FIND, id);
 
     switch (descriptor)
@@ -757,7 +756,7 @@ static void do_stop(char *id)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    if (!log_find(&log, id))
+    if (log_find(&log, id) <= 0)
         panic(ERROR_LOG_FIND, id);
 
     if (log_close(&log) < 0)
@@ -810,7 +809,7 @@ static void do_wait(char *id)
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
-    if (!log_find(&log, id))
+    if (log_find(&log, id) <= 0)
         panic(ERROR_LOG_FIND, id);
 
     while (log.complete < log.total)
