@@ -264,17 +264,17 @@ int log_add(struct log *log)
     strftime(log->datetime, 25, "%FT%T%z", localtime(&timeraw));
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_APPEND | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
 
     flock(fd, LOCK_SH);
 
+    log->position = lseek(fd, 0, SEEK_END);
+
     if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
         return -1;
-
-    log->position = lseek(fd, -LOG_ENTRYSIZE, SEEK_CUR);
 
     flock(fd, LOCK_UN);
     close(fd);
