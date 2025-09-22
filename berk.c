@@ -218,7 +218,7 @@ static void updatelog(struct log *log)
     {
 
         struct run run;
-        unsigned int pid;
+        int pid;
         unsigned int status;
 
         run_init(&run, i);
@@ -227,9 +227,6 @@ static void updatelog(struct log *log)
 
         if (pid < 0)
             continue;
-
-        if (pid == 0)
-            complete++;
 
         status = run_get_status(&run, log->id);
 
@@ -261,6 +258,9 @@ static void updatelog(struct log *log)
             break;
 
         }
+
+        if (pid == 0)
+            complete++;
 
     }
 
