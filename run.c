@@ -41,7 +41,7 @@ int run_update_remote(struct run *run, char *id, char *remote)
 
 }
 
-int run_get_status(struct run *run, char *id)
+unsigned int run_get_status(struct run *run, char *id)
 {
 
     char path[BUFSIZ];
@@ -54,7 +54,7 @@ int run_get_status(struct run *run, char *id)
     fd = open(path, O_RDONLY, 0644);
 
     if (fd < 0)
-        return -1;
+        return 0;
 
     count = read(fd, buffer, 64);
 
@@ -69,7 +69,7 @@ int run_get_status(struct run *run, char *id)
 
     }
 
-    return -1;
+    return 0;
 
 }
 

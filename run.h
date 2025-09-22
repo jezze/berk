@@ -15,7 +15,7 @@ struct run
 
 int run_prepare(struct run *run, char *id);
 int run_update_remote(struct run *run, char *id, char *remote);
-int run_get_status(struct run *run, char *id);
+unsigned int run_get_status(struct run *run, char *id);
 int run_update_status(struct run *run, char *id, unsigned int status);
 int run_get_pid(struct run *run, char *id);
 int run_update_pid(struct run *run, char *id, unsigned int pid);

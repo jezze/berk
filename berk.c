@@ -257,6 +257,9 @@ static void updatelog(struct log *log)
 
             break;
 
+        default:
+            continue;
+
         }
 
         if (pid == 0)
