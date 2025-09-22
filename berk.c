@@ -50,7 +50,7 @@
 #define ERROR_ARG_PARSE                 "Could not parse '%s' as '%s'."
 #define ERROR_ARG_FLAG                  "Unrecognized flag '%s'."
 #define ERROR_ARG_UNKNOWN               "Argument parsing failed."
-#define DEFAULT_COMMAND                 "hostname; uname -a; uptime; date; whoami; df; free";
+#define DEFAULT_COMMAND                 "hostname; uname -a; uptime; date; whoami; df; free"
 
 int error(char *format, ...)
 {
