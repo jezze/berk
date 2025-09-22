@@ -219,7 +219,6 @@ static void updatelog(struct log *log)
 
         struct run run;
         int pid;
-        unsigned int status;
 
         run_init(&run, i);
 
@@ -228,12 +227,7 @@ static void updatelog(struct log *log)
         if (pid < 0)
             continue;
 
-        status = run_get_status(&run, log->id);
-
-        if (status < 0)
-            continue;
-
-        switch (status)
+        switch (run_get_status(&run, log->id))
         {
 
         case RUN_STATUS_UNKNOWN:
