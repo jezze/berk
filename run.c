@@ -7,12 +7,39 @@
 #include "util.h"
 #include "run.h"
 
-int run_prepare(struct run *run, char *id)
+char *getstatusname(unsigned int status)
+{
+
+    switch (status)
+    {
+
+    case RUN_STATUS_UNKNOWN:
+        return "unknown";
+
+    case RUN_STATUS_PENDING:
+        return "pending";
+
+    case RUN_STATUS_ABORTED:
+        return "aborted";
+        
+    case RUN_STATUS_PASSED:
+        return "passed";
+
+    case RUN_STATUS_FAILED:
+        return "failed";
+
+    }
+
+    return "unknown";
+
+}
+
+int run_prepare(struct run *run)
 {
 
     char path[BUFSIZ];
 
-    config_get_rundir(path, BUFSIZ, id, run->index);
+    config_get_rundir(path, BUFSIZ, run->id, run->index);
 
     if (util_mkdir(path) < 0)
         return -1;
@@ -21,13 +48,13 @@ int run_prepare(struct run *run, char *id)
 
 }
 
-int run_update_remote(struct run *run, char *id, char *remote)
+int run_update_remote(struct run *run, char *remote)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "remote");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "remote");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
@@ -41,7 +68,7 @@ int run_update_remote(struct run *run, char *id, char *remote)
 
 }
 
-unsigned int run_get_status(struct run *run, char *id)
+unsigned int run_get_status(struct run *run)
 {
 
     char path[BUFSIZ];
@@ -49,7 +76,7 @@ unsigned int run_get_status(struct run *run, char *id)
     unsigned int count;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "status");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -73,58 +100,27 @@ unsigned int run_get_status(struct run *run, char *id)
 
 }
 
-int run_update_status(struct run *run, char *id, unsigned int status)
+int run_update_status(struct run *run, unsigned int status)
 {
 
     char path[BUFSIZ];
-    char *statusname = "unknown";
     int fd;
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "status");
-
-    switch (status)
-    {
-
-    case RUN_STATUS_UNKNOWN:
-        statusname = "unknown";
-
-        break;
-
-    case RUN_STATUS_PENDING:
-        statusname = "pending";
-
-        break;
-
-    case RUN_STATUS_ABORTED:
-        statusname = "aborted";
-
-        break;
-
-    case RUN_STATUS_PASSED:
-        statusname = "passed";
-
-        break;
-
-    case RUN_STATUS_FAILED:
-        statusname = "failed";
-
-        break;
-
-    }
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
     if (fd < 0)
         return -1;
 
-    dprintf(fd, "%s\n", statusname);
+    dprintf(fd, "%s\n", getstatusname(status));
     close(fd);
 
     return 0;
 
 }
 
-int run_get_pid(struct run *run, char *id)
+int run_get_pid(struct run *run)
 {
 
     char path[BUFSIZ];
@@ -132,7 +128,7 @@ int run_get_pid(struct run *run, char *id)
     unsigned int count;
     int fd;
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
 
     fd = open(path, O_RDONLY, 0644);
 
@@ -158,13 +154,13 @@ int run_get_pid(struct run *run, char *id)
 
 }
 
-int run_update_pid(struct run *run, char *id, unsigned int pid)
+int run_update_pid(struct run *run, unsigned int pid)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
@@ -178,16 +174,97 @@ int run_update_pid(struct run *run, char *id, unsigned int pid)
 
 }
 
-int run_open(struct run *run, char *id)
+void run_print(struct run *run)
+{
+
+    char remote[BUFSIZ];
+    unsigned int count;
+    char path[BUFSIZ];
+    int fd;
+
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "remote");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd >= 0)
+    {
+
+        count = read(fd, remote, BUFSIZ);
+        remote[count - 1] = '\0';
+
+    }
+
+    else
+    {
+
+        strcpy(remote, "unknown");
+        count = 7;
+
+    }
+
+    close(fd);
+
+    printf("run=%u remote=%s status=%s\n", run->index, remote, getstatusname(run->status));
+
+}
+
+void run_printstd(struct run *run, unsigned int descriptor)
+{
+
+    char buffer[BUFSIZ];
+    unsigned int count;
+    char path[BUFSIZ];
+    int fd;
+
+    switch (descriptor)
+    {
+
+    case 1:
+        config_get_runpath(path, BUFSIZ, run->id, run->index, "stdout");
+
+        break;
+
+    case 2:
+        config_get_runpath(path, BUFSIZ, run->id, run->index, "stderr");
+
+        break;
+
+    }
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd >= 0)
+    {
+
+        while ((count = read(fd, buffer, BUFSIZ)))
+            write(STDOUT_FILENO, buffer, count);
+
+    }
+
+    close(fd);
+
+}
+
+int run_load(struct run *run)
+{
+
+    run->pid = run_get_pid(run);
+    run->status = run_get_status(run);
+
+    return 0;
+
+}
+
+int run_open(struct run *run)
 {
 
     char path[BUFSIZ];
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "stderr");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "stderr");
 
     run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
-    config_get_runpath(path, BUFSIZ, id, run->index, "stdout");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "stdout");
 
     run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
@@ -205,11 +282,12 @@ int run_close(struct run *run)
 
 }
 
-void run_init(struct run *run, unsigned int index)
+void run_init(struct run *run, char *id, unsigned int index)
 {
 
     memset(run, 0, sizeof (struct run));
 
+    run->id = id;
     run->index = index;
 
 }

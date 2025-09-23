@@ -159,104 +159,11 @@ int log_find(struct log *log, char *id)
 
 }
 
-int log_printstd(struct log *log, unsigned int run, unsigned int descriptor)
+void log_print(struct log *log)
 {
 
-    char buffer[BUFSIZ];
-    unsigned int count;
-    char path[BUFSIZ];
-    int fd;
-
-    switch (descriptor)
-    {
-
-    case 1:
-        config_get_runpath(path, BUFSIZ, log->id, run, "stdout");
-
-        break;
-
-    case 2:
-        config_get_runpath(path, BUFSIZ, log->id, run, "stderr");
-
-        break;
-
-    }
-
-    fd = open(path, O_RDONLY, 0644);
-
-    if (fd < 0)
-        return -1;
-
-    while ((count = read(fd, buffer, BUFSIZ)))
-        write(STDOUT_FILENO, buffer, count);
-
-    close(fd);
-
-    return 0;
-
-}
-
-int log_printrun(struct log *log, unsigned int run)
-{
-
-    char status[BUFSIZ];
-    char remote[BUFSIZ];
-    unsigned int count;
-    char path[BUFSIZ];
-    int fd;
-
-    config_get_runpath(path, BUFSIZ, log->id, run, "remote");
-
-    fd = open(path, O_RDONLY, 0644);
-
-    if (fd < 0)
-        return -1;
-
-    count = read(fd, remote, BUFSIZ);
-    remote[count - 1] = '\0';
-
-    close(fd);
-
-    config_get_runpath(path, BUFSIZ, log->id, run, "status");
-
-    fd = open(path, O_RDONLY, 0644);
-
-    if (fd < 0)
-        return -1;
-
-    count = read(fd, status, BUFSIZ);
-    status[count - 1] = '\0';
-
-    close(fd);
-
-    printf("run=%u remote=%s status=%s\n", run, remote, status);
-
-    return 0;
-
-}
-
-int log_print(struct log *log)
-{
-
-    char path[BUFSIZ];
-    unsigned int i;
-
-    config_get_rundirfull(path, BUFSIZ, log->id);
     printf("id=%s datetime=%s\n", log->id, log->datetime);
     printf("total=%u complete=%u aborted=%u passed=%u failed=%u\n", log->total, log->complete, log->aborted, log->passed, log->failed);
-    printf("\n");
-
-    for (i = 0; i < log->total; i++)
-    {
-
-        printf("    ");
-        log_printrun(log, i);
-
-    }
-
-    printf("\n");
-
-    return 0;
 
 }
 
