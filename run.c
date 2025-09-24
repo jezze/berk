@@ -260,9 +260,9 @@ void run_printstd(struct run *run, unsigned int descriptor)
         while ((count = read(fd, buffer, BUFSIZ)))
             write(STDOUT_FILENO, buffer, count);
 
-    }
+        close(fd);
 
-    close(fd);
+    }
 
 }
 
