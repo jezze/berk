@@ -316,6 +316,14 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
 
     rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
 
+    if (remote_disconnect(&remote))
+        panic(ERROR_REMOTE_DISCONNECT, remote.name);
+
+    event_stop(remote.name, run.index);
+
+    if (run_closestd(&run))
+        panic(ERROR_RUN_CLOSE, run.index);
+
     run.pid = 0;
     run.status = (rc == 0) ? RUN_STATUS_PASSED : RUN_STATUS_FAILED;
 
@@ -324,14 +332,6 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
 
     if (run_save_status(&run))
         panic(ERROR_RUN_SAVE, run.index, "status");
-
-    if (remote_disconnect(&remote))
-        panic(ERROR_REMOTE_DISCONNECT, remote.name);
-
-    event_stop(remote.name, run.index);
-
-    if (run_closestd(&run))
-        panic(ERROR_RUN_CLOSE, run.index);
 
     return 0;
 
