@@ -22,21 +22,25 @@ int log_open(struct log *log)
 
     log->fd = open(path, O_RDONLY, 0644);
 
-    if (log->fd < 0)
-        return -1;
+    if (log->fd >= 0)
+    {
 
-    flock(log->fd, LOCK_SH);
+        flock(log->fd, LOCK_SH);
 
-    log->size = lseek(log->fd, 0, SEEK_END);
+        log->size = lseek(log->fd, 0, SEEK_END);
 
-    flock(log->fd, LOCK_UN);
+        flock(log->fd, LOCK_UN);
 
-    if (log->size % LOG_ENTRYSIZE != 0)
-        return -1;
+        if (log->size % LOG_ENTRYSIZE != 0)
+            return -1;
 
-    log->position = log->size;
+        log->position = log->size;
 
-    return 0;
+        return 0;
+
+    }
+
+    return -1;
 
 }
 
