@@ -119,10 +119,11 @@ int run_save_pid(struct run *run)
     if (fd >= 0)
     {
 
-        dprintf(fd, "%u\n", run->pid);
+        int count = dprintf(fd, "%u\n", run->pid);
+
         close(fd);
 
-        return 0;
+        return (count <= 0) ? -1 : 0;
 
     }
 
@@ -143,10 +144,11 @@ int run_save_remote(struct run *run, char *remote)
     if (fd >= 0)
     {
 
-        dprintf(fd, "%s\n", remote);
+        int count = dprintf(fd, "%s\n", remote);
+
         close(fd);
 
-        return 0;
+        return (count <= 0) ? -1 : 0;
 
     }
 
@@ -167,10 +169,11 @@ int run_save_status(struct run *run)
     if (fd >= 0)
     {
 
-        dprintf(fd, "%s\n", getstatusname(run->status));
+        int count = dprintf(fd, "%s\n", getstatusname(run->status));
+
         close(fd);
 
-        return 0;
+        return (count <= 0) ? -1 : 0;
 
     }
 

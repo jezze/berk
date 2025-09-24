@@ -180,20 +180,25 @@ int log_add(struct log *log)
 
     fd = open(path, O_WRONLY | O_CREAT | O_SYNC, 0644);
 
-    if (fd < 0)
-        return -1;
+    if (fd >= 0)
+    {
 
-    flock(fd, LOCK_SH);
+        int count;
 
-    log->position = lseek(fd, 0, SEEK_END);
+        flock(fd, LOCK_SH);
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
-        return -1;
+        log->position = lseek(fd, 0, SEEK_END);
 
-    flock(fd, LOCK_UN);
-    close(fd);
+        count = dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed);
 
-    return 0;
+        flock(fd, LOCK_UN);
+        close(fd);
+
+        return (count == LOG_ENTRYSIZE) ? 0 : -1;
+
+    }
+
+    return -1;
 
 }
 
@@ -207,17 +212,22 @@ int log_update(struct log *log)
 
     fd = open(path, O_WRONLY | O_SYNC, 0644);
 
-    if (fd < 0)
-        return -1;
+    if (fd >= 0)
+    {
 
-    flock(fd, LOCK_SH);
-    lseek(fd, log->position, SEEK_SET);
+        int count;
 
-    if (dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed) != LOG_ENTRYSIZE)
-        return -1;
+        flock(fd, LOCK_SH);
+        lseek(fd, log->position, SEEK_SET);
 
-    flock(fd, LOCK_UN);
-    close(fd);
+        count = dprintf(fd, "%s %s %04d %04d %04d %04d %04d\n", log->id, log->datetime, log->total, log->complete, log->aborted, log->passed, log->failed);
+
+        flock(fd, LOCK_UN);
+        close(fd);
+
+        return (count == LOG_ENTRYSIZE) ? 0 : -1;
+
+    }
 
     return 0;
 
