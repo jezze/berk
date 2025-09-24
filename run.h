@@ -16,15 +16,14 @@ struct run
 
 };
 
+int run_load_pid(struct run *run);
+int run_load_status(struct run *run);
+int run_save_status(struct run *run);
+int run_save_remote(struct run *run, char *remote);
+int run_save_pid(struct run *run);
 int run_prepare(struct run *run);
-int run_update_remote(struct run *run, char *remote);
-unsigned int run_get_status(struct run *run);
-int run_update_status(struct run *run, unsigned int status);
-int run_get_pid(struct run *run);
-int run_update_pid(struct run *run, unsigned int pid);
 void run_print(struct run *run);
 void run_printstd(struct run *run, unsigned int descriptor);
-int run_load(struct run *run);
-int run_open(struct run *run);
-int run_close(struct run *run);
+int run_openstd(struct run *run);
+int run_closestd(struct run *run);
 void run_init(struct run *run, char *id, unsigned int index);

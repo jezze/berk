@@ -7,7 +7,7 @@
 #include "util.h"
 #include "run.h"
 
-char *getstatusname(unsigned int status)
+static char *getstatusname(unsigned int status)
 {
 
     switch (status)
@@ -34,21 +34,103 @@ char *getstatusname(unsigned int status)
 
 }
 
-int run_prepare(struct run *run)
+int run_load_pid(struct run *run)
 {
 
     char path[BUFSIZ];
+    int fd;
 
-    config_get_rundir(path, BUFSIZ, run->id, run->index);
+    run->pid = -1;
 
-    if (util_mkdir(path) < 0)
-        return -1;
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
 
-    return 0;
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd >= 0)
+    {
+
+        char buffer[64];
+        unsigned int count = read(fd, buffer, 64);
+
+        close(fd);
+
+        if (count)
+        {
+
+            sscanf(buffer, "%d\n", &run->pid);
+
+            return 0;
+
+        }
+
+    }
+
+    return -1;
 
 }
 
-int run_update_remote(struct run *run, char *remote)
+int run_load_status(struct run *run)
+{
+
+    char path[BUFSIZ];
+    int fd;
+
+    run->status = RUN_STATUS_UNKNOWN;
+
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
+
+    fd = open(path, O_RDONLY, 0644);
+
+    if (fd >= 0)
+    {
+
+        char buffer[64];
+        unsigned int count = read(fd, buffer, 64);
+
+        close(fd);
+
+        if (count)
+        {
+
+            buffer[count - 1] = '\0';
+
+            run->status = util_hash(buffer);
+
+            return 0;
+
+        }
+
+    }
+
+    return -1;
+
+}
+
+int run_save_pid(struct run *run)
+{
+
+    char path[BUFSIZ];
+    int fd;
+
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
+
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+
+    if (fd >= 0)
+    {
+
+        dprintf(fd, "%u\n", run->pid);
+        close(fd);
+
+        return 0;
+
+    }
+
+    return -1;
+
+}
+
+int run_save_remote(struct run *run, char *remote)
 {
 
     char path[BUFSIZ];
@@ -58,95 +140,13 @@ int run_update_remote(struct run *run, char *remote)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
-    if (fd < 0)
-        return -1;
+    if (fd >= 0)
+    {
 
-    dprintf(fd, "%s\n", remote);
-    close(fd);
+        dprintf(fd, "%s\n", remote);
+        close(fd);
 
-    return 0;
-
-}
-
-unsigned int run_get_status(struct run *run)
-{
-
-    char path[BUFSIZ];
-    char buffer[64];
-    unsigned int count;
-    int fd;
-
-    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
-
-    fd = open(path, O_RDONLY, 0644);
-
-    if (fd < 0)
         return 0;
-
-    count = read(fd, buffer, 64);
-
-    close(fd);
-
-    if (count)
-    {
-
-        buffer[count - 1] = '\0';
-
-        return util_hash(buffer);
-
-    }
-
-    return 0;
-
-}
-
-int run_update_status(struct run *run, unsigned int status)
-{
-
-    char path[BUFSIZ];
-    int fd;
-
-    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
-
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
-
-    if (fd < 0)
-        return -1;
-
-    dprintf(fd, "%s\n", getstatusname(status));
-    close(fd);
-
-    return 0;
-
-}
-
-int run_get_pid(struct run *run)
-{
-
-    char path[BUFSIZ];
-    char buffer[64];
-    unsigned int count;
-    int fd;
-
-    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
-
-    fd = open(path, O_RDONLY, 0644);
-
-    if (fd < 0)
-        return -1;
-
-    count = read(fd, buffer, 64);
-
-    close(fd);
-
-    if (count)
-    {
-
-        unsigned int pid;
-
-        sscanf(buffer, "%u\n", &pid);
-
-        return pid;
 
     }
 
@@ -154,21 +154,39 @@ int run_get_pid(struct run *run)
 
 }
 
-int run_update_pid(struct run *run, unsigned int pid)
+int run_save_status(struct run *run)
 {
 
     char path[BUFSIZ];
     int fd;
 
-    config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
+    config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
 
-    if (fd < 0)
-        return -1;
+    if (fd >= 0)
+    {
 
-    dprintf(fd, "%u\n", pid);
-    close(fd);
+        dprintf(fd, "%s\n", getstatusname(run->status));
+        close(fd);
+
+        return 0;
+
+    }
+
+    return -1;
+
+}
+
+int run_prepare(struct run *run)
+{
+
+    char path[BUFSIZ];
+
+    config_get_rundir(path, BUFSIZ, run->id, run->index);
+
+    if (util_mkdir(path) < 0)
+        return -1;
 
     return 0;
 
@@ -245,17 +263,7 @@ void run_printstd(struct run *run, unsigned int descriptor)
 
 }
 
-int run_load(struct run *run)
-{
-
-    run->pid = run_get_pid(run);
-    run->status = run_get_status(run);
-
-    return 0;
-
-}
-
-int run_open(struct run *run)
+int run_openstd(struct run *run)
 {
 
     char path[BUFSIZ];
@@ -272,7 +280,7 @@ int run_open(struct run *run)
 
 }
 
-int run_close(struct run *run)
+int run_closestd(struct run *run)
 {
 
     close(run->stderrfd);

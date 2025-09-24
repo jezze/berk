@@ -39,7 +39,8 @@
 #define ERROR_REMOTE_SHELL              "Could not open shell of type '%s' on remote '%s'."
 #define ERROR_REMOTE_REMOVE             "Could not remove remote '%s'."
 #define ERROR_RUN_PREPARE               "Could not prepare run '%u'."
-#define ERROR_RUN_UPDATE                "Could not update run '%u' with type '%s'."
+#define ERROR_RUN_LOAD                  "Could not load run '%u' property '%s'."
+#define ERROR_RUN_SAVE                  "Could not save run '%u' property '%s'."
 #define ERROR_RUN_OPEN                  "Could not open run '%u'."
 #define ERROR_RUN_CLOSE                 "Could not close run '%u'."
 #define ERROR_RUN_GETPID                "Could not get pid of run '%u'."
@@ -220,7 +221,12 @@ static void updatelog(struct log *log)
         struct run run;
 
         run_init(&run, log->id, i);
-        run_load(&run);
+
+        if (run_load_pid(&run) < 0)
+            continue;
+
+        if (run_load_status(&run) < 0)
+            continue;
 
         if (run.pid < 0)
             continue;
@@ -279,6 +285,9 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
     remote_init(&remote, name);
     run_init(&run, id, index);
 
+    run.pid = pid;
+    run.status = RUN_STATUS_PENDING;
+
     if (remote_load(&remote))
         panic(ERROR_REMOTE_LOAD, remote.name);
 
@@ -288,16 +297,16 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
     if (run_prepare(&run))
         panic(ERROR_RUN_PREPARE, run.index);
 
-    if (run_update_remote(&run, remote.name))
-        panic(ERROR_RUN_UPDATE, run.index, "remote");
+    if (run_save_remote(&run, remote.name))
+        panic(ERROR_RUN_SAVE, run.index, "remote");
 
-    if (run_update_pid(&run, pid))
-        panic(ERROR_RUN_UPDATE, run.index, "pid");
+    if (run_save_pid(&run))
+        panic(ERROR_RUN_SAVE, run.index, "pid");
 
-    if (run_update_status(&run, RUN_STATUS_PENDING))
-        panic(ERROR_RUN_UPDATE, run.index, "status");
+    if (run_save_status(&run))
+        panic(ERROR_RUN_SAVE, run.index, "status");
 
-    if (run_open(&run))
+    if (run_openstd(&run))
         panic(ERROR_RUN_OPEN, run.index);
 
     event_start(remote.name, run.index);
@@ -307,18 +316,21 @@ static int execute(char *id, unsigned int pid, unsigned int index, char *name, c
 
     rc = remote_exec(&remote, command, run.stdoutfd, run.stderrfd);
 
-    if (run_update_pid(&run, 0))
-        panic(ERROR_RUN_UPDATE, run.index, "pid");
+    run.pid = 0;
+    run.status = (rc == 0) ? RUN_STATUS_PASSED : RUN_STATUS_FAILED;
 
-    if (run_update_status(&run, rc == 0 ? RUN_STATUS_PASSED : RUN_STATUS_FAILED))
-        panic(ERROR_RUN_UPDATE, run.index, "status");
+    if (run_save_pid(&run))
+        panic(ERROR_RUN_SAVE, run.index, "pid");
+
+    if (run_save_status(&run))
+        panic(ERROR_RUN_SAVE, run.index, "status");
 
     if (remote_disconnect(&remote))
         panic(ERROR_REMOTE_DISCONNECT, remote.name);
 
     event_stop(remote.name, run.index);
 
-    if (run_close(&run))
+    if (run_closestd(&run))
         panic(ERROR_RUN_CLOSE, run.index);
 
     return 0;
@@ -557,8 +569,8 @@ static void do_log(char *count, char *skip)
                 struct run run;
 
                 run_init(&run, log.id, i);
-                run_load(&run);
-
+                run_load_pid(&run);
+                run_load_status(&run);
                 printf("    ");
                 run_print(&run);
 
@@ -756,8 +768,8 @@ static void do_show(char *id, char *rindex, unsigned int descriptor)
         {
 
             run_init(&run, log.id, i);
-            run_load(&run);
-
+            run_load_pid(&run);
+            run_load_status(&run);
             printf("    ");
             run_print(&run);
 
@@ -806,7 +818,8 @@ static void do_stop(char *id)
         for (;;)
         {
 
-            run_load(&run);
+            if (run_load_pid(&run) < 0)
+                continue;
 
             if (run.pid < 0)
                 continue;
@@ -820,11 +833,14 @@ static void do_stop(char *id)
 
             kill(run.pid, SIGTERM);
 
-            if (run_update_pid(&run, 0))
-                panic(ERROR_RUN_UPDATE, run.index, "pid");
+            run.pid = 0;
+            run.status = RUN_STATUS_ABORTED;
 
-            if (run_update_status(&run, RUN_STATUS_ABORTED))
-                panic(ERROR_RUN_UPDATE, run.index, "status");
+            if (run_save_pid(&run))
+                panic(ERROR_RUN_SAVE, run.index, "pid");
+
+            if (run_save_status(&run))
+                panic(ERROR_RUN_SAVE, run.index, "status");
 
         }
 
