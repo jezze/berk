@@ -46,7 +46,7 @@ int run_load_pid(struct run *run)
 
     fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         char buffer[64];
@@ -81,7 +81,7 @@ int run_load_status(struct run *run)
 
     fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         char buffer[64];
@@ -116,7 +116,7 @@ int run_save_pid(struct run *run)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         int count = dprintf(fd, "%u\n", run->pid);
@@ -141,7 +141,7 @@ int run_save_remote(struct run *run, char *remote)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         int count = dprintf(fd, "%s\n", remote);
@@ -166,7 +166,7 @@ int run_save_status(struct run *run)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         int count = dprintf(fd, "%s\n", getstatusname(run->status));
@@ -206,7 +206,7 @@ void run_print(struct run *run)
 
     fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         int count;
@@ -252,7 +252,7 @@ void run_printstd(struct run *run, unsigned int descriptor)
 
     fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd >= 0)
+    if (fd)
     {
 
         char buffer[BUFSIZ];
