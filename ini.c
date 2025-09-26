@@ -188,7 +188,7 @@ int ini_parse(char *filename, int (*handler)(void *user, char *section, char *na
     int error;
     int fd;
 
-    fd = open(filename, O_RDONLY, 0644);
+    fd = open(filename, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd < 0)
         return -1;

@@ -159,7 +159,7 @@ int remote_save(struct remote *remote)
 
     config_get_subpath(path, BUFSIZ, CONFIG_REMOTES, remote->name);
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd < 0)
         return -1;
@@ -502,12 +502,12 @@ static int remote_send_local(struct remote *remote, char *localpath, char *remot
     if (stat(localpath, &fileinfo))
         return -1;
 
-    fdlocal = open(localpath, O_RDONLY, 0644);
+    fdlocal = open(localpath, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fdlocal < 0)
         return -1;
 
-    fdremote = open(remotepath, O_WRONLY | O_CREAT | O_SYNC, fileinfo.st_mode | 0777);
+    fdremote = open(remotepath, O_WRONLY | O_CREAT | O_SYNC, fileinfo.st_mode);
 
     if (fdremote < 0)
         return -1;
@@ -553,7 +553,7 @@ static int remote_send_ssh(struct remote *remote, char *localpath, char *remotep
     if (stat(localpath, &fileinfo))
         return -1;
 
-    fd = open(localpath, O_RDONLY, 0644);
+    fd = open(localpath, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd < 0)
         return -1;

@@ -44,7 +44,7 @@ int run_load_pid(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
 
-    fd = open(path, O_RDONLY, 0644);
+    fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -79,7 +79,7 @@ int run_load_status(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
 
-    fd = open(path, O_RDONLY, 0644);
+    fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -114,7 +114,7 @@ int run_save_pid(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "pid");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -139,7 +139,7 @@ int run_save_remote(struct run *run, char *remote)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "remote");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -164,7 +164,7 @@ int run_save_status(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "status");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -205,7 +205,7 @@ void run_print(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "remote");
 
-    fd = open(path, O_RDONLY, 0644);
+    fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -252,7 +252,7 @@ void run_printstd(struct run *run, unsigned int descriptor)
 
     }
 
-    fd = open(path, O_RDONLY, 0644);
+    fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -273,11 +273,11 @@ int run_openstd(struct run *run)
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "stderr");
 
-    run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    run->stderrfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     config_get_runpath(path, BUFSIZ, run->id, run->index, "stdout");
 
-    run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0644);
+    run->stdoutfd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     return 0;
 

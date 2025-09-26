@@ -20,7 +20,7 @@ int log_open(struct log *log)
 
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    log->fd = open(path, O_RDONLY, 0644);
+    log->fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (log->fd >= 0)
     {
@@ -182,7 +182,7 @@ int log_add(struct log *log)
     strftime(log->datetime, 25, "%FT%T%z", localtime(&timeraw));
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    fd = open(path, O_WRONLY | O_CREAT | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_CREAT | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
@@ -214,7 +214,7 @@ int log_update(struct log *log)
 
     config_get_subpath(path, BUFSIZ, CONFIG_LOGS, "HEAD");
 
-    fd = open(path, O_WRONLY | O_SYNC, 0644);
+    fd = open(path, O_WRONLY | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if (fd >= 0)
     {
