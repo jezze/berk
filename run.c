@@ -50,11 +50,11 @@ int run_load_pid(struct run *run)
     {
 
         char buffer[64];
-        unsigned int count = read(fd, buffer, 64);
+        int count = read(fd, buffer, 64);
 
         close(fd);
 
-        if (count)
+        if (count > 0)
         {
 
             sscanf(buffer, "%d\n", &run->pid);
@@ -85,11 +85,11 @@ int run_load_status(struct run *run)
     {
 
         char buffer[64];
-        unsigned int count = read(fd, buffer, 64);
+        int count = read(fd, buffer, 64);
 
         close(fd);
 
-        if (count)
+        if (count > 0)
         {
 
             buffer[count - 1] = '\0';
@@ -199,7 +199,6 @@ void run_print(struct run *run)
 {
 
     char remote[BUFSIZ];
-    unsigned int count;
     char path[BUFSIZ];
     int fd;
 
@@ -210,6 +209,8 @@ void run_print(struct run *run)
     if (fd >= 0)
     {
 
+        int count;
+
         count = read(fd, remote, BUFSIZ);
         remote[count - 1] = '\0';
 
@@ -219,7 +220,6 @@ void run_print(struct run *run)
     {
 
         strcpy(remote, "unknown");
-        count = 7;
 
     }
 
@@ -232,8 +232,6 @@ void run_print(struct run *run)
 void run_printstd(struct run *run, unsigned int descriptor)
 {
 
-    char buffer[BUFSIZ];
-    unsigned int count;
     char path[BUFSIZ];
     int fd;
 
@@ -256,6 +254,9 @@ void run_printstd(struct run *run, unsigned int descriptor)
 
     if (fd >= 0)
     {
+
+        char buffer[BUFSIZ];
+        int count;
 
         while ((count = read(fd, buffer, BUFSIZ)))
             write(STDOUT_FILENO, buffer, count);
