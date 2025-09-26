@@ -96,7 +96,8 @@ int log_read(struct log *log)
     if (count != LOG_ENTRYSIZE)
         return -1;
 
-    sscanf(buffer, "%s %s %u %u %u %u %u\n", log->id, log->datetime, &log->total, &log->complete, &log->aborted, &log->passed, &log->failed);
+    if (sscanf(buffer, "%s %s %u %u %u %u %u\n", log->id, log->datetime, &log->total, &log->complete, &log->aborted, &log->passed, &log->failed) != 7)
+        return -1;
 
     return count;
 
@@ -141,7 +142,8 @@ int log_find(struct log *log, char *id)
 
         unsigned int count = 0;
 
-        sscanf(id, "HEAD~%u", &count);
+        if (sscanf(id, "HEAD~%u", &count) != 1)
+            return -1;
 
         if (log_moveprev(log, count + 1) >= 0)
             return log_read(log);

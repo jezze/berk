@@ -57,7 +57,8 @@ int run_load_pid(struct run *run)
         if (count > 0)
         {
 
-            sscanf(buffer, "%d\n", &run->pid);
+            if (sscanf(buffer, "%d\n", &run->pid) != 1)
+                return -1;
 
             return 0;
 
