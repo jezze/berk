@@ -53,22 +53,7 @@
 #define ERROR_ARG_UNKNOWN               "Argument parsing failed."
 #define DEFAULT_COMMAND                 "hostname; uname -a; uptime; date; whoami; df; free"
 
-int error(char *format, ...)
-{
-
-    va_list args;
-
-    va_start(args, format);
-    fprintf(stderr, "%s: ", CONFIG_PROGNAME);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-
-    return EXIT_FAILURE;
-
-}
-
-void panic(char *format, ...)
+static void panic(char *format, ...)
 {
 
     va_list args;
