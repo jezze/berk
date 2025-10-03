@@ -757,6 +757,9 @@ static void do_show(char *id, char *rindex, unsigned int descriptor)
     if (log_find(&log, id) <= 0)
         panic(ERROR_LOG_FIND, id);
 
+    if (log_close(&log) < 0)
+        panic(ERROR_LOG_CLOSE);
+
     switch (descriptor)
     {
 
@@ -787,9 +790,6 @@ static void do_show(char *id, char *rindex, unsigned int descriptor)
         break;
 
     }
-
-    if (log_close(&log) < 0)
-        panic(ERROR_LOG_CLOSE);
 
 }
 
