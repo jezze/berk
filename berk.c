@@ -873,7 +873,12 @@ static void do_wait(char *id)
         panic(ERROR_LOG_FIND, id);
 
     while (log.complete < log.total)
-        log_read(&log);
+    {
+
+        if (log_read(&log) < 0)
+            panic(ERROR_LOG_READ);
+
+    }
 
     if (log_close(&log) < 0)
         panic(ERROR_LOG_CLOSE);
