@@ -1527,7 +1527,6 @@ static int command_version(struct args *args)
         panic(ERROR_ARG_MANY);
 
     assert_args(args);
-
     printf("%s version %s\n", CONFIG_PROGNAME, CONFIG_VERSION);
 
     return EXIT_SUCCESS;
