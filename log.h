@@ -23,4 +23,5 @@ int log_find(struct log *log, char *id);
 void log_print(struct log *log);
 int log_add(struct log *log);
 int log_update(struct log *log);
-void log_init(struct log *log, unsigned int total);
+void log_createid(struct log *log);
+void log_init(struct log *log);

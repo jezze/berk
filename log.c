@@ -11,7 +11,7 @@
 #include "util.h"
 #include "log.h"
 
-#define LOG_ENTRYSIZE 82
+#define LOG_ENTRYSIZE 83
 
 int log_open(struct log *log)
 {
@@ -239,7 +239,7 @@ int log_update(struct log *log)
 
 }
 
-static void createid(char *dest, unsigned int length)
+void log_createid(struct log *log)
 {
 
     char charset[] = "0123456789abcdef";
@@ -249,26 +249,25 @@ static void createid(char *dest, unsigned int length)
     gettimeofday(&t1, NULL);
     srand(t1.tv_usec * t1.tv_sec);
 
-    for (i = 0; i < length; i++)
+    for (i = 0; i < 32; i++)
     {
 
         unsigned int index = (double)rand() / RAND_MAX * 16;
 
-        dest[i] = charset[index];
+        log->id[i] = charset[index];
 
     }
 
-    dest[length - 1] = '\0';
+    log->id[32] = '\0';
 
 }
 
-void log_init(struct log *log, unsigned int total)
+void log_init(struct log *log)
 {
 
     memset(log, 0, sizeof (struct log));
-    createid(log->id, 32);
 
-    log->total = total;
+    log->total = 0;
     log->complete = 0;
     log->aborted = 0;
     log->passed = 0;

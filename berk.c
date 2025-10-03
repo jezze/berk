@@ -437,7 +437,10 @@ static void do_exec(char *command, unsigned int nofork, unsigned int dowait, uns
 
     struct log log;
 
-    log_init(&log, names);
+    log_init(&log);
+    log_createid(&log);
+
+    log.total = names;
 
     if (log_prepare(&log))
         panic(ERROR_LOG_PREPARE);
@@ -545,6 +548,8 @@ static void do_log(char *count, char *skip)
     unsigned int s = strtoul(skip, NULL, 10);
     struct log log;
     unsigned int n;
+
+    log_init(&log);
 
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
@@ -751,6 +756,8 @@ static void do_show(char *id, char *rindex, unsigned int descriptor)
     struct run run;
     unsigned int i;
 
+    log_init(&log);
+
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
 
@@ -798,6 +805,8 @@ static void do_stop(char *id)
 
     unsigned int i;
     struct log log;
+
+    log_init(&log);
 
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
@@ -854,6 +863,8 @@ static void do_wait(char *id)
 {
 
     struct log log;
+
+    log_init(&log);
 
     if (log_open(&log) < 0)
         panic(ERROR_LOG_OPEN);
