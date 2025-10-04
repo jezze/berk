@@ -467,6 +467,7 @@ static void do_exec(char *command, unsigned int nofork, unsigned int dowait, uns
 
                 execute(log.id, getpid(), i, name[i], command);
                 updatelog(&log);
+                exit(EXIT_SUCCESS);
 
             }
 
