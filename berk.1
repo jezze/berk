@@ -87,15 +87,17 @@ It was written by Jens Nyberg.
     <tags>: String with tags, seperated by space.
 .P
 .B remote add
-[-h <hostname>] [-t <type>] <name>
+[-h <hostname>] [-t <type>] [-p <port>] <name>
 .P
     Add a new remote with a given name.
 
     -h: Hostname of remote.
     -t: Type of remote.
+    -p: Port number of remote.
 
     <hostname>: String with hostname.
     <type>: String with type. Valid types are 'ssh' or 'local'.
+    <port>: Integer with port number.
 .P
 .B remote remove
 <remote> [<remote>...]

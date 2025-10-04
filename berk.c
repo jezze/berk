@@ -581,7 +581,7 @@ static void do_log(char *count, char *skip)
 
 }
 
-static void do_remote_add(char *name, char *type, char *hostname)
+static void do_remote_add(char *name, char *type, char *hostname, char *port)
 {
 
     struct remote remote;
@@ -593,6 +593,9 @@ static void do_remote_add(char *name, char *type, char *hostname)
 
     if (hostname)
         remote_set_value(&remote, REMOTE_HOSTNAME, hostname);
+
+    if (port)
+        remote_set_value(&remote, REMOTE_PORT, port);
 
     if (remote_save(&remote))
         panic(ERROR_REMOTE_SAVE, name);
@@ -1149,7 +1152,7 @@ static int command_help(struct args *args)
     printf("    %s\n", "init");
     printf("    %s\n", "log [-c <count>] [-s <skip>]");
     printf("    %s\n", "remote [-t <tags>]");
-    printf("    %s\n", "remote add [-h <hostname>] [-t <type>] <name>");
+    printf("    %s\n", "remote add [-h <hostname>] [-t <type>] [-p <port>] <name>");
     printf("    %s\n", "remote remove <remote> [<remote>...]");
     printf("    %s\n", "send <localpath> <remotepath> <remote> [<remote>...]");
     printf("    %s\n", "shell [-t <type>] <remote>");
@@ -1221,8 +1224,9 @@ static int command_remote_add(struct args *args)
     char *hostname = NULL;
     char *name = NULL;
     char *type = "ssh";
+    char *port = NULL;
 
-    args_setoptions(args, "h:t:");
+    args_setoptions(args, "h:t:p:");
 
     while (args_next(args))
     {
@@ -1240,11 +1244,16 @@ static int command_remote_add(struct args *args)
 
             break;
 
+        case 'p':
+            port = assert_print(args->value);
+
+            break;
+
         default:
             name = assert_print(args->value);
 
             if (name)
-                do_remote_add(name, type, hostname);
+                do_remote_add(name, type, hostname, port);
 
             break;
 
