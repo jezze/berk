@@ -94,6 +94,9 @@ unsigned int args_next(struct args *args)
             break;
 
         case ARGS_OPTION:
+            if (args->index >= args->argc)
+                return 0;
+
             args->value = args->argv[args->index];
             args->index++;
 

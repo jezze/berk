@@ -50,6 +50,7 @@
 #define ERROR_ARG_INVALID               "Invalid argument '%s'."
 #define ERROR_ARG_PARSE                 "Could not parse '%s' as '%s'."
 #define ERROR_ARG_FLAG                  "Unrecognized flag '%s'."
+#define ERROR_ARG_MISSING               "MIssing argument for option '%c'."
 #define ERROR_ARG_UNKNOWN               "Argument parsing failed."
 #define DEFAULT_COMMAND                 "hostname; uname -a; uptime; date; whoami; df; free"
 
@@ -70,11 +71,23 @@ static void panic(char *format, ...)
 static void assert_args(struct args *args)
 {
 
-    if (args->state == ARGS_DONE)
+    switch (args->state)
+    {
+
+    case ARGS_DONE:
         return;
 
-    if (args->flag)
+    case ARGS_OPTION:
+        panic(ERROR_ARG_MISSING, args->flag);
+
+        break;
+
+    default:
         panic(ERROR_ARG_FLAG, args->value);
+
+        break;
+
+    }
 
     panic(ERROR_ARG_UNKNOWN);
 
