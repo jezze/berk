@@ -10,7 +10,7 @@
 
 static char root[BUFSIZ];
 
-char *config_init()
+char *config_setup(void)
 {
 
     char path[512];

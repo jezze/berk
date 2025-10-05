@@ -13,7 +13,7 @@ struct config_core
 
 };
 
-char *config_init();
+char *config_setup(void);
 int config_load(struct config_core *core);
 int config_save(struct config_core *core);
 int config_get_path(char *path, unsigned int length, char *name);

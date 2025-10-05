@@ -494,7 +494,7 @@ static void do_init(void)
     if (mkdir(CONFIG_ROOT, 0775) < 0)
         panic(ERROR_EXIST);
 
-    if (!config_init())
+    if (!config_setup())
         panic(ERROR_INIT, CONFIG_ROOT);
 
     core.version = CONFIG_VERSION;
@@ -1593,7 +1593,7 @@ static int command_main(struct args *args)
                 break;
 
             default:
-                if (!config_init())
+                if (!config_setup())
                     panic(ERROR_INIT, CONFIG_ROOT);
 
                 break;
