@@ -22,7 +22,7 @@ int log_open(struct log *log)
 
     log->fd = open(path, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (log->fd)
+    if (log->fd > 0)
     {
 
         flock(log->fd, LOCK_SH);
@@ -186,7 +186,7 @@ int log_add(struct log *log)
 
     fd = open(path, O_WRONLY | O_CREAT | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd)
+    if (fd > 0)
     {
 
         int count;
@@ -218,7 +218,7 @@ int log_update(struct log *log)
 
     fd = open(path, O_WRONLY | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd)
+    if (fd > 0)
     {
 
         int count;
