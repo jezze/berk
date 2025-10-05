@@ -2,37 +2,44 @@
 #include <string.h>
 #include "args.h"
 
-static unsigned int gettype(struct args *args, char flag)
+static unsigned int getstate(struct args *args)
 {
 
-    unsigned int length;
-    unsigned int i;
-
-    if (!args->options)
-        return 0;
-
-    length = strlen(args->options);
-
-    for (i = 0; i < length; i++)
+    if (args->value[0] == '-')
     {
 
-        if (args->options[i] != flag)
-            continue;
-
-        switch (args->options[i + 1])
+        if (args->options)
         {
 
-        case ':':
-            return ARGS_OPTION;
+            unsigned int length = strlen(args->options);
+            unsigned int i;
 
-        default:
-            return ARGS_FLAG;
+            for (i = 0; i < length; i++)
+            {
+
+                if (args->options[i] != args->value[1])
+                    continue;
+
+                switch (args->options[i + 1])
+                {
+
+                case ':':
+                    return ARGS_OPTION;
+
+                default:
+                    return ARGS_FLAG;
+
+                }
+
+            }
 
         }
 
+        return ARGS_ERROR;
+
     }
 
-    return ARGS_ERROR;
+    return ARGS_COMMAND;
 
 }
 
@@ -61,9 +68,6 @@ void args_init(struct args *args, int argc, char **argv)
 unsigned int args_next(struct args *args)
 {
 
-    if (args->state == ARGS_ERROR)
-        return 0;
-
     if (args->index >= args->argc)
     {
 
@@ -73,48 +77,40 @@ unsigned int args_next(struct args *args)
 
     }
 
-    args->state = ARGS_NONE;
     args->value = args->argv[args->index];
-    args->flag = 0;
+    args->state = getstate(args);
     args->index++;
 
-    if (args->value[0] == '-')
+    switch (args->state)
     {
 
-        args->state = gettype(args, args->value[1]);
+    case ARGS_COMMAND:
+        args->flag = 0xFF;
+        args->position++;
+
+        break;
+
+    case ARGS_FLAG:
         args->flag = args->value[1];
 
-        switch (args->state)
-        {
+        break;
 
-        case ARGS_ERROR:
+    case ARGS_OPTION:
+        args->flag = args->value[1];
+
+        if (args->index >= args->argc)
             return 0;
 
-        case ARGS_FLAG:
-            break;
+        args->value = args->argv[args->index];
+        args->index++;
 
-        case ARGS_OPTION:
-            if (args->index >= args->argc)
-                return 0;
+        break;
 
-            args->value = args->argv[args->index];
-            args->index++;
+    case ARGS_ERROR:
+    default:
+        args->flag = 0;
 
-            break;
-
-        default:
-            return 0;
-
-        }
-
-    }
-
-    else
-    {
-
-        args->state = ARGS_COMMAND;
-        args->position++;
-        args->flag = 0xFF;
+        break;
 
     }
 
