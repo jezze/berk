@@ -13,7 +13,6 @@ struct config_core
 
 };
 
-char *config_setup(void);
 int config_load(struct config_core *core);
 int config_save(struct config_core *core);
 int config_get_path(char *path, unsigned int length, char *name);
@@ -22,3 +21,4 @@ int config_get_rundirshort(char *path, unsigned int length, char *id);
 int config_get_rundirfull(char *path, unsigned int length, char *id);
 int config_get_rundir(char *path, unsigned int length, char *id, int run);
 int config_get_runpath(char *path, unsigned int length, char *id, int run, char *name);
+char *config_setup(void);

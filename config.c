@@ -10,35 +10,6 @@
 
 static char root[BUFSIZ];
 
-char *config_setup(void)
-{
-
-    char path[512];
-
-    getcwd(path, 512);
-
-    while (1)
-    {    
-
-        if (strlen(path) == 1)
-            snprintf(root, BUFSIZ, "/%s", CONFIG_ROOT);
-        else
-            snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
-
-        if (access(root, F_OK) == 0)
-            return root;
-
-        if (strlen(path) == 1)
-            break;
-
-        dirname(path);
-
-    }
-
-    return 0;
-
-}
-
 static int loadcallback(void *user, char *section, char *key, char *value)
 {
 
@@ -133,6 +104,35 @@ int config_get_runpath(char *path, unsigned int length, char *id, int run, char 
 {
 
     return snprintf(path, length, "%s/%s/%c%c/%s/%d/%s", root, CONFIG_LOGS, id[0], id[1], id, run, name);
+
+}
+
+char *config_setup(void)
+{
+
+    char path[512];
+
+    getcwd(path, 512);
+
+    while (1)
+    {    
+
+        if (strlen(path) == 1)
+            snprintf(root, BUFSIZ, "/%s", CONFIG_ROOT);
+        else
+            snprintf(root, BUFSIZ, "%s/%s", path, CONFIG_ROOT);
+
+        if (access(root, F_OK) == 0)
+            return root;
+
+        if (strlen(path) == 1)
+            break;
+
+        dirname(path);
+
+    }
+
+    return 0;
 
 }
 

@@ -11,6 +11,7 @@
 
 static char *rstrip(char *s)
 {
+
     char *p = s + strlen(s);
 
     while (p > s && isspace((unsigned char)(*--p)))
