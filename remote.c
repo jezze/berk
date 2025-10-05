@@ -161,41 +161,45 @@ int remote_save(struct remote *remote)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd < 0)
-        return -1;
+    if (fd > 0)
+    {
 
-    ini_write_section(fd, "remote");
+        ini_write_section(fd, "remote");
 
-    if (remote->name && strlen(remote->name))
-        ini_write_string(fd, "name", remote->name);
+        if (remote->name && strlen(remote->name))
+            ini_write_string(fd, "name", remote->name);
 
-    if (remote->type && strlen(remote->type))
-        ini_write_string(fd, "type", remote->type);
+        if (remote->type && strlen(remote->type))
+            ini_write_string(fd, "type", remote->type);
 
-    if (remote->hostname && strlen(remote->hostname))
-        ini_write_string(fd, "hostname", remote->hostname);
+        if (remote->hostname && strlen(remote->hostname))
+            ini_write_string(fd, "hostname", remote->hostname);
 
-    if (remote->port && strlen(remote->port))
-        ini_write_string(fd, "port", remote->port);
+        if (remote->port && strlen(remote->port))
+            ini_write_string(fd, "port", remote->port);
 
-    if (remote->username && strlen(remote->username))
-        ini_write_string(fd, "username", remote->username);
+        if (remote->username && strlen(remote->username))
+            ini_write_string(fd, "username", remote->username);
 
-    if (remote->password && strlen(remote->password))
-        ini_write_string(fd, "password", remote->password);
+        if (remote->password && strlen(remote->password))
+            ini_write_string(fd, "password", remote->password);
 
-    if (remote->privatekey && strlen(remote->privatekey))
-        ini_write_string(fd, "privatekey", remote->privatekey);
+        if (remote->privatekey && strlen(remote->privatekey))
+            ini_write_string(fd, "privatekey", remote->privatekey);
 
-    if (remote->publickey && strlen(remote->publickey))
-        ini_write_string(fd, "publickey", remote->publickey);
+        if (remote->publickey && strlen(remote->publickey))
+            ini_write_string(fd, "publickey", remote->publickey);
 
-    if (remote->tags && strlen(remote->tags))
-        ini_write_string(fd, "tags", remote->tags);
+        if (remote->tags && strlen(remote->tags))
+            ini_write_string(fd, "tags", remote->tags);
 
-    close(fd);
+        close(fd);
 
-    return 0;
+        return 0;
+
+    }
+
+    return -1;
 
 }
 
@@ -504,41 +508,48 @@ static int remote_send_local(struct remote *remote, char *localpath, char *remot
 
     fdlocal = open(localpath, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fdlocal < 0)
-        return -1;
-
-    fdremote = open(remotepath, O_WRONLY | O_CREAT | O_SYNC, fileinfo.st_mode);
-
-    if (fdremote < 0)
-        return -1;
-
-    while ((total = read(fdlocal, buffer, BUFSIZ)))
+    if (fdlocal > 0)
     {
 
-        char *current = buffer;
+        fdremote = open(remotepath, O_WRONLY | O_CREAT | O_SYNC, fileinfo.st_mode);
 
-        if (total < 0)
-            break;
-
-        do
+        if (fdremote > 0)
         {
 
-            int count = write(fdremote, current, total);
+            while ((total = read(fdlocal, buffer, BUFSIZ)))
+            {
 
-            if (count < 0)
-                break;
+                char *current = buffer;
 
-            current += count;
-            total -= count;
+                if (total < 0)
+                    break;
 
-        } while (total);
- 
-    };
+                do
+                {
 
-    close(fdlocal);
-    close(fdremote);
+                    int count = write(fdremote, current, total);
 
-    return 0;
+                    if (count < 0)
+                        break;
+
+                    current += count;
+                    total -= count;
+
+                } while (total);
+         
+            };
+
+            close(fdremote);
+
+        }
+
+        close(fdlocal);
+
+        return fdremote > 0 ? 0 : -1;
+
+    }
+
+    return -1;
 
 }
 
@@ -555,44 +566,51 @@ static int remote_send_ssh(struct remote *remote, char *localpath, char *remotep
 
     fd = open(localpath, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd < 0)
-        return -1;
-
-    remote->channel = libssh2_scp_send(remote->session, remotepath, fileinfo.st_mode & 0777, fileinfo.st_size);
-
-    if (remote->channel == NULL)
-        return -1;
-
-    while ((total = read(fd, buffer, BUFSIZ)))
+    if (fd > 0)
     {
 
-        char *current = buffer;
+        remote->channel = libssh2_scp_send(remote->session, remotepath, fileinfo.st_mode & 0777, fileinfo.st_size);
 
-        if (total < 0)
-            break;
-
-        do
+        if (remote->channel)
         {
 
-            int count = libssh2_channel_write(remote->channel, current, total);
+            while ((total = read(fd, buffer, BUFSIZ)))
+            {
 
-            if (count < 0)
-                break;
+                char *current = buffer;
 
-            current += count;
-            total -= count;
+                if (total < 0)
+                    break;
 
-        } while (total);
- 
-    };
+                do
+                {
 
-    libssh2_channel_send_eof(remote->channel);
-    libssh2_channel_wait_eof(remote->channel);
-    libssh2_channel_wait_closed(remote->channel);
-    libssh2_channel_free(remote->channel);
-    close(fd);
+                    int count = libssh2_channel_write(remote->channel, current, total);
 
-    return 0;
+                    if (count < 0)
+                        break;
+
+                    current += count;
+                    total -= count;
+
+                } while (total);
+         
+            };
+
+            libssh2_channel_send_eof(remote->channel);
+            libssh2_channel_wait_eof(remote->channel);
+            libssh2_channel_wait_closed(remote->channel);
+            libssh2_channel_free(remote->channel);
+
+        }
+
+        close(fd);
+
+        return remote->channel ? 0 : -1;
+
+    }
+
+    return -1;
 
 }
 

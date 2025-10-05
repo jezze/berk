@@ -186,19 +186,20 @@ static int ini_parse_file(int fd, int (*handler)(void *user, char *section, char
 int ini_parse(char *filename, int (*handler)(void *user, char *section, char *name, char *value), void *user)
 {
 
-    int error;
-    int fd;
+    int fd = open(filename, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    fd = open(filename, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (fd > 0)
+    {
 
-    if (fd < 0)
-        return -1;
+        int rc = ini_parse_file(fd, handler, user);
 
-    error = ini_parse_file(fd, handler, user);
+        close(fd);
 
-    close(fd);
+        return rc;
 
-    return error;
+    }
+
+    return -1;
 
 }
 

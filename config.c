@@ -51,17 +51,21 @@ int config_save(struct config_core *core)
 
     fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (fd < 0)
-        return -1;
+    if (fd > 0)
+    {
 
-    ini_write_section(fd, "core");
+        ini_write_section(fd, "core");
 
-    if (core->version && strlen(core->version))
-        ini_write_string(fd, "version", core->version);
+        if (core->version && strlen(core->version))
+            ini_write_string(fd, "version", core->version);
 
-    close(fd);
+        close(fd);
 
-    return 0;
+        return 0;
+
+    }
+
+    return -1;
 
 }
 

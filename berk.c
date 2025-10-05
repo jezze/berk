@@ -515,11 +515,20 @@ static void do_init(void)
 
         fd = open(path, O_WRONLY | O_CREAT | O_TRUNC | O_SYNC, 0755);
 
-        if (fd < 0)
+        if (fd > 0)
+        {
+
+            dprintf(fd, "#!/bin/sh\n\n# To enable this hook, rename it to \"%s\".\n", hooks[i]);
+            close(fd);
+
+        }
+
+        else
+        {
+
             panic(ERROR_HOOK_CREATE, hooks[i]);
 
-        dprintf(fd, "#!/bin/sh\n\n# To enable this hook, rename it to \"%s\".\n", hooks[i]);
-        close(fd);
+        }
 
     }
 
