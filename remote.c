@@ -224,10 +224,6 @@ static int remote_prepare_local(struct remote *remote)
 static int remote_prepare_ssh(struct remote *remote)
 {
 
-    char buffer[BUFSIZ];
-    char keybuffer[BUFSIZ];
-    struct passwd passwd, *current;
-
     if (!remote->hostname)    
         remote_set_value(remote, REMOTE_HOSTNAME, "localhost");
 
@@ -237,24 +233,11 @@ static int remote_prepare_ssh(struct remote *remote)
     if (!remote->username)    
         remote_set_value(remote, REMOTE_USERNAME, getenv("USER"));
 
-    if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
-        return -1;
-
     if (!remote->privatekey)
-    {
-
-        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa");
-        remote_set_value(remote, REMOTE_PRIVATEKEY, keybuffer);
-
-    }
+        remote_set_value(remote, REMOTE_PRIVATEKEY, "~/.ssh/id_rsa");
 
     if (!remote->publickey)
-    {
-
-        snprintf(keybuffer, BUFSIZ, "%s/.ssh/%s", passwd.pw_dir, "id_rsa.pub");
-        remote_set_value(remote, REMOTE_PUBLICKEY, keybuffer);
-
-    }
+        remote_set_value(remote, REMOTE_PUBLICKEY, "~/.ssh/id_rsa.pub");
 
     return 0;
 
@@ -328,7 +311,36 @@ static int remote_connect_ssh(struct remote *remote)
     else
     {
 
-        if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, remote->publickey, remote->privatekey, 0) < 0)
+        char buffer[BUFSIZ];
+        struct passwd passwd;
+        struct passwd *current;
+        char *privatekey = remote->privatekey;
+        char *publickey = remote->publickey;
+        char fullprivatekey[1024];
+        char fullpublickey[1024];
+
+        if (getpwnam_r(remote->username, &passwd, buffer, BUFSIZ, &current))
+            return -1;
+
+        if (privatekey[0] == '~')
+        {
+
+            snprintf(fullprivatekey, 1024, "%s%s", passwd.pw_dir, privatekey + 1);
+
+            privatekey = fullprivatekey;
+
+        }
+
+        if (publickey[0] == '~')
+        {
+
+            snprintf(fullpublickey, 1024, "%s%s", passwd.pw_dir, publickey + 1);
+
+            publickey = fullpublickey;
+
+        }
+
+        if (libssh2_userauth_publickey_fromfile(remote->session, remote->username, publickey, privatekey, 0) < 0)
             return -1;
 
     }
